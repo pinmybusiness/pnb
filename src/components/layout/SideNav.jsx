@@ -28,7 +28,7 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
         className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-all duration-300
           ${sidebarOpen ? "w-64" : "w-16"}`}
       >
- {/* Header */}
+       {/* Header */}
         <div className="flex items-center justify-between h-16 px-3 border-b border-gray-200">
           <div
             className={`flex items-center gap-3 transition-all ${
@@ -40,9 +40,9 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
             </div>
             {sidebarOpen && (
               <div>
-                <h1 className="font-semibold text-gray-800 leading-tight">
+                <h2 className="font-semibold text-gray-800 leading-tight">
                   {title}
-                </h1>
+                </h2>
                 <p className="text-xs text-gray-500">{subtitle}</p>
               </div>
             )}

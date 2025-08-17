@@ -1,28 +1,33 @@
-// components/icons/IconMapper.jsx
+// components/IconMapper.jsx
+"use client";
 import { 
-  Home,
-  Store,
-  MapPin,
-  Users,
-  BarChart3,
-  Settings,
-  Building2,
-  // Add all other icons you need
+  Building2, 
+  Store, 
+  Users, 
+  BarChart3, 
+  Home, 
+  MapPin, 
+  Settings, 
+  Menu, 
+  X, 
+  UserCircle 
 } from "lucide-react";
 
-const IconMapper = ({ iconName, ...props }) => {
-  const icons = {
-    Home: <Home {...props} />,
-    Store: <Store {...props} />,
-    MapPin: <MapPin {...props} />,
-    Users: <Users {...props} />,
-    BarChart3: <BarChart3 {...props} />,
-    Settings: <Settings {...props} />,
-    Building2: <Building2 {...props} />,
-    // Add mappings for all other icons
+const IconMapper = ({ iconName, className = "w-5 h-5", ...props }) => {
+  const iconComponents = {
+    Building2: <Building2 className={className} {...props} />,
+    Store: <Store className={className} {...props} />,
+    Users: <Users className={className} {...props} />,
+    BarChart3: <BarChart3 className={className} {...props} />,
+    Home: <Home className={className} {...props} />,
+    MapPin: <MapPin className={className} {...props} />,
+    Settings: <Settings className={className} {...props} />,
+    Menu: <Menu className={className} {...props} />,
+    X: <X className={className} {...props} />,
+    UserCircle: <UserCircle className={className} {...props} />
   };
 
-  return icons[iconName] || null;
+  return iconComponents[iconName] || null;
 };
 
 export default IconMapper;

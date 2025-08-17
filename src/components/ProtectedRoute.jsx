@@ -2,28 +2,26 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { Loader2 } from 'lucide-react';
 
 export default function ProtectedRoute({ children, requiredRole }) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
-  useEffect(() => {
+    // console.log("token", token)
+
+ useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       router.push('/auth/login');
     }
+  }, [isLoading, isAuthenticated]);
 
-    if (!isLoading && isAuthenticated && requiredRole && user?.role !== requiredRole) {
-      router.push('/unauthorized');
-    }
-  }, [isAuthenticated, isLoading, router, user, requiredRole]);
 
-  if (isLoading || !isAuthenticated) {
-    return <div>Loading...</div>;
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">
+      <Loader2 className="animate-spin h-8 w-8 text-primary" />
+    </div>;
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
-    return <div>Checking permissions...</div>;
-  }
-
-  return children;
+ return isAuthenticated ? children : null;
 }

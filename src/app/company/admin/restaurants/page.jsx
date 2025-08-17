@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import KPICard from "@/components/KPICard";
 import StatusBadge from "@/components/StatusBadge";
 import { 
@@ -8,23 +8,59 @@ import {
   Search, 
   Plus, 
   Calendar,
-  TrendingUp
+  TrendingUp,
+  AlertCircle,
+  Clock
 } from "lucide-react";
-import { restaurants, branches } from "@/data/mockData";
+import Link from "next/link";
+import { toast } from "react-hot-toast";
 
 const Restaurants = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [restaurants, setRestaurants] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch restaurants and branches data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Fetch restaurants
+        const restaurantsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`);
+        if (!restaurantsRes.ok) throw new Error('Failed to fetch restaurants');
+        const restaurantsData = await restaurantsRes.json();
+        setRestaurants(restaurantsData.data || []);
+        
+        // Fetch branches
+        const branchesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants/branches`);
+        if (!branchesRes.ok) throw new Error('Failed to fetch branches');
+        const branchesData = await branchesRes.json();
+        setBranches(branchesData.data || []);
+        
+      } catch (err) {
+        setError(err.message);
+        toast.error('Failed to fetch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const filteredRestaurants = restaurants.filter(restaurant =>
     restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    restaurant.address.toLowerCase().includes(searchTerm.toLowerCase())
+    (restaurant.location?.address || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getRestaurantStats = (restaurantId) => {
-    const restaurantBranches = branches.filter(b => b.restaurantId === restaurantId);
-    const totalRevenue = restaurantBranches.reduce((sum, b) => sum + b.revenue, 0);
-    const avgRating = restaurantBranches.reduce((sum, b) => sum + b.reviews, 0) / restaurantBranches.length;
-    const activeTrials = restaurantBranches.filter(b => b.trialDaysLeft > 0).length;
+    const restaurantBranches = branches.filter(b => b.restaurant === restaurantId || b.parentRestaurant === restaurantId);
+    const totalRevenue = restaurantBranches.reduce((sum, b) => sum + (b.revenue || 0), 0);
+    const avgRating = restaurantBranches.reduce((sum, b) => sum + (b.avgRating || 0), 0) / restaurantBranches.length || 0;
+    const activeTrials = restaurantBranches.filter(b => b.trial?.isActive).length;
     
     return {
       totalRevenue,
@@ -34,6 +70,30 @@ const Restaurants = () => {
     };
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg p-6 text-center shadow">
+        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading data</h3>
+        <p className="text-gray-500 mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition mx-auto"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
@@ -42,18 +102,36 @@ const Restaurants = () => {
           <h1 className="text-2xl font-bold text-gray-900">Restaurant Partners</h1>
           <p className="text-gray-500">Manage your restaurant network and partnerships</p>
         </div>
-        <button className="flex items-center bg-primary text-white px-4 py-2 rounded-md shadow hover:bg-primary/90 transition">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Restaurant
-        </button>
+        <Link href='/company/admin/restaurants/add'>
+          <button className="flex items-center bg-primary text-white px-4 py-2 rounded-md shadow hover:bg-primary/90 transition">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Restaurant
+          </button>
+        </Link>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <KPICard title="Total Partners" value={restaurants.length} icon={Store} />
-        <KPICard title="Active Branches" value={branches.filter(b => b.status !== 'Closed').length} icon={MapPin} />
-        <KPICard title="Total Revenue" value={`$${(branches.reduce((sum, b) => sum + b.revenue, 0) / 1000).toFixed(0)}K`} icon={TrendingUp} />
-        <KPICard title="Active Trials" value={branches.filter(b => b.trialDaysLeft > 0).length} icon={Calendar} />
+        <KPICard 
+          title="Total Partners" 
+          value={restaurants.length} 
+          icon={Store} 
+        />
+        <KPICard 
+          title="Active Branches" 
+          value={branches.filter(b => b.status?.current !== 'closed').length} 
+          icon={MapPin} 
+        />
+        <KPICard 
+          title="Total Revenue" 
+          value={`$${(branches.reduce((sum, b) => sum + (b.revenue || 0), 0) / 1000).toFixed(0)}K`} 
+          icon={TrendingUp} 
+        />
+        <KPICard 
+          title="Active Trials" 
+          value={branches.filter(b => b.trial?.isActive).length} 
+          icon={Calendar} 
+        />
       </div>
 
       {/* Search */}
@@ -71,17 +149,17 @@ const Restaurants = () => {
       {/* Restaurant Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {filteredRestaurants.map((restaurant) => {
-          const stats = getRestaurantStats(restaurant.id);
+          const stats = getRestaurantStats(restaurant._id);
           return (
-            <div key={restaurant.id} className="bg-white rounded-lg p-6 shadow hover:shadow-md transition">
+            <div key={restaurant._id} className="bg-white rounded-lg p-6 shadow hover:shadow-md transition">
               <div className="space-y-4">
                 {/* Header */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="text-2xl">{restaurant.logo}</div>
+                    <div className="text-2xl">{restaurant.logo || '🍽️'}</div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{restaurant.name}</h3>
-                      <p className="text-sm text-gray-500">{restaurant.address}</p>
+                      <p className="text-sm text-gray-500">{restaurant.location?.address}</p>
                     </div>
                   </div>
                   <span className="inline-block bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">
@@ -115,8 +193,8 @@ const Restaurants = () => {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {stats.branches.map((branch) => (
-                      <div key={branch.id} className="flex items-center gap-2">
-                        <StatusBadge status={branch.status} />
+                      <div key={branch._id} className="flex items-center gap-2">
+                        <StatusBadge status={branch.status?.current || 'no_status'} />
                         <span className="text-xs text-gray-500 truncate max-w-[120px]">
                           {branch.name.split(' ').slice(-1)[0]}
                         </span>
@@ -127,12 +205,12 @@ const Restaurants = () => {
 
                 {/* Actions */}
                 <div className="flex gap-2 pt-2">
-                  <button className="flex-1 border border-gray-300 px-3 py-1.5 text-sm rounded hover:bg-gray-100 transition">
+                  <Link href={`/company/admin/restaurants/${restaurant._id}`} className="flex-1 border border-gray-300 px-3 py-1.5 text-sm rounded hover:bg-gray-100 transition text-center">
                     View Details
-                  </button>
-                  <button className="flex-1 bg-primary text-white px-3 py-1.5 text-sm rounded hover:bg-primary/90 transition">
+                  </Link>
+                  <Link href={`/company/admin/restaurants/${restaurant._id}/branches`} className="flex-1 bg-primary text-white px-3 py-1.5 text-sm rounded hover:bg-primary/90 transition text-center">
                     Manage Branches
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -147,10 +225,12 @@ const Restaurants = () => {
           <p className="text-gray-500 mb-4">
             {searchTerm ? "Try adjusting your search terms" : "Get started by adding your first restaurant partner"}
           </p>
-          <button className="flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Restaurant
-          </button>
+          <Link href='/company/admin/restaurants/add'>
+            <button className="flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition mx-auto">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Restaurant
+            </button>
+          </Link>
         </div>
       )}
     </div>

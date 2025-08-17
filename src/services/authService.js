@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/auth'; // Your backend URL
-
+axios.defaults.withCredentials = true; // कुकीज के लिए जरूरी
 // Register user
 const register = async (userData) => {
   const response = await axios.post(`${API_URL}/register`, userData);

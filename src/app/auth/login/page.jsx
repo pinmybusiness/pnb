@@ -24,7 +24,7 @@ export default function LoginPage() {
     try {
       await dispatch(loginUser({ mobile, password, rememberMe })).unwrap();
       toast.success("Login successful!");
-      router.push("/dashboard");
+      router.push("/company/admin");
     } catch (error) {
       toast.error(error.message || "Login failed. Please try again.");
     } finally {

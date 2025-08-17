@@ -1,28 +1,33 @@
 'use client';
 import { useSelector, useDispatch } from 'react-redux';
-import { loadUser, logoutUser } from '../store/authThunks';
+import { loadUser } from '@/store/authThunks';
 import { useEffect } from 'react';
 
 export const useAuth = () => {
   const { user, token, isLoading, error } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (!user && token) {
-      dispatch(loadUser());
+  const checkAuth = async () => {
+    if (token && !user) {
+      try {
+        await dispatch(loadUser()).unwrap();
+      } catch (err) {
+        console.error("Failed to load user:", err);
+        localStorage.removeItem('token');
+      }
     }
-  }, [dispatch, user, token]);
-
-  const logout = () => {
-    dispatch(logoutUser());
   };
+
+    useEffect(() => {
+    checkAuth();
+  }, [token]); 
 
   return {
     user,
     token,
     isLoading,
     error,
-    logout,
-    isAuthenticated: !!user,
+    isAuthenticated: !!token,
+    checkAuth,
   };
 };

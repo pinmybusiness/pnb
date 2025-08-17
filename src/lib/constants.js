@@ -1,3 +1,16 @@
+import { 
+  Building2, 
+  Store, 
+  Users, 
+  BarChart3, 
+  Home, 
+  MapPin, 
+  Settings, 
+  Menu, 
+  X, 
+  UserCircle 
+} from "lucide-react";
+
 // lib/constants.js
 export const ROLE_MAPPING = {
   0: 'companyAdmin',

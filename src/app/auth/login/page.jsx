@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Phone, Eye, EyeOff } from "lucide-react"; // 👀 eye icons
+import { Lock, Phone, Eye, EyeOff, ArrowLeft } from "lucide-react"; // 👈 back icon
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // 👈 for toggle
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -33,9 +33,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="bg-white border border-soft rounded-2xl p-6 shadow-sm max-w-md w-full">
-      <h1 className="text-2xl font-bold text-dark mb-1">Welcome Back</h1>
-      <p className="text-sm text-gray-500 mb-6">Login with your mobile number</p>
+    <div className="bg-white border border-soft rounded-2xl p-1 shadow-sm max-w-md w-full relative">
+      {/* Back Button */}
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="p-2 rounded-full hover:bg-gray-200 transition"
+      >
+        <ArrowLeft className="w-5 h-5 text-gray-700" />
+      </button>
+
+      <div className="p-6">
+        <h1 className="text-2xl font-bold text-dark mb-1 text-center">Welcome Back</h1>
+      <p className="text-sm text-gray-500 mb-6 text-center">
+        Login with your mobile number
+      </p>
 
       <form onSubmit={handleSubmit}>
         {/* Mobile */}
@@ -45,12 +57,11 @@ export default function LoginPage() {
             <Phone className="w-4 h-4 text-gray-400" />
             <input
               type="text"
-              inputMode="numeric"       // numeric keyboard (mobile devices)
-              pattern="[0-9]*"          // sirf digits allow
-              // maxLength={10}            // 10 digit limit
+              inputMode="numeric"
+              pattern="[0-9]*"
               placeholder="9876543210"
               value={mobile}
-              onChange={(e) => setMobile(e.target.value.replace(/\D/g, ""))} // 👈 non-digit hatao
+              onChange={(e) => setMobile(e.target.value.replace(/\D/g, ""))}
               className="flex-1 px-2 py-2 focus:outline-none text-sm"
               required
             />
@@ -63,7 +74,7 @@ export default function LoginPage() {
           <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
             <Lock className="w-4 h-4 text-gray-400" />
             <input
-              type={showPassword ? "text" : "password"} // 👈 toggle here
+              type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -82,7 +93,7 @@ export default function LoginPage() {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between mb-4">
+        {/* <div className="flex items-center justify-between mb-4">
           <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
             <input
               type="checkbox"
@@ -99,7 +110,7 @@ export default function LoginPage() {
           >
             Forgot password?
           </Link>
-        </div>
+        </div> */}
 
         <button
           type="submit"
@@ -118,6 +129,7 @@ export default function LoginPage() {
           Sign up
         </Link>
       </p>
+      </div>
     </div>
   );
 }

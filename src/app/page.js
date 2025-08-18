@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import api from '../lib/api';
+import HeroSection from '@/components/HeroSection';
+import Header from '@/components/Header';
 
 
 export default function Home() {
 
 
   return (
-    <main className="min-h-screen p-24">
-      <h1 className="text-4xl font-bold mb-8">WaitPro System</h1>
-      
+    <main className="min-h-screen">
+     <Header activeLink="/" />
+     <HeroSection />
     </main>
   );
 }

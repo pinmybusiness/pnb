@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-hot-toast";
+import axios from "axios";
 import { 
   Store, 
   MapPin, 
@@ -27,18 +28,18 @@ const RestaurantForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    phone: '',
-    email: '',
-    website: '',
+    // phone: '',
+    // email: '',
+    // website: '',
     logo: '',
     isBranch: false,
     parentRestaurant: '',
     status: { current: 'no_status', reason: '', updatedAt: new Date() },
-    trial: {
-      isActive: false,
-      startDate: null,
-      endDate: null,
-    },
+    // trial: {
+    //   isActive: false,
+    //   startDate: null,
+    //   endDate: null,
+    // },
     location: {
       type: 'Point',
       address: '',
@@ -57,14 +58,28 @@ const RestaurantForm = () => {
   const [trialDays, setTrialDays] = useState(14);
   const [parentRestaurants, setParentRestaurants] = useState([]);
 
+  // Create Axios instance
+  const api = axios.create({
+    baseURL: process.env.NEXT_PUBLIC_API_URL
+  });
+
+  // Add request interceptor for auth token
+  api.interceptors.request.use(config => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  });
+
   // Fetch restaurant data if in edit mode
   useEffect(() => {
     if (isEditMode) {
       const fetchRestaurant = async () => {
         try {
           setLoading(true);
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants/${params.id}`);
-          const { data } = await response.json();
+          const response = await api.get(`/api/restaurants/${params.id}`);
+          const { data } = response.data;
           
           setFormData({
             ...data,
@@ -80,7 +95,7 @@ const RestaurantForm = () => {
             setShowTrialForm(true);
           }
         } catch (error) {
-          toast.error('Failed to fetch restaurant data');
+          toast.error(error.response?.data?.message || 'Failed to fetch restaurant data');
         } finally {
           setLoading(false);
         }
@@ -95,11 +110,11 @@ const RestaurantForm = () => {
     if (formData.isBranch) {
       const fetchParentRestaurants = async () => {
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`);
-          const { data } = await response.json();
+          const response = await api.get('/api/restaurants');
+          const { data } = response.data;
           setParentRestaurants(data);
         } catch (error) {
-          toast.error('Failed to fetch parent restaurants');
+          toast.error(error.response?.data?.message || 'Failed to fetch parent restaurants');
         }
       };
       
@@ -167,7 +182,7 @@ const RestaurantForm = () => {
     if (!formData.name) newErrors.name = 'Name is required';
     if (!formData.location.address) newErrors.address = 'Address is required';
     if (!formData.location.city) newErrors.city = 'City is required';
-    if (!formData.phone) newErrors.phone = 'Phone is required';
+    // if (!formData.phone) newErrors.phone = 'Phone is required';
     if (formData.isBranch && !formData.parentRestaurant) {
       newErrors.parentRestaurant = 'Parent restaurant is required for branches';
     }
@@ -187,47 +202,25 @@ const RestaurantForm = () => {
     try {
       setLoading(true);
       
-      const token = localStorage.getItem('token');
       const submissionData = {
         ...formData,
-        // Ensure coordinates are numbers
         location: {
           ...formData.location,
           coordinates: formData.location.coordinates.map(Number)
         }
       };
 
-      let response;
       if (isEditMode) {
-        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants/${params.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(submissionData),
-        });
+        await api.put(`/api/restaurants/${params.id}`, submissionData);
+        toast.success('Restaurant updated successfully!');
       } else {
-        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(submissionData),
-        });
+        await api.post('/api/restaurants', submissionData);
+        toast.success('Restaurant created successfully!');
       }
       
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
-      }
-      
-      toast.success(isEditMode ? 'Restaurant updated successfully!' : 'Restaurant created successfully!');
       router.push('/company/admin/restaurants');
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }
@@ -236,31 +229,17 @@ const RestaurantForm = () => {
   const handleStartTrial = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants/${params.id}/trial`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ days: trialDays }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to start trial');
-      }
+      const response = await api.post(`/api/restaurants/${params.id}/trial`, { days: trialDays });
       
       setFormData(prev => ({
         ...prev,
-        trial: data.data.trial
+        trial: response.data.data.trial
       }));
       toast.success('Trial started successfully!');
       setShowTrialForm(false);
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || 'Failed to start trial');
     } finally {
       setLoading(false);
     }
@@ -320,7 +299,6 @@ const RestaurantForm = () => {
               {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
             </div>
 
-           
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Status
@@ -370,7 +348,6 @@ const RestaurantForm = () => {
                 placeholder="Brief description about the restaurant"
               />
             </div>
-
           </div>
         </div>
 
@@ -460,7 +437,7 @@ const RestaurantForm = () => {
           </div>
         </div>
 
-        <div className="bg-white shadow rounded-lg p-6">
+        {/* <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
             Contact Information
           </h2>
@@ -512,9 +489,9 @@ const RestaurantForm = () => {
               />
             </div>
           </div>
-        </div>
+        </div> */}
 
-        <div className="bg-white shadow rounded-lg p-6">
+        {/* <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
             Additional Settings
           </h2>
@@ -647,7 +624,7 @@ const RestaurantForm = () => {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
 
         <div className="flex justify-end space-x-3">
           <button

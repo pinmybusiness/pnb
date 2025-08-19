@@ -64,19 +64,13 @@ export default function HomePage() {
               </div>
 
               <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight animate-fade-in delay-100">
-                {/*Transform Your <span className="text-primary">Restaurant Operations</span> With AI*/}
-                Listen Better. <br/>
+                Listen Smarter. <br/>
                 Grow Faster.  <br/>
-                With <span className="text-primary">AI</span>
-                <br/><br/>
-                Your Customers Are Talking.<br/> <span className="text-primary">Are You Listening?</span>
+                With <span className="text-primary">ListenLift AI.</span>
               </h1>
 
               <p className="text-l text-gray-700 animate-fade-in delay-200">
-                {/*The complete solution to streamline operations, enhance customer experience, and boost profitability with intelligent automation.*/}
-                {/*AI calling system that gathers customer feedback, provides deep analytics, and transforms happy customers into vocal advocates for unstoppable growth*/}
-                {/*ListenLift.ai automates customer feedback calls and delivers actionable insights to boost retention, satisfaction, and growth. Listen Better. Grow Faster.*/}
-                AI-powered voice feedback and analytics that help you listen smarter, understand customers deeper, and lift your business higher
+                Capture feedback, uncover insights, and act faster with AI-driven listening.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 animate-fade-in delay-300">
@@ -145,14 +139,14 @@ export default function HomePage() {
                 </div>
 
                 {/* Demo CTA */}
-                <div className="bg-primary/5 border border-primary/10 rounded-lg p-4">
+               {/* <div className="bg-primary/5 border border-primary/10 rounded-lg p-4">
                   <h4 className="font-medium text-gray-900 mb-2 text-center">See it in action</h4>
                   <Link href="/book-demo">
                     <button className="w-full py-2 bg-primary hover:bg-primary-dark text-white rounded-md text-sm font-medium transition-colors">
                       Schedule Demo
                     </button>
                   </Link>
-                </div>
+                </div>*/}
               </div>
             </div>
           </div>

@@ -71,26 +71,33 @@ const Branches = () => {
   const [restaurantId, setRestaurantId] = useState(null);
 
   // Fetch data from API
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [branchesRes, restaurantsRes] = await Promise.all([
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants/branches`),
-          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`)
-        ]);
-        
-        setBranches(branchesRes.data.data);
-        setRestaurants(restaurantsRes.data.data);
-      } catch (error) {
-        toast.error("Failed to fetch data");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, []);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const branchesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`);
+      
+      // Safely process branches data
+      const processedBranches = branchesRes.data.data.map(branch => {
+        return {
+          ...branch,
+          status: typeof branch.status === 'string' 
+            ? { current: branch.status, reason: '' }
+            : branch.status
+        };
+      });
+      
+      setBranches(processedBranches);
+    } catch (error) {
+      toast.error("Failed to fetch branches");
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  fetchData();
+}, []);
 
   const getRestaurantName = (restaurantId) => {
     const restaurant = restaurants.find(r => r._id === restaurantId);

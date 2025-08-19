@@ -44,15 +44,16 @@ const BranchForm = ({ onSuccess, onClose }) => {
   const [teams, setTeams] = useState([]);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
-  const [formData, setFormData] = useState({
+ const [formData, setFormData] = useState({
     name: '',
-    isBranch: true,
     parentRestaurant: parentId || '',
     location: {
       address: '',
       city: '',
       state: '',
+      postalCode: '',
       country: 'India',
+      coordinates: [0, 0]
     },
     status: {
       current: 'no_status',
@@ -64,8 +65,7 @@ const BranchForm = ({ onSuccess, onClose }) => {
       startDate: null,
       endDate: null,
       extendedDays: 0
-    },
-    createdBy: ''
+    }
   });
 
   useEffect(() => {
@@ -176,32 +176,27 @@ const BranchForm = ({ onSuccess, onClose }) => {
     });
   };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const payload = {
         ...formData,
-        createdBy: 'current-user-id' // Replace with actual user ID
+        parentRestaurant: formData.parentRestaurant
       };
 
       if (branchId) {
-        // Update existing branch
-        await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants/${branchId}`, payload);
+        await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${branchId}`, payload);
         toast.success("Branch updated successfully");
       } else {
-        // Create new branch
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/restaurants/${payload.parentRestaurant}/branches`,
-          payload
-        );
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, payload);
         toast.success("Branch created successfully");
       }
 
-      onSuccess();
-      onClose();
-      router.refresh(); // Refresh the page to show updated data
+      onSuccess?.();
+      onClose?.();
+      router.refresh();
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
@@ -365,7 +360,7 @@ const BranchForm = ({ onSuccess, onClose }) => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   City *
@@ -380,6 +375,7 @@ const BranchForm = ({ onSuccess, onClose }) => {
                 />
               </div>
 
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   State
@@ -392,6 +388,20 @@ const BranchForm = ({ onSuccess, onClose }) => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
+              <div>
+              <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
+                Postal Code
+              </label>
+              <input
+                type="text"
+                id="postalCode"
+                name="postalCode"
+                value={formData.location.postalCode}
+                onChange={handleLocationChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Postal code"
+              />
+            </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">

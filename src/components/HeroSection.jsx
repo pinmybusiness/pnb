@@ -63,12 +63,20 @@ export default function HomePage() {
                 Trusted by 850+ Restaurants
               </div>
 
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight animate-fade-in delay-100">
-                Transform Your <span className="text-primary">Restaurant Operations</span> With AI
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight animate-fade-in delay-100">
+                {/*Transform Your <span className="text-primary">Restaurant Operations</span> With AI*/}
+                Listen Better. <br/>
+                Grow Faster.  <br/>
+                With <span className="text-primary">AI</span>
+                <br/><br/>
+                Your Customers Are Talking.<br/> <span className="text-primary">Are You Listening?</span>
               </h1>
 
-              <p className="text-xl text-gray-600 animate-fade-in delay-200">
-                The complete solution to streamline operations, enhance customer experience, and boost profitability with intelligent automation.
+              <p className="text-l text-gray-700 animate-fade-in delay-200">
+                {/*The complete solution to streamline operations, enhance customer experience, and boost profitability with intelligent automation.*/}
+                {/*AI calling system that gathers customer feedback, provides deep analytics, and transforms happy customers into vocal advocates for unstoppable growth*/}
+                {/*ListenLift.ai automates customer feedback calls and delivers actionable insights to boost retention, satisfaction, and growth. Listen Better. Grow Faster.*/}
+                AI-powered voice feedback and analytics that help you listen smarter, understand customers deeper, and lift your business higher
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 animate-fade-in delay-300">
@@ -79,11 +87,11 @@ export default function HomePage() {
                   </button>
                 </Link>
                   
-                <Link href="/auth/login">
+                {/*<Link href="/auth/login">
                   <button className="px-8 py-4 border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 font-medium rounded-lg transition-all duration-300 flex items-center justify-center">
                     Existing User? Login
                   </button>
-                </Link>
+                </Link>*/}
               </div>
 
               {/* Trust Indicators */}
@@ -122,7 +130,7 @@ export default function HomePage() {
                 <h3 className="text-xl font-bold text-gray-900 mb-3">
                   {features[activeFeature].title}
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-700 mb-6 text-sm">
                   {features[activeFeature].description}
                 </p>
                 

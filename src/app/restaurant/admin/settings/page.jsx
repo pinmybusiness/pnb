@@ -44,7 +44,7 @@ const Settings = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Settings Navigation */}
-        <div className="lg:col-span-1">
+       {/* <div className="lg:col-span-1">
           <div className={cardClasses}>
             <nav className="space-y-2">
               {[
@@ -64,10 +64,10 @@ const Settings = () => {
               ))}
             </nav>
           </div>
-        </div>
+        </div>*/}
 
         {/* Settings Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-3 space-y-6">
           {/* Profile Settings */}
           <div className={cardClasses}>
             <div className="flex items-center gap-3 mb-6">
@@ -140,8 +140,8 @@ const Settings = () => {
             <div className="space-y-6">
               {[
                 { key: 'email', title: 'Email Notifications', description: 'Receive updates and alerts via email', icon: Mail },
-                { key: 'push', title: 'Push Notifications', description: 'Browser push notifications for urgent alerts', icon: Globe },
-                { key: 'sms', title: 'SMS Notifications', description: 'Text messages for critical system alerts', icon: Bell },
+                // { key: 'push', title: 'Push Notifications', description: 'Browser push notifications for urgent alerts', icon: Globe },
+                // { key: 'sms', title: 'SMS Notifications', description: 'Text messages for critical system alerts', icon: Bell },
                 { key: 'reports', title: 'Weekly Reports', description: 'Automated performance reports every Monday', icon: Database }
               ].map((setting) => (
                 <div key={setting.key} className="flex items-center justify-between p-4 rounded-lg border border-gray-200">
@@ -171,7 +171,7 @@ const Settings = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200">
+             {/* <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200">
                 <div className="flex items-center gap-3">
                   <Key className="h-5 w-5 text-gray-500" />
                   <div>
@@ -183,7 +183,7 @@ const Settings = () => {
                   <span className={badgeClasses}>Enabled</span>
                   <button className={btnOutline}>Configure</button>
                 </div>
-              </div>
+              </div>*/}
 
               <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200">
                 <div>
@@ -193,18 +193,18 @@ const Settings = () => {
                 <button className={btnOutline}>Change Password</button>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200">
+             {/* <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200">
                 <div>
                   <h3 className="font-medium">Login Sessions</h3>
                   <p className="text-sm text-gray-500">Manage active sessions</p>
                 </div>
                 <button className={btnOutline}>View Sessions</button>
-              </div>
+              </div>*/}
             </div>
           </div>
 
           {/* Data & Export */}
-          <div className={cardClasses}>
+          {/*<div className={cardClasses}>
             <div className="flex items-center gap-3 mb-6">
               <Database className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-semibold">Data Management</h2>
@@ -244,7 +244,7 @@ const Settings = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </div>*/}
         </div>
       </div>
     </div>

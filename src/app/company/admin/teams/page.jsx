@@ -1,4 +1,5 @@
 'use client';
+
 import { useState } from "react";
 import {
   Users,
@@ -6,17 +7,60 @@ import {
   Plus,
   Mail,
   Calendar,
-  MapPin,
+  ArrowUpDown,
+  Eye,
   UserPlus,
-  Shield,
-  ChevronRight,
 } from "lucide-react";
 import { teams, branches, restaurants } from "@/data/mockData";
-import StatusBadge from "@/components/StatusBadge";
 import KPICard from "@/components/KPICard";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+// 🔹 Reusable components (same as Branches)
+const Card = ({ className = "", children }) => (
+  <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
+    {children}
+  </div>
+);
+
+const Button = ({ children, className = "", ...props }) => (
+  <button
+    className={`inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition ${className}`}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+const Input = ({ className = "", ...props }) => (
+  <input
+    className={`border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${className}`}
+    {...props}
+  />
+);
+
+const Table = ({ children }) => <table className="min-w-full">{children}</table>;
+const TableHeader = ({ children }) => <thead className="bg-gray-50">{children}</thead>;
+const TableBody = ({ children }) => <tbody className="divide-y divide-gray-200">{children}</tbody>;
+const TableRow = ({ children, className = "" }) => <tr className={className}>{children}</tr>;
+const TableHead = ({ children, className = "", ...props }) => (
+  <th
+    scope="col"
+    className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer ${className}`}
+    {...props}
+  >
+    {children}
+  </th>
+);
+const TableCell = ({ children, className = "" }) => (
+  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-700 ${className}`}>{children}</td>
+);
 
 const Teams = () => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("name");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const getBranchInfo = (branchId) => {
     const branch = branches.find((b) => b.id === branchId);
@@ -26,12 +70,51 @@ const Teams = () => {
     return { branch, restaurant };
   };
 
-  const filteredTeams = teams.filter(
-    (member) =>
-      member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      member.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredTeams = teams
+    .filter(
+      (member) =>
+        member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.email.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      let aValue, bValue;
+      switch (sortBy) {
+        case "name":
+          aValue = a.name;
+          bValue = b.name;
+          break;
+        case "role":
+          aValue = a.role;
+          bValue = b.role;
+          break;
+        case "email":
+          aValue = a.email;
+          bValue = b.email;
+          break;
+        case "joined":
+          aValue = new Date(a.joinDate);
+          bValue = new Date(b.joinDate);
+          break;
+        default:
+          return 0;
+      }
+      if (typeof aValue === "string") {
+        return sortOrder === "asc"
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+    });
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(field);
+      setSortOrder("asc");
+    }
+  };
 
   const roleStats = {
     managers: teams.filter((t) => t.role.includes("Manager")).length,
@@ -40,159 +123,139 @@ const Teams = () => {
     total: teams.length,
   };
 
-  const getRoleColor = (role) => {
-    if (role.includes("Manager"))
-      return "bg-primary/10 text-primary border-primary/20";
-    if (role.includes("Analyst"))
-      return "bg-secondary-accent/20 text-secondary-accent border-secondary-accent/30";
-    if (role.includes("Assistant"))
-      return "bg-accent-primary/20 text-accent-primary border-accent-primary/30";
-    return "bg-muted text-muted-foreground border-soft";
-  };
-
-  const getInitials = (name) =>
-    name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-
   return (
-    <div className="space-y-6 ">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Team Management</h1>
-          <p className="text-muted-foreground">
-            Manage team members across all branches
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Team Management</h1>
+          <p className="text-gray-500">Manage team members across all branches</p>
         </div>
-        <button className="bg-primary text-white px-4 py-2 rounded-md flex items-center gap-2 hover:opacity-90">
-          <UserPlus className="h-4 w-4" />
-          Invite Member
-        </button>
+        <Link href='/company/admin/teams/add'>
+        <Button>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Add Team
+        </Button>
+        </Link>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <KPICard title="Total Members" value={roleStats.total} icon={Users} />
-        <KPICard title="Managers" value={roleStats.managers} icon={Shield} />
+        <KPICard title="Managers" value={roleStats.managers} icon={Users} />
         <KPICard title="Analysts" value={roleStats.analysts} icon={Users} />
         <KPICard title="Assistants" value={roleStats.assistants} icon={Users} />
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-        <input
-          type="text"
-          placeholder="Search team members..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full border border-soft rounded-md pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-        />
-      </div>
-
-      {/* Team Members */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredTeams.map((member) => {
-          const { branch, restaurant } = getBranchInfo(member.branchId);
-          return (
-            <div
-              key={member.id}
-              className="p-6 bg-card rounded-lg shadow hover:shadow-lg transition"
-            >
-              <div className="space-y-4">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 flex items-center justify-center rounded-full bg-primary/10 text-primary font-medium">
-                      {getInitials(member.name)}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">
-                        {member.name}
-                      </h3>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Mail className="h-3 w-3" />
-                        {member.email}
-                      </div>
-                    </div>
-                  </div>
-                  <span
-                    className={`px-2 py-1 rounded-md text-xs border ${getRoleColor(
-                      member.role
-                    )}`}
-                  >
-                    {member.role}
-                  </span>
-                </div>
-
-                {/* Branch Info */}
-                <div className="p-3 rounded-lg bg-muted/30">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{restaurant?.logo}</span>
-                      <div>
-                        <p className="font-medium text-sm">{branch?.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {restaurant?.name}
-                        </p>
-                      </div>
-                    </div>
-                    {branch && <StatusBadge status={branch.status} />}
-                  </div>
-                  {branch?.location && (
-                    <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3" />
-                      <span className="truncate">{branch.location}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Joined Date */}
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-1 text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    Joined {new Date(member.joinDate).toLocaleDateString()}
-                  </div>
-                  <button className="h-8 w-8 flex items-center justify-center rounded hover:bg-muted">
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-2 border-t border-soft">
-                  <button className="flex-1 border border-soft rounded-md py-1 text-sm hover:bg-muted">
-                    View Profile
-                  </button>
-                  <button className="flex-1 rounded-md py-1 text-sm hover:bg-muted">
-                    Edit Role
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {filteredTeams.length === 0 && (
-        <div className="p-12 text-center bg-card rounded-lg">
-          <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-foreground mb-2">
-            No team members found
-          </h3>
-          <p className="text-muted-foreground mb-4">
-            {searchTerm
-              ? "Try adjusting your search terms"
-              : "Get started by inviting your first team member"}
-          </p>
-          <button className="bg-primary text-white px-4 py-2 rounded-md flex items-center gap-2 mx-auto">
-            <UserPlus className="h-4 w-4" />
-            Invite Member
-          </button>
+      {/* Filters */}
+      <Card className="p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search team members..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
         </div>
-      )}
+      </Card>
+
+      {/* Teams Table */}
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead onClick={() => handleSort("name")}>
+                <div className="flex items-center gap-2">
+                  Name <ArrowUpDown className="h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead onClick={() => handleSort("role")}>
+                <div className="flex items-center gap-2">
+                  Role <ArrowUpDown className="h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead onClick={() => handleSort("email")}>
+                <div className="flex items-center gap-2">
+                  Email <ArrowUpDown className="h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead>Branch & Restaurant</TableHead>
+              <TableHead onClick={() => handleSort("joined")}>
+                <div className="flex items-center gap-2">
+                  Joined <ArrowUpDown className="h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredTeams.map((member) => {
+              const { branch, restaurant } = getBranchInfo(member.branchId);
+              return (
+                <TableRow key={member.id} className="hover:bg-gray-50">
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 flex items-center justify-center rounded-full bg-primary/10 text-primary font-medium">
+                        {member.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-medium">{member.name}</div>
+                        <div className="flex items-center gap-1 text-sm text-gray-500">
+                          <Mail className="h-3 w-3" /> {member.email}
+                        </div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>{member.role}</TableCell>
+                  <TableCell>{member.email}</TableCell>
+                  <TableCell>
+                    <div className="max-w-[200px] truncate">
+                      {branch?.name || "Unknown"} <br />
+                      <span className="text-xs text-gray-500">{restaurant?.name || ""}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2 text-gray-600 text-sm">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(member.joinDate).toLocaleDateString()}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => router.push(`/company/admin/teams/${member.id}`)}
+                        className="p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-md"
+                        title="View"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+
+        {filteredTeams.length === 0 && (
+          <div className="p-12 text-center">
+            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No team members found</h3>
+            <p className="text-gray-500">
+              {searchTerm
+                ? "Try adjusting your search terms"
+                : "Get started by inviting your first team member"}
+            </p>
+          </div>
+        )}
+      </Card>
     </div>
   );
 };

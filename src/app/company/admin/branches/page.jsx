@@ -99,10 +99,20 @@ useEffect(() => {
   fetchData();
 }, []);
 
-  const getRestaurantName = (restaurantId) => {
-    const restaurant = restaurants.find(r => r._id === restaurantId);
+const getRestaurantName = (restaurantIdOrObject) => {
+  // Handle case where we get the full restaurant object (new API format)
+  if (typeof restaurantIdOrObject === 'object' && restaurantIdOrObject !== null) {
+    return restaurantIdOrObject.name || "Unknown";
+  }
+  
+  // Handle case where we get just the ID string (old API format)
+  if (typeof restaurantIdOrObject === 'string') {
+    const restaurant = restaurants.find(r => r._id === restaurantIdOrObject);
     return restaurant ? restaurant.name : "Unknown";
-  };
+  }
+  
+  return "Unknown";
+};
 
   const handleDeleteBranch = async (branchId) => {
     if (!confirm("Are you sure you want to delete this branch?")) return;
@@ -344,9 +354,12 @@ useEffect(() => {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="max-w-[200px] truncate" title={branch.location?.address}>
-                    {branch.location?.address || 'No address'}
+                 <div className="max-w-[200px] truncate" title={branch.location?.address}>
+                    {branch.location?.city && branch.location?.state 
+                      ? `${branch.location.city}, ${branch.location.state}`
+                      : 'No address'}
                   </div>
+
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">

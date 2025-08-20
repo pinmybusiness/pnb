@@ -55,8 +55,17 @@ const Restaurants = () => {
     fetchData();
   }, []);
 
+  // FIXED: Properly compare ObjectIds and strings
   const getRestaurantStats = (restaurantId) => {
-    const restaurantBranches = branches.filter(b => b.parentRestaurant === restaurantId);
+    // Convert restaurantId to string for comparison
+    const restaurantIdStr = restaurantId.toString();
+    
+    const restaurantBranches = branches.filter(b => {
+      // Handle both string and ObjectId cases
+      const branchParentId = b.parentRestaurant?._id || b.parentRestaurant;
+      return branchParentId && branchParentId.toString() === restaurantIdStr;
+    });
+    
     const activeTrials = restaurantBranches.filter(b => b.trial?.isActive).length;
     
     return {
@@ -100,7 +109,7 @@ const Restaurants = () => {
 
   const filteredRestaurants = sortedRestaurants.filter(restaurant =>
     restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (restaurant.location?.address || '').toLowerCase().includes(searchTerm.toLowerCase())
+    (restaurant.contact?.phone || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const calculateKPIs = () => {
@@ -112,6 +121,21 @@ const Restaurants = () => {
   };
 
   const kpiData = calculateKPIs();
+
+  // Debug: Log the data to see what's happening
+  useEffect(() => {
+    if (restaurants.length > 0 && branches.length > 0) {
+      console.log("Restaurants:", restaurants);
+      console.log("Branches:", branches);
+      
+      // Check first restaurant's branches
+      const firstRestaurantId = restaurants[0]?._id;
+      if (firstRestaurantId) {
+        const stats = getRestaurantStats(firstRestaurantId);
+        console.log("First restaurant branches:", stats.branches);
+      }
+    }
+  }, [restaurants, branches]);
 
   if (loading) {
     return (
@@ -205,7 +229,7 @@ const Restaurants = () => {
                   </div>
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Location
+                  Contact
                 </th>
                 <th 
                   scope="col" 
@@ -254,9 +278,9 @@ const Restaurants = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{restaurant.location?.city || 'N/A'}</div>
+                      <div className="text-sm text-gray-900">{restaurant.contact?.phone || 'N/A'}</div>
                       <div className="text-sm text-gray-500 truncate max-w-[200px]">
-                        {restaurant.location?.address || 'No address'}
+                        {restaurant.contact?.email || 'No email'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">

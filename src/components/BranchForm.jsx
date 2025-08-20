@@ -7,14 +7,8 @@ import {
   X, 
   MapPin, 
   Clock, 
-  Phone, 
-  Mail, 
-  Globe, 
-  User, 
-  Calendar, 
-  Info, 
-  Store,
-  ChevronDown
+  ChevronDown,
+  Store
 } from "lucide-react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -36,15 +30,14 @@ const statusReasons = {
 const BranchForm = ({ onSuccess, onClose }) => {
   const router = useRouter();
   const params = useParams();
-  const branchId = params.id; // Get ID from URL params
-  const parentId = params.parentId; // Get parent restaurant ID if available
+  const branchId = params.id;
+  const parentId = params.parentId;
 
   const [loading, setLoading] = useState(false);
   const [restaurants, setRestaurants] = useState([]);
-  const [teams, setTeams] = useState([]);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
- const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     name: '',
     parentRestaurant: parentId || '',
     location: {
@@ -53,7 +46,6 @@ const BranchForm = ({ onSuccess, onClose }) => {
       state: '',
       postalCode: '',
       country: 'India',
-      coordinates: [0, 0]
     },
     status: {
       current: 'no_status',
@@ -75,13 +67,19 @@ const BranchForm = ({ onSuccess, onClose }) => {
         const restaurantsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`);
         setRestaurants(restaurantsRes.data.data);
 
-        // If in edit mode (branchId exists), fetch branch data
+        // If in edit mode (branchId exists), fetch branch data from BRANCHES endpoint
         if (branchId) {
-          const branchRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants/${branchId}`);
+          const branchRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${branchId}`);
           const branchData = branchRes.data.data;
+          
+          console.log("Branch data received:", branchData); // Debug log
+          
+          // Extract just the ID from parentRestaurant object
+          const parentRestaurantId = branchData.parentRestaurant?._id || branchData.parentRestaurant?.id || '';
           
           setFormData({
             ...branchData,
+            parentRestaurant: parentRestaurantId, // Set just the ID
             trial: branchData.trial || {
               isActive: false,
               startDate: null,
@@ -89,12 +87,9 @@ const BranchForm = ({ onSuccess, onClose }) => {
               extendedDays: 0
             }
           });
-
-          // Fetch teams for this branch
-          const teamsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/teams?branch=${branchId}`);
-          setTeams(teamsRes.data.data);
         }
       } catch (error) {
+        console.error("Fetch error:", error);
         toast.error("Failed to fetch data");
       }
     };
@@ -155,15 +150,14 @@ const BranchForm = ({ onSuccess, onClose }) => {
     }));
   };
 
- const handleTrialDaysChange = (days) => {
+  const handleTrialDaysChange = (days) => {
     setFormData(prev => {
       if (!prev.trial.startDate || !(prev.trial.startDate instanceof Date)) {
         return prev;
       }
 
-      // Ensure minimum 1 day but allow keeping original duration
       const newDays = days < 1 ? 1 : days;
-      const standardTrialDays = 14; // Default trial period
+      const standardTrialDays = 14;
       
       return {
         ...prev,
@@ -176,20 +170,25 @@ const BranchForm = ({ onSuccess, onClose }) => {
     });
   };
 
- const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Prepare the payload - ensure we're only sending the parentRestaurant ID
       const payload = {
         ...formData,
-        parentRestaurant: formData.parentRestaurant
+        parentRestaurant: formData.parentRestaurant // This should be just the ID string
       };
 
+      console.log("Submitting payload:", payload); // Debug log
+
       if (branchId) {
+        // Update branch using BRANCHES endpoint
         await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${branchId}`, payload);
         toast.success("Branch updated successfully");
       } else {
+        // Create new branch using BRANCHES endpoint
         await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, payload);
         toast.success("Branch created successfully");
       }
@@ -198,6 +197,7 @@ const BranchForm = ({ onSuccess, onClose }) => {
       onClose?.();
       router.refresh();
     } catch (error) {
+      console.error("Submit error:", error);
       toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -212,6 +212,13 @@ const BranchForm = ({ onSuccess, onClose }) => {
   const getStatusLabel = (status) => {
     const option = statusOptions.find(opt => opt.value === status);
     return option ? option.label : 'Unknown';
+  };
+
+  // Helper function to get restaurant name for display
+  const getSelectedRestaurantName = () => {
+    if (!formData.parentRestaurant) return '';
+    const restaurant = restaurants.find(r => r._id === formData.parentRestaurant);
+    return restaurant ? restaurant.name : 'Loading...';
   };
 
   return (
@@ -277,9 +284,15 @@ const BranchForm = ({ onSuccess, onClose }) => {
                     </option>
                   ))}
                 </select>
+                {formData.parentRestaurant && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    Selected: {getSelectedRestaurantName()}
+                  </p>
+                )}
               </div>
             )}
 
+            {/* Rest of your form remains the same */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Status
@@ -338,7 +351,7 @@ const BranchForm = ({ onSuccess, onClose }) => {
           </div>
         </div>
 
-        {/* Location Information */}
+        {/* Location Information - remains the same */}
         <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
             <MapPin className="h-5 w-5 mr-2 text-primary" />
@@ -375,7 +388,6 @@ const BranchForm = ({ onSuccess, onClose }) => {
                 />
               </div>
 
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   State
@@ -388,20 +400,20 @@ const BranchForm = ({ onSuccess, onClose }) => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 />
               </div>
+
               <div>
-              <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
-                Postal Code
-              </label>
-              <input
-                type="text"
-                id="postalCode"
-                name="postalCode"
-                value={formData.location.postalCode}
-                onChange={handleLocationChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="Postal code"
-              />
-            </div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Postal Code
+                </label>
+                <input
+                  type="text"
+                  name="postalCode"
+                  value={formData.location.postalCode}
+                  onChange={handleLocationChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  placeholder="Postal code"
+                />
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -420,137 +432,137 @@ const BranchForm = ({ onSuccess, onClose }) => {
           </div>
         </div>
 
-  {/* Trial Section */}
-  <div className="bg-white shadow rounded-lg p-6">
-    <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-      <Clock className="h-5 w-5 mr-2 text-primary" />
-      Free Trial
-    </h2>
+        {/* Trial Section - remains the same */}
+        <div className="bg-white shadow rounded-lg p-6">
+          <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+            <Clock className="h-5 w-5 mr-2 text-primary" />
+            Free Trial
+          </h2>
 
-    <div className="flex items-center justify-between">
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          checked={formData.trial.isActive}
-          onChange={handleTrialToggle}
-          className="h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary"
-        />
-        <label className="ml-2 block text-sm text-gray-700">
-          Enable Free Trial
-        </label>
-      </div>
-      
-      {formData.trial.isActive && formData.trial.endDate && (
-        <div className="text-sm text-gray-500">
-          {formData.trial.extendedDays > 0 ? (
-            `Extended by ${formData.trial.extendedDays} days (${new Date(formData.trial.endDate).toLocaleDateString()})`
-          ) : (
-            `Standard 14-day trial (${new Date(formData.trial.endDate).toLocaleDateString()})`
-          )}
-        </div>
-      )}
-    </div>
-
-    {formData.trial.isActive && (
-      <div className="mt-6 space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Start Date *
-            </label>
-            <DatePicker
-              selected={formData.trial.startDate ? new Date(formData.trial.startDate) : null}
-              onChange={(date) => {
-                if (!date) return;
-                const currentDuration = formData.trial.endDate 
-                  ? (formData.trial.endDate - formData.trial.startDate) / 86400000
-                  : 14;
-                setFormData(prev => ({
-                  ...prev,
-                  trial: {
-                    ...prev.trial,
-                    startDate: date,
-                    endDate: new Date(date.getTime() + currentDuration * 86400000)
-                  }
-                }));
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              End Date *
-            </label>
-            <DatePicker
-              selected={formData.trial.endDate ? new Date(formData.trial.endDate) : null}
-              onChange={(date) => {
-                if (!date || !formData.trial.startDate) return;
-                const days = Math.round((date - formData.trial.startDate) / 86400000);
-                handleTrialDaysChange(days);
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              required
-              minDate={formData.trial.startDate ? new Date(formData.trial.startDate) : null}
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Trial Duration
-          </label>
-          <div className="flex gap-2 items-center">
-            <div className="flex gap-2">
-              {[7, 14, 30].map(days => (
-                <button
-                  type="button"
-                  key={days}
-                  onClick={() => handleTrialDaysChange(days)}
-                  className={`px-3 py-1 rounded-md text-sm ${
-                    formData.trial.startDate && formData.trial.endDate &&
-                    Math.round((formData.trial.endDate - formData.trial.startDate) / 86400000) === days
-                      ? 'bg-primary text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-                >
-                  {days} days
-                </button>
-              ))}
-            </div>
-            <div className="relative flex-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
               <input
-                type="number"
-                value={
-                  formData.trial.startDate && formData.trial.endDate
-                    ? Math.round((formData.trial.endDate - formData.trial.startDate) / 86400000)
-                    : 14
-                }
-                onChange={(e) => {
-                  const days = parseInt(e.target.value);
-                  if (!isNaN(days)) {
-                    handleTrialDaysChange(days);
-                  }
-                }}
-                className="w-full px-3 py-1 border border-gray-300 rounded-md text-sm"
-                min="1"
+                type="checkbox"
+                checked={formData.trial.isActive}
+                onChange={handleTrialToggle}
+                className="h-4 w-4 text-primary rounded border-gray-300 focus:ring-primary"
               />
+              <label className="ml-2 block text-sm text-gray-700">
+                Enable Free Trial
+              </label>
             </div>
-          </div>
-          <div className="mt-2 text-sm text-gray-500">
-            {formData.trial.extendedDays > 0 ? (
-              <span className="text-green-600">
-                Trial extended by {formData.trial.extendedDays} days beyond standard period
-              </span>
-            ) : (
-              <span>Standard 14-day trial period</span>
+            
+            {formData.trial.isActive && formData.trial.endDate && (
+              <div className="text-sm text-gray-500">
+                {formData.trial.extendedDays > 0 ? (
+                  `Extended by ${formData.trial.extendedDays} days (${new Date(formData.trial.endDate).toLocaleDateString()})`
+                ) : (
+                  `Standard 14-day trial (${new Date(formData.trial.endDate).toLocaleDateString()})`
+                )}
+              </div>
             )}
           </div>
+
+          {formData.trial.isActive && (
+            <div className="mt-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Start Date *
+                  </label>
+                  <DatePicker
+                    selected={formData.trial.startDate ? new Date(formData.trial.startDate) : null}
+                    onChange={(date) => {
+                      if (!date) return;
+                      const currentDuration = formData.trial.endDate 
+                        ? (formData.trial.endDate - formData.trial.startDate) / 86400000
+                        : 14;
+                      setFormData(prev => ({
+                        ...prev,
+                        trial: {
+                          ...prev.trial,
+                          startDate: date,
+                          endDate: new Date(date.getTime() + currentDuration * 86400000)
+                        }
+                      }));
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    End Date *
+                  </label>
+                  <DatePicker
+                    selected={formData.trial.endDate ? new Date(formData.trial.endDate) : null}
+                    onChange={(date) => {
+                      if (!date || !formData.trial.startDate) return;
+                      const days = Math.round((date - formData.trial.startDate) / 86400000);
+                      handleTrialDaysChange(days);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required
+                    minDate={formData.trial.startDate ? new Date(formData.trial.startDate) : null}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Trial Duration
+                </label>
+                <div className="flex gap-2 items-center">
+                  <div className="flex gap-2">
+                    {[7, 14, 30].map(days => (
+                      <button
+                        type="button"
+                        key={days}
+                        onClick={() => handleTrialDaysChange(days)}
+                        className={`px-3 py-1 rounded-md text-sm ${
+                          formData.trial.startDate && formData.trial.endDate &&
+                          Math.round((formData.trial.endDate - formData.trial.startDate) / 86400000) === days
+                            ? 'bg-primary text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        {days} days
+                      </button>
+                    ))}
+                  </div>
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      value={
+                        formData.trial.startDate && formData.trial.endDate
+                          ? Math.round((formData.trial.endDate - formData.trial.startDate) / 86400000)
+                          : 14
+                      }
+                      onChange={(e) => {
+                        const days = parseInt(e.target.value);
+                        if (!isNaN(days)) {
+                          handleTrialDaysChange(days);
+                        }
+                      }}
+                      className="w-full px-3 py-1 border border-gray-300 rounded-md text-sm"
+                      min="1"
+                    />
+                  </div>
+                </div>
+                <div className="mt-2 text-sm text-gray-500">
+                  {formData.trial.extendedDays > 0 ? (
+                    <span className="text-green-600">
+                      Trial extended by {formData.trial.extendedDays} days beyond standard period
+                    </span>
+                  ) : (
+                    <span>Standard 14-day trial period</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
-    )}
-  </div>
 
         <div className="flex justify-end space-x-3">
           <button

@@ -18,14 +18,9 @@ const RestaurantForm = () => {
     name: '',
     description: '',
     logo: '',
-    location: {
-      type: 'Point',
-      address: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      country: 'India',
-      coordinates: [0, 0]
+    contact: {
+      email: '',
+      phone: ''
     }
   });
 
@@ -47,23 +42,29 @@ const RestaurantForm = () => {
   });
 
   // Fetch restaurant data if in edit mode
-  useEffect(() => {
-    if (isEditMode) {
-      const fetchRestaurant = async () => {
-        try {
-          setLoading(true);
-          const response = await api.get(`/api/restaurants/${params.id}`);
-          setFormData(response.data.data);
-        } catch (error) {
-          toast.error(error.response?.data?.message || 'Failed to fetch restaurant');
-        } finally {
-          setLoading(false);
-        }
-      };
-      
-      fetchRestaurant();
-    }
-  }, [isEditMode, params.id]);
+useEffect(() => {
+  if (isEditMode) {
+    const fetchRestaurant = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get(`/api/restaurants/${params.id}`);
+        const restaurantData = response.data.data;
+        
+        // Ensure contact object exists
+        setFormData({
+          ...restaurantData,
+          contact: restaurantData.contact || { email: '', phone: '' }
+        });
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to fetch restaurant');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchRestaurant();
+  }
+}, [isEditMode, params.id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -73,12 +74,12 @@ const RestaurantForm = () => {
     }));
   };
 
-  const handleLocationChange = (e) => {
+  const handleContactChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      location: {
-        ...prev.location,
+      contact: {
+        ...prev.contact,
         [name]: value
       }
     }));
@@ -88,8 +89,8 @@ const RestaurantForm = () => {
     const newErrors = {};
     
     if (!formData.name) newErrors.name = 'Name is required';
-    if (!formData.location.address) newErrors.address = 'Address is required';
-    if (!formData.location.city) newErrors.city = 'City is required';
+    // if (!formData.location.address) newErrors.address = 'Address is required';
+    // if (!formData.location.city) newErrors.city = 'City is required';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -108,10 +109,10 @@ const RestaurantForm = () => {
       
       const submissionData = {
         ...formData,
-        location: {
-          ...formData.location,
-          coordinates: formData.location.coordinates.map(Number)
-        }
+        // location: {
+        //   ...formData.location,
+        //   coordinates: formData.location.coordinates.map(Number)
+        // }
       };
 
       if (isEditMode) {
@@ -189,7 +190,7 @@ const RestaurantForm = () => {
               />
             </div>
 
-            <div className="md:col-span-2">
+            {/* <div className="md:col-span-2">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description
               </label>
@@ -202,95 +203,49 @@ const RestaurantForm = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 placeholder="Brief description about the restaurant"
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
-        {/* <div className="bg-white shadow rounded-lg p-6">
+        <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
             <MapPin className="h-5 w-5 mr-2 text-primary" />
-            Location Information
+            Contact Information
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
-                Address *
-              </label>
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={formData.location.address}
-                onChange={handleLocationChange}
-                className={`w-full px-3 py-2 border rounded-md ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
-                placeholder="Street address"
-              />
-              {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
-            </div>
 
             <div>
-              <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                City *
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone
               </label>
               <input
                 type="text"
-                id="city"
-                name="city"
-                value={formData.location.city}
-                onChange={handleLocationChange}
-                className={`w-full px-3 py-2 border rounded-md ${errors.city ? 'border-red-500' : 'border-gray-300'}`}
-                placeholder="City name"
-              />
-              {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
-                State
-              </label>
-              <input
-                type="text"
-                id="state"
-                name="state"
-                value={formData.location.state}
-                onChange={handleLocationChange}
+                id="phone"
+                name="phone"
+                value={formData.contact?.phone || ''}
+                onChange={handleContactChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="State"
+                placeholder="9876543210"
               />
             </div>
 
             <div>
-              <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
-                Postal Code
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
               </label>
               <input
-                type="text"
-                id="postalCode"
-                name="postalCode"
-                value={formData.location.postalCode}
-                onChange={handleLocationChange}
+                type="email"
+                id="email"
+                name="email"
+                value={formData.contact?.email || ''}
+                onChange={handleContactChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="Postal code"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">
-                Country
-              </label>
-              <input
-                type="text"
-                id="country"
-                name="country"
-                value={formData.location.country}
-                onChange={handleLocationChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="Country"
+                placeholder="email@example.com"
               />
             </div>
           </div>
-        </div> */}
+        </div>
 
         <div className="flex justify-end space-x-3">
           <button

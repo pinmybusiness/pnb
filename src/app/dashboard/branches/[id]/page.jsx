@@ -50,7 +50,7 @@ const Button = ({ children, className = "", ...props }) => (
 
 const BranchView = ({ params }) => {
   const router = useRouter();
-  const { id } = use(params); // 👈 use() hook
+  const { id } = params;
   const [branch, setBranch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");

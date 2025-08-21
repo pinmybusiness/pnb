@@ -23,7 +23,7 @@ export const ROLE_MAPPING = {
 
 export const DASHBOARD_CONFIG = {
   companyAdmin: {
-    title: "Wait Pro",
+    title: "ListenLift AI",
     subtitle: "Company Admin",
     menus: [
       { name: "Dashboard", href: "/company/admin", icon: "Home" },

@@ -9,7 +9,7 @@ export default function DashboardLayout({ children, panel }) {
   // Define menus and titles based on panel
   const panelConfig = {
     companyAdmin: {
-      title: "Wait Pro",
+      title: "ListenLift AI",
       subtitle: "Company Admin",
       menus: [
         { name: "Dashboard", href: "/company/admin", icon: Home },

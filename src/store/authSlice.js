@@ -1,11 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { loginUser } from './authThunks';
 
-// authSlice.js
-const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 const initialState = {
-  user: null,
-  token,
+  user: null,    // isme user.role aa jayega
+  token: null,
   isLoading: false,
   error: null,
 };
@@ -32,16 +30,17 @@ const authSlice = createSlice({
       state.error = null;
     },
   },
-   extraReducers: (builder) => {
+  extraReducers: (builder) => {
     builder
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
+        state.error = null;
       })
-     .addCase(loginUser.fulfilled, (state, action) => {
-      state.user = action.payload.user;
-      state.token = action.payload.token;
-      localStorage.setItem('token', action.payload.token); // यहाँ सेव करो
-    })
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isLoading = false;
+      })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;

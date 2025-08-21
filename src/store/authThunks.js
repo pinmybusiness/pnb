@@ -1,6 +1,7 @@
+// authThunks.js
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { authService } from '../services/authService';
-import { setCredentials, logout, setLoading, setError } from './authSlice';
+import { setCredentials, logout, setLoading } from './authSlice';
 
 // Register user
 export const registerUser = createAsyncThunk(
@@ -9,11 +10,16 @@ export const registerUser = createAsyncThunk(
     try {
       dispatch(setLoading(true));
       const response = await authService.register(userData);
+
+      // response.data.data se user + token nikalna
+      const userDataResponse = response.data.data;
+
       dispatch(setCredentials({ 
-        user: response.data.user, 
-        token: response.data.token 
+        user: userDataResponse, 
+        token: userDataResponse.token 
       }));
-      return response.data;
+
+      return userDataResponse;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     } finally {
@@ -28,9 +34,13 @@ export const loginUser = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await authService.login(userData);
+
+      // ✅ API structure: { success: true, data: {...user, token} }
+      const userDataResponse = response.data;
+
       return {
-        user: response.data.user,
-        token: response.data.token
+        user: userDataResponse,
+        token: userDataResponse.token
       };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
@@ -45,16 +55,21 @@ export const loadUser = createAsyncThunk(
     try {
       const { token } = getState().auth;
       if (!token) throw new Error("No token found");
-      
+
       dispatch(setLoading(true));
       const response = await authService.getMe();
+
+      // yaha bhi data andar hoga
+      const userDataResponse = response.data.data;
+
       dispatch(setCredentials({
-        user: response.data,
-        token: token // मौजूदा टोकन को बनाए रखें
+        user: userDataResponse,
+        token: token // existing token rakho
       }));
-      return response.data;
+
+      return userDataResponse;
     } catch (error) {
-      localStorage.removeItem('token'); // इनवैलिड टोकन को हटाएं
+      localStorage.removeItem('token');
       return rejectWithValue(error.response?.data?.message || error.message);
     } finally {
       dispatch(setLoading(false));
@@ -69,7 +84,7 @@ export const logoutUser = createAsyncThunk(
     try {
       dispatch(setLoading(true));
       await authService.logout();
-      localStorage.removeItem('token'); // टोकन साफ करें
+      localStorage.removeItem('token');
       dispatch(logout());
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);

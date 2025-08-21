@@ -152,26 +152,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Testimonials Section */}
-        {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <h2 className="text-2xl font-bold text-center text-gray-900 mb-12">What Our Customers Say</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-white p-6 rounded-xl border border-soft shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-start mb-4">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-3">
-                    <Users className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold">{testimonial.author}</h3>
-                    <p className="text-sm text-gray-600">{testimonial.role}</p>
-                  </div>
-                </div>
-                <p className="text-gray-700">"{testimonial.quote}"</p>
-              </div>
-            ))}
-          </div>
-        </div> */}
       </section>
 
       {/* Animation Styles */}

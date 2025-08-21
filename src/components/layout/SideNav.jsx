@@ -1,13 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Home, Store, MapPin, Users, BarChart3, Settings, Menu, X, Building2, UserCircle } from "lucide-react";
+import { 
+  Home, Store, MapPin, Users, BarChart3, Settings, 
+  Menu, X, Building2, UserCircle, LogOut
+} from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSelector, useDispatch } from "react-redux";
+import { logout } from "@/store/authSlice";   // <-- import logout action
 
 export default function SideNav({ navigation, title = "Dashboard", subtitle = "Portal" }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
 
   // Default nav if not provided
   const defaultNavigation = [
@@ -21,6 +29,11 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
 
   const links = navigation?.length ? navigation : defaultNavigation;
 
+  const handleLogout = () => {
+    dispatch(logout());
+    router.push("/login"); // 🔥 apne login page ka path
+  };
+
   return (
     <div className="flex">
       {/* Sidebar */}
@@ -28,7 +41,7 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
         className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-all duration-300
           ${sidebarOpen ? "w-64" : "w-16"}`}
       >
-       {/* Header */}
+        {/* Header */}
         <div className="flex items-center justify-between h-16 px-3 border-b border-gray-200">
           <div
             className={`flex items-center gap-3 transition-all ${
@@ -40,9 +53,9 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
             </div>
             {sidebarOpen && (
               <div>
-                <h2 className="font-semibold text-gray-800 leading-tight">
+                <h4 className="font-semibold text-gray-800 leading-tight">
                   {title}
-                </h2>
+                </h4>
                 <p className="text-xs text-gray-500">{subtitle}</p>
               </div>
             )}
@@ -90,8 +103,8 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
             })}
           </nav>
 
-          {/* User */}
-          <div className="border-t border-gray-200 px-3 py-4">
+          {/* User + Logout */}
+          <div className="border-t border-gray-200 px-3 py-4 space-y-3 gap-5 flex justify-around items-center">
             <div
               className={`flex items-center gap-3 ${
                 !sidebarOpen && "justify-center"
@@ -101,12 +114,22 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
               {sidebarOpen && (
                 <div className="leading-tight">
                   <p className="text-sm font-medium text-gray-800">
-                    John Admin
+                   {user?.name}
                   </p>
-                  <p className="text-xs text-gray-500">admin@company.com</p>
+                  <p className="text-xs text-gray-500">{user?.mobile}</p>
                 </div>
               )}
             </div>
+
+            {/* Logout button */}
+            <button
+              onClick={handleLogout}
+              className={`flex items-center gap-3 p-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors
+                ${!sidebarOpen && "justify-center"}`}
+            >
+              <LogOut className="h-5 w-5" />
+              {/* {sidebarOpen && <span>Logout</span>} */}
+            </button>
           </div>
         </div>
       </aside>

@@ -123,7 +123,7 @@ useEffect(() => {
         toast.success('Restaurant created successfully!');
       }
       
-      router.push('/company/admin/restaurants');
+      router.push('/dashboard/restaurants');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Something went wrong');
     } finally {
@@ -143,7 +143,7 @@ useEffect(() => {
           </p>
         </div>
         <button
-          onClick={() => router.push('/company/admin/restaurants')}
+          onClick={() => router.push('/dashboard/restaurants')}
           className="flex items-center text-gray-600 hover:text-gray-900"
         >
           <X className="h-5 w-5 mr-1" />
@@ -250,7 +250,7 @@ useEffect(() => {
         <div className="flex justify-end space-x-3">
           <button
             type="button"
-            onClick={() => router.push('/company/admin/restaurants')}
+            onClick={() => router.push('/dashboard/restaurants')}
             className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
           >
             Cancel

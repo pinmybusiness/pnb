@@ -1,7 +1,7 @@
 'use client';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import KPICard from "@/components/KPICard";
-import StatusBadge from "@/components/StatusBadge";
+import KPICard from "@/components/ui/KPICard";
+import StatusBadge from "@/components/ui/StatusBadge";
 import { 
   Store, 
   MapPin, 

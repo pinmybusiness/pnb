@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Lock, Phone, Eye, EyeOff, ArrowLeft } from "lucide-react"; // 👈 back icon
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "@/store/authThunks";
 import { toast } from "react-hot-toast";
 
@@ -16,6 +16,13 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
+  const { role, token } = useSelector((state) => state.auth);
+
+   useEffect(() => {
+    if (token && role) {
+      router.push("/dashboard");
+    }
+  }, [token, role, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,7 +31,7 @@ export default function LoginPage() {
     try {
       await dispatch(loginUser({ mobile, password, rememberMe })).unwrap();
       toast.success("Login successful!");
-      router.push("/company/admin");
+      router.push("/dashboard");
     } catch (error) {
       toast.error(error.message || "Login failed. Please try again.");
     } finally {

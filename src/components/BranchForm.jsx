@@ -46,6 +46,7 @@ const BranchForm = ({ onSuccess, onClose }) => {
       state: '',
       postalCode: '',
       country: 'India',
+      coordinates: [0, 0]
     },
     status: {
       current: 'no_status',

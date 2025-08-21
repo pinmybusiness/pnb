@@ -389,15 +389,13 @@ const getRestaurantName = (restaurantIdOrObject) => {
                     >
                       <Eye className="h-4 w-4" />
                     </button>
-                    {/* <button
-                      onClick={() => {
-                        setSelectedBranch(branch);
-                      }}
+                    <button
+                      onClick={() => router.push(`/company/admin/branches/${branch._id}/edit`)}
                       className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md"
                       title="Edit"
                     >
                       <Edit className="h-4 w-4" />
-                    </button> */}
+                    </button>
                   </div>
                 </TableCell>
               </TableRow>

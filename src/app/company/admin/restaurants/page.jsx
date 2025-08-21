@@ -1,78 +1,161 @@
 'use client';
 import { useState, useEffect } from "react";
-import { 
-  Store, 
-  MapPin, 
-  Search, 
-  Plus, 
-  DollarSign,
-  Star,
-  ArrowUpDown,
-  Eye,
-  ChevronDown
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { toast } from "react-hot-toast";
+import { Store, Search, Plus, DollarSign, Star, TrendingUp, ArrowUpDown, Eye, Edit, Trash2 } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
 import KPICard from "@/components/KPICard";
+import { toast } from "react-hot-toast";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+
+const Card = ({ className = "", children }) => (
+  <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
+    {children}
+  </div>
+);
+
+const Button = ({ children, className = "", ...props }) => (
+  <button
+    className={`inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition ${className}`}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+const Input = ({ className = "", ...props }) => (
+  <input
+    className={`border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary ${className}`}
+    {...props}
+  />
+);
+
+const Badge = ({ children, variant = "secondary", className = "" }) => {
+  const variantClasses = {
+    secondary: "bg-gray-100 text-gray-800",
+    destructive: "bg-red-100 text-red-800",
+    outline: "border border-gray-300 text-gray-800",
+  };
+  return (
+    <span className={`px-2.5 py-0.5 text-xs font-medium rounded-md ${variantClasses[variant]} ${className}`}>
+      {children}
+    </span>
+  );
+};
+
+const Table = ({ children }) => <table className="min-w-full">{children}</table>;
+const TableHeader = ({ children }) => <thead className="bg-gray-50">{children}</thead>;
+const TableBody = ({ children }) => <tbody className="divide-y divide-gray-200">{children}</tbody>;
+const TableRow = ({ children, className = "" }) => <tr className={className}>{children}</tr>;
+const TableHead = ({ children, className = "", ...props }) => (
+  <th scope="col" className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${className}`} {...props}>
+    {children}
+  </th>
+);
+const TableCell = ({ children, className = "" }) => (
+  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-700 ${className}`}>{children}</td>
+);
 
 const Restaurants = () => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
   const [restaurants, setRestaurants] = useState([]);
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
 
-  // Fetch restaurants and branches data
+  // Fetch data from API
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const restaurantsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`);
+        const branchesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`);
         
-        // Fetch restaurants
-        const restaurantsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`);
-        if (!restaurantsRes.ok) throw new Error('Failed to fetch restaurants');
-        const restaurantsData = await restaurantsRes.json();
-        setRestaurants(restaurantsData.data || []);
-        
-        // Fetch branches
-        const branchesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`);
-        if (!branchesRes.ok) throw new Error('Failed to fetch branches');
-        const branchesData = await branchesRes.json();
-        setBranches(branchesData.data || []);
-        
-      } catch (err) {
-        setError(err.message);
-        toast.error('Failed to fetch data');
+        setRestaurants(restaurantsRes.data.data || []);
+        setBranches(branchesRes.data.data || []);
+      } catch (error) {
+        toast.error("Failed to fetch data");
+        console.error("Fetch error:", error);
       } finally {
         setLoading(false);
       }
     };
-
+    
     fetchData();
   }, []);
 
-  // FIXED: Properly compare ObjectIds and strings
   const getRestaurantStats = (restaurantId) => {
-    // Convert restaurantId to string for comparison
-    const restaurantIdStr = restaurantId.toString();
+    const restaurantBranches = branches.filter(branch => 
+      branch.parentRestaurant?._id === restaurantId || branch.parentRestaurant === restaurantId
+    );
     
-    const restaurantBranches = branches.filter(b => {
-      // Handle both string and ObjectId cases
-      const branchParentId = b.parentRestaurant?._id || b.parentRestaurant;
-      return branchParentId && branchParentId.toString() === restaurantIdStr;
-    });
-    
-    const activeTrials = restaurantBranches.filter(b => b.trial?.isActive).length;
+    const activeTrials = restaurantBranches.filter(branch => branch.trial?.isActive).length;
     
     return {
-      branches: restaurantBranches,
+      branches: restaurantBranches.length,
       activeTrials
     };
   };
+
+  const handleUpdateStatus = async (restaurantId, status) => {
+    try {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants/${restaurantId}/status`, {
+        status,
+        reason: "Updated via admin panel"
+      });
+      
+      setRestaurants(restaurants.map(restaurant => 
+        restaurant._id === restaurantId 
+          ? { ...restaurant, status: { current: status, reason: "Updated via admin panel" } } 
+          : restaurant
+      ));
+      
+      toast.success("Status updated successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update status");
+    }
+  };
+
+  const filteredAndSortedRestaurants = restaurants
+    .filter(restaurant => {
+      const matchesSearch =
+        restaurant.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        restaurant.contact?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        restaurant.contact?.phone?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === "all" || restaurant.status?.current?.toLowerCase() === statusFilter.toLowerCase();
+
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      let aValue, bValue;
+      switch (sortBy) {
+        case "name":
+          aValue = a.name || '';
+          bValue = b.name || '';
+          break;
+        case "branches":
+          aValue = getRestaurantStats(a._id).branches;
+          bValue = getRestaurantStats(b._id).branches;
+          break;
+        case "status":
+          aValue = a.status?.current || '';
+          bValue = b.status?.current || '';
+          break;
+        default:
+          return 0;
+      }
+
+      if (typeof aValue === "string") {
+        return sortOrder === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      }
+      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+    });
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -83,59 +166,27 @@ const Restaurants = () => {
     }
   };
 
-  const sortedRestaurants = [...restaurants].sort((a, b) => {
-    const aStats = getRestaurantStats(a._id);
-    const bStats = getRestaurantStats(b._id);
-    
-    let aValue, bValue;
-    switch (sortBy) {
-      case "name":
-        aValue = a.name || '';
-        bValue = b.name || '';
-        break;
-      case "branches":
-        aValue = aStats.branches.length;
-        bValue = bStats.branches.length;
-        break;
-      default:
-        return 0;
-    }
-
-    if (typeof aValue === "string") {
-      return sortOrder === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-    }
-    return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-  });
-
-  const filteredRestaurants = sortedRestaurants.filter(restaurant =>
-    restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (restaurant.contact?.phone || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const statusOptions = [
+    { value: "all", label: "All Status" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+  ];
 
   const calculateKPIs = () => {
+    if (restaurants.length === 0) return { totalRestaurants: 0, totalBranches: 0, activeTrials: 0 };
+    
+    const totalRestaurants = restaurants.length;
+    const totalBranches = branches.length;
+    const activeTrials = branches.filter(branch => branch.trial?.isActive).length;
+    
     return {
-      totalRestaurants: restaurants.length,
-      totalBranches: branches.length,
-      activeTrials: branches.filter(b => b.trial?.isActive).length
+      totalRestaurants,
+      totalBranches,
+      activeTrials
     };
   };
 
   const kpiData = calculateKPIs();
-
-  // Debug: Log the data to see what's happening
-  useEffect(() => {
-    if (restaurants.length > 0 && branches.length > 0) {
-      console.log("Restaurants:", restaurants);
-      console.log("Branches:", branches);
-      
-      // Check first restaurant's branches
-      const firstRestaurantId = restaurants[0]?._id;
-      if (firstRestaurantId) {
-        const stats = getRestaurantStats(firstRestaurantId);
-        console.log("First restaurant branches:", stats.branches);
-      }
-    }
-  }, [restaurants, branches]);
 
   if (loading) {
     return (
@@ -145,117 +196,89 @@ const Restaurants = () => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="bg-white rounded-lg p-6 text-center shadow">
-        <div className="h-12 w-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="text-red-500 text-2xl">!</span>
-        </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading data</h3>
-        <p className="text-gray-500 mb-4">{error}</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition mx-auto"
-        >
-          Try Again
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Restaurants</h1>
-          <p className="text-gray-500">Manage your restaurant partners</p>
+          <h1 className="text-2xl font-bold text-gray-900">Restaurant Management</h1>
+          <p className="text-gray-500">Monitor and manage all restaurants</p>
         </div>
         <Link href='/company/admin/restaurants/add'>
-          <button className="flex items-center bg-primary text-white px-4 py-2 rounded-md shadow hover:bg-primary/90 transition">
+          <Button className="rounded-lg">
             <Plus className="h-4 w-4 mr-2" />
             Add Restaurant
-          </button>
+          </Button>
         </Link>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <KPICard 
-          title="Total Restaurants" 
-          value={kpiData.totalRestaurants} 
-          icon={Store}
-        />
-        <KPICard 
-          title="Total Branches" 
-          value={kpiData.totalBranches} 
-          icon={MapPin}
-        />
-        <KPICard 
-          title="Active Trials" 
-          value={kpiData.activeTrials} 
-          icon={DollarSign}
-        />
+        <KPICard title="Total Restaurants" value={kpiData.totalRestaurants} icon={Store} />
+        <KPICard title="Total Branches" value={kpiData.totalBranches} icon={TrendingUp} />
+        <KPICard title="Active Trials" value={kpiData.activeTrials} icon={DollarSign} />
       </div>
 
-      {/* Search */}
-      <div className="relative max-w-md">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-4 w-4 text-gray-400" />
+      {/* Filters */}
+      <Card className="p-4">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search restaurants..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
+          >
+            {statusOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
-        <input
-          type="text"
-          placeholder="Search restaurants..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm"
-        />
-      </div>
+      </Card>
 
       {/* Restaurants Table */}
-      <div className="bg-white shadow overflow-hidden rounded-lg">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th 
-                  scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("name")}
-                >
-                  <div className="flex items-center">
-                    Restaurant
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </div>
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contact
-                </th>
-                <th 
-                  scope="col" 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                  onClick={() => handleSort("branches")}
-                >
-                  <div className="flex items-center">
-                    Branches
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </div>
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead onClick={() => handleSort("name")} className="cursor-pointer">
+                <div className="flex items-center gap-2">
+                  Restaurant Name
+                  <ArrowUpDown className="h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead>Contact Info</TableHead>
+              <TableHead onClick={() => handleSort("branches")} className="cursor-pointer">
+                <div className="flex items-center gap-2">
+                  Branches
+                  <ArrowUpDown className="h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead onClick={() => handleSort("status")} className="cursor-pointer">
+                <div className="flex items-center gap-2">
                   Status
-                </th>
-                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredRestaurants.map((restaurant) => {
-                const stats = getRestaurantStats(restaurant._id);
-                return (
-                  <tr key={restaurant._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
+                  <ArrowUpDown className="h-4 w-4" />
+                </div>
+              </TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredAndSortedRestaurants.map((restaurant) => {
+              const stats = getRestaurantStats(restaurant._id);
+              return (
+                <TableRow key={restaurant._id} className="hover:bg-gray-50">
+                  <TableCell>
+                     <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
                           {restaurant.logo ? (
                             <Image
@@ -271,66 +294,81 @@ const Restaurants = () => {
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">{restaurant.name}</div>
-                          <div className="text-sm text-gray-500 truncate max-w-[200px]">
-                            {restaurant.description || 'No description'}
-                          </div>
+
                         </div>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{restaurant.contact?.phone || 'N/A'}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="text-sm text-gray-900">{restaurant.contact?.phone || 'No phone'}</div>
                       <div className="text-sm text-gray-500 truncate max-w-[200px]">
                         {restaurant.contact?.email || 'No email'}
                       </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                          {stats.branches.length} branch{stats.branches.length !== 1 ? 'es' : ''}
-                        </span>
-                        {stats.activeTrials > 0 && (
-                          <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">
-                            {stats.activeTrials} trial{stats.activeTrials !== 1 ? 's' : ''}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <StatusBadge status={restaurant.status?.current || 'no_status'} />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Link
-                        href={`/company/admin/restaurants/${restaurant._id}`}
-                        className="text-primary hover:text-primary/80 mr-4"
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="font-medium">{stats.branches} branch{stats.branches !== 1 ? 'es' : ''}</div>
+                      {stats.activeTrials > 0 && (
+                        <Badge variant="secondary">
+                          {stats.activeTrials} active trial{stats.activeTrials !== 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <StatusBadge status={restaurant.status?.current || (restaurant.isActive ? 'active' : 'inactive')} />
+                      {restaurant.status?.reason && (
+                        <div className="text-xs text-gray-500 max-w-[150px] truncate" title={restaurant.status.reason}>
+                          {restaurant.status.reason}
+                        </div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      {/* <button
+                        onClick={() => router.push(`/company/admin/restaurants/${restaurant._id}`)}
+                        className="p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-md"
+                        title="View"
                       >
-                        <Eye className="h-5 w-5" />
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                        <Eye className="h-4 w-4" />
+                      </button> */}
+                      <button
+                        onClick={() => router.push(`/company/admin/restaurants/${restaurant._id}`)}
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md"
+                        title="Edit"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </button>
+                      {/* <button
+                        onClick={() => handleDeleteRestaurant(restaurant._id)}
+                        className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-md"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button> */}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
 
-        {filteredRestaurants.length === 0 && (
+        {filteredAndSortedRestaurants.length === 0 && (
           <div className="p-12 text-center">
-            <div className="mx-auto h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <Store className="h-5 w-5 text-gray-400" />
-            </div>
+            <Store className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No restaurants found</h3>
-            <p className="text-gray-500 mb-4">
-              {searchTerm ? "Try adjusting your search terms" : "Get started by adding your first restaurant"}
+            <p className="text-gray-500">
+              {searchTerm || statusFilter !== "all"
+                ? "Try adjusting your search or filter criteria"
+                : "Get started by adding your first restaurant"}
             </p>
-            <Link href='/company/admin/restaurants/add'
-              className="inline-flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Restaurant
-            </Link>
           </div>
         )}
-      </div>
+      </Card>     
     </div>
   );
 };

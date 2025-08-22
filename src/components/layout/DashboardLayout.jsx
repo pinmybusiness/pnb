@@ -3,7 +3,7 @@
 import React from "react";
 import SideNav from "./SideNav";
 import TopNav from "./TopNav";
-import { Building2, Store, Users, BarChart3, Home, MapPin, Settings } from "lucide-react";
+import { Building2, Store, Users, BarChart3, Home, MapPin, Settings, UserPlus, Hourglass, FileBarChart, LayoutDashboard } from "lucide-react";
 import { useSelector } from "react-redux";
 import { roleNames } from "@/utils/roles";
 
@@ -53,9 +53,20 @@ const panelConfig = {
     title: "Branch Manager",
     subtitle: "Operations Dashboard",
     menus: [
-      { name: "Dashboard", href: "/dashboard", icon: Building2 },
-      { name: "Orders", href: "/dashboard/orders", icon: BarChart3 },
-      { name: "Reports", href: "/dashboard/reports", icon: Users },
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Entry", href: "/dashboard/entry", icon: UserPlus },
+      { name: "Waiting List", href: "/dashboard/waiting-list", icon: Hourglass },
+      { name: "Reports", href: "/dashboard/reports", icon: FileBarChart },
+    ],
+  },
+  branch_team: {
+    title: "Branch Team",
+    subtitle: "Operations Dashboard",
+    menus: [
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { name: "Entry", href: "/dashboard/entry", icon: UserPlus },
+      { name: "Waiting List", href: "/dashboard/waiting-list", icon: Hourglass },
+      { name: "Reports", href: "/dashboard/reports", icon: FileBarChart },
     ],
   },
   // 👇 add more roles here (branch_manager, branch_team, etc.)

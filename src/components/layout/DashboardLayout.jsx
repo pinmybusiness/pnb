@@ -3,7 +3,7 @@
 import React from "react";
 import SideNav from "./SideNav";
 import TopNav from "./TopNav";
-import { Building2, Store, Users, BarChart3, Home, MapPin, Settings, UserPlus, Hourglass, FileBarChart, LayoutDashboard } from "lucide-react";
+import { Building2, Store, Users, BarChart3, Home, MapPin, Settings, UserPlus, Hourglass, FileBarChart, LayoutDashboard, GraduationCap, ChartArea } from "lucide-react";
 import { useSelector } from "react-redux";
 import { roleNames } from "@/utils/roles";
 
@@ -14,7 +14,14 @@ const panelConfig = {
     menus: [
       { name: "Dashboard", href: "/dashboard", icon: Home },
       { name: "Restaurants", href: "/dashboard/restaurants", icon: Store },
-      { name: "Branches", href: "/dashboard/branches", icon: MapPin },
+      { 
+        name: "Branches", 
+        icon: MapPin, 
+        children: [
+          { name: "Add Branch", href: "/dashboard/branches/add" },
+          { name: "List Branches", href: "/dashboard/branches" },
+        ]
+      },
       { name: "Teams", href: "/dashboard/teams", icon: Users },
       { name: "Reports", href: "/dashboard/reports", icon: BarChart3 },
       { name: "Settings", href: "/dashboard/settings", icon: Settings },
@@ -56,6 +63,8 @@ const panelConfig = {
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { name: "Entry", href: "/dashboard/entry", icon: UserPlus },
       { name: "Waiting List", href: "/dashboard/waiting-list", icon: Hourglass },
+      { name: "Internship", href: "/dashboard/internship", icon: GraduationCap },
+      { name: "Analytics", href: "/dashboard/analytics ", icon: ChartArea },
       { name: "Reports", href: "/dashboard/reports", icon: FileBarChart },
     ],
   },
@@ -66,6 +75,7 @@ const panelConfig = {
       { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { name: "Entry", href: "/dashboard/entry", icon: UserPlus },
       { name: "Waiting List", href: "/dashboard/waiting-list", icon: Hourglass },
+      { name: "Internship", href: "/dashboard/internship", icon: GraduationCap },
       { name: "Reports", href: "/dashboard/reports", icon: FileBarChart },
     ],
   },

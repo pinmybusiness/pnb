@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 /* Theme variables */
-/* Theme variables */
 :root {
   --color-primary: #ff5211;
   --color-primary-light: #FFE7E0;
@@ -30,6 +29,20 @@
 .text-dark { color: var(--color-text-dark); }
 
 .font-sans { font-family: var(--font-sans); }
+
+/* Focus styles */
+.focus\:ring-primary:focus {
+  --tw-ring-color: var(--color-primary);
+  ring-color: var(--color-primary);
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: color-mix(in srgb, var(--color-primary) 90%, transparent);
+}
+
+.hover\:bg-green-custom\/90:hover {
+  background-color: color-mix(in srgb, var(--color-green-custom) 90%, transparent);
+}
 
 body {
   background: var(--background);

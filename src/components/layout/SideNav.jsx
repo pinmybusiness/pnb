@@ -3,35 +3,28 @@
 import { useState } from "react";
 import { 
   Home, Store, MapPin, Users, BarChart3, Settings, 
-  Menu, X, Building2, UserCircle, LogOut
+  Menu, X, Building2, UserCircle, LogOut, ChevronDown, ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "@/store/authSlice";   // <-- import logout action
+import { logout } from "@/store/authSlice";
 
 export default function SideNav({ navigation, title = "Dashboard", subtitle = "Portal" }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [openMenus, setOpenMenus] = useState({}); // <-- submenu state
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
-  // Default nav if not provided
-  const defaultNavigation = [
-    { name: "Dashboard", href: "/", icon: Home },
-    { name: "Restaurants", href: "/restaurants", icon: Store },
-    { name: "Branches", href: "/branches", icon: MapPin },
-    { name: "Teams", href: "/teams", icon: Users },
-    { name: "Reports", href: "/reports", icon: BarChart3 },
-    { name: "Settings", href: "/settings", icon: Settings },
-  ];
-
-  const links = navigation?.length ? navigation : defaultNavigation;
-
   const handleLogout = () => {
     dispatch(logout());
-    router.push("/login"); // 🔥 apne login page ka path
+    router.push("/login");
+  };
+
+  const toggleSubMenu = (name) => {
+    setOpenMenus((prev) => ({ ...prev, [name]: !prev[name] }));
   };
 
   return (
@@ -77,34 +70,97 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
         <div className="flex flex-col justify-between h-[calc(100dvh-64px)]">
           {/* Nav Links */}
           <nav className="flex-1 px-2 py-4 space-y-1">
-            {links.map((item) => {
+            {navigation.map((item) => {
               const isActive = pathname === item.href;
+              const hasChildren = item.children?.length > 0;
+              const isOpen = openMenus[item.name];
+
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                    ${
-                      isActive
-                        ? "bg-primary text-white"
-                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                    }`}
-                >
-                  <div className="flex items-center justify-center w-6 min-w-[24px]">
-                    <item.icon
-                      className={`h-5 w-5 ${
-                        isActive ? "text-white" : "text-gray-600"
-                      }`}
-                    />
-                  </div>
-                  {sidebarOpen && <span>{item.name}</span>}
-                </Link>
+                <div key={item.name}>
+                  {/* 👉 Parent with Children (toggle only) */}
+                  {hasChildren ? (
+                    <div
+                      onClick={() => toggleSubMenu(item.name)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors cursor-pointer
+                        ${
+                          isActive
+                            ? "bg-primary text-white"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-6 min-w-[24px]">
+                          {item.icon && (
+                            <item.icon
+                              className={`h-5 w-5 ${
+                                isActive ? "text-white" : "text-gray-600"
+                              }`}
+                            />
+                          )}
+                        </div>
+                        {sidebarOpen && <span>{item.name}</span>}
+                      </div>
+
+                      {sidebarOpen &&
+                        (isOpen ? (
+                          <ChevronDown className="h-4 w-4 text-gray-500" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-gray-500" />
+                        ))}
+                    </div>
+                  ) : (
+                    /* 👉 Parent without Children (normal Link) */
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
+                        ${
+                          isActive
+                            ? "bg-primary text-white"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                        }`}
+                    >
+                      <div className="flex items-center justify-center w-6 min-w-[24px]">
+                        {item.icon && (
+                          <item.icon
+                            className={`h-5 w-5 ${
+                              isActive ? "text-white" : "text-gray-600"
+                            }`}
+                          />
+                        )}
+                      </div>
+                      {sidebarOpen && <span>{item.name}</span>}
+                    </Link>
+                  )}
+
+                  {/* Submenu */}
+                  {hasChildren && isOpen && sidebarOpen && (
+                    <div className="ml-10 mt-1 space-y-1">
+                      {item.children.map((sub) => {
+                        const subActive = pathname === sub.href;
+                        return (
+                          <Link
+                            key={sub.name}
+                            href={sub.href}
+                            className={`block px-3 py-1.5 rounded-lg text-sm transition-colors
+                              ${
+                                subActive
+                                  ? "bg-primary text-white"
+                                  : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                              }`}
+                          >
+                            {sub.name}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </nav>
 
           {/* User + Logout */}
-          <div className="border-t border-gray-200 px-3 py-4 space-y-3 gap-5 flex justify-around items-center">
+          <div className="border-t border-gray-200 px-3 py-4 flex justify-around items-center">
             <div
               className={`flex items-center gap-3 ${
                 !sidebarOpen && "justify-center"
@@ -128,7 +184,6 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
                 ${!sidebarOpen && "justify-center"}`}
             >
               <LogOut className="h-5 w-5" />
-              {/* {sidebarOpen && <span>Logout</span>} */}
             </button>
           </div>
         </div>
@@ -140,7 +195,7 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
           sidebarOpen ? "ml-64" : "ml-16"
         }`}
       >
-        {/* Page content goes here */}
+        {/* Page content */}
       </div>
     </div>
   );

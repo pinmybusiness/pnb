@@ -148,7 +148,7 @@ const WaitingList = () => {
         {/* Navigation */}
         <div className="flex gap-3">
           <button
-            onClick={() => router.push("/analytics")}
+            onClick={() => router.push("/dashboard/analytics")}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-soft rounded-lg hover:bg-gray-50 transition text-dark"
           >
             <BarChart3 className="w-4 h-4 text-primary" />

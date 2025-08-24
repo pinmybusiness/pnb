@@ -10,6 +10,7 @@ export default function Header({ activeLink = '' }) {
   const links = [
     { name: 'Home', path: '/' },
     { name: 'Pricing', path: '/pricing' },
+    { name: 'Internship', path: '/internships' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' }
   ];

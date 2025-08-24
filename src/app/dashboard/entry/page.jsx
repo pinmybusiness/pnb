@@ -4,9 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Phone, User, Baby } from "lucide-react";
 import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { addCustomer } from "@/store/customerSlice";
 
 const Entry = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
   const [formData, setFormData] = useState({
     restaurantName: "Bella Vista Restaurant",
     customerName: "",
@@ -14,35 +18,46 @@ const Entry = () => {
     children: "",
     phone: "",
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     if (!formData.customerName || !formData.adults || !formData.phone) {
       toast.error("Please fill required fields (Name, Adults, Phone)");
       return;
     }
 
-    const waitingList = JSON.parse(localStorage.getItem("waitingList") || "[]");
-    const newEntry = {
-      id: Date.now(),
-      ...formData,
-      adults: parseInt(formData.adults),
-      children: parseInt(formData.children) || 0,
-      timestamp: new Date().toISOString(),
-      served: false,
-    };
-    waitingList.push(newEntry);
-    localStorage.setItem("waitingList", JSON.stringify(waitingList));
+    if (!user) {
+      toast.error("No branch selected");
+      return;
+    }
 
-    toast.success(`${formData.customerName} added to waiting list!`);
-
-    setFormData({
-      ...formData,
-      customerName: "",
-      adults: "",
-      children: "",
-      phone: "",
-    });
+    setLoading(true);
+    try {
+      await dispatch(addCustomer({
+        branchId: user.branch,
+        customerData: {
+          ...formData,
+          adults: parseInt(formData.adults),
+          children: parseInt(formData.children) || 0,
+        }
+      })).unwrap();
+      
+      toast.success(`${formData.customerName} added to waiting list!`);
+      
+      setFormData({
+        ...formData,
+        customerName: "",
+        adults: "",
+        children: "",
+        phone: "",
+      });
+    } catch (error) {
+      toast.error(error || "Failed to add customer");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,6 +67,11 @@ const Entry = () => {
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-gray-900">New Customer</h1>
           <p className="text-gray-500">Add to waiting list</p>
+          {user && (
+            <p className="text-sm text-primary font-medium">
+              Branch: {user.branch}
+            </p>
+          )}
         </div>
 
         {/* Entry Form */}
@@ -156,9 +176,10 @@ const Entry = () => {
               {/* Submit */}
               <button
                 type="submit"
-                className="w-full bg-primary text-white rounded-lg h-12 font-medium hover:bg-primary/90 transition"
+                disabled={loading || !user}
+                className="w-full bg-primary text-white rounded-lg h-12 font-medium hover:bg-primary/90 transition disabled:opacity-50"
               >
-                Add to Waiting List
+                {loading ? "Adding..." : "Add to Waiting List"}
               </button>
             </form>
           </div>
@@ -167,7 +188,7 @@ const Entry = () => {
         {/* Navigation */}
         <div className="flex gap-3">
           <button
-            onClick={() => router.push("/dashboard//waiting-list")}
+            onClick={() => router.push("/dashboard/waiting-list")}
             className="flex-1 border border-gray-300 text-gray-700 rounded-lg h-12 font-medium hover:bg-gray-100 transition"
           >
             View Waiting List

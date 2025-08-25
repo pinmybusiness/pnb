@@ -23,7 +23,15 @@ export const allMenus = [
   { name: "Orders", href: "/dashboard/orders", icon: BarChart3, roles: [4] },
   { name: "Entry", href: "/dashboard/entry", icon: UserPlus, roles: [6,7] },
   { name: "Waiting List", href: "/dashboard/waiting-list", icon: Hourglass, roles: [6,7] },
-  { name: "Internship", href: "/dashboard/internship", icon: GraduationCap, roles: [6,7] },
+  { 
+    name: "Internship", 
+    icon: GraduationCap, 
+    roles: [6,7], 
+    children: [
+      { name: "Internships", href: "/dashboard/internship" },
+      { name: "Add Internship", href: "/dashboard/internship/add" },
+    ]
+  },
   { name: "Analytics", href: "/dashboard/analytics", icon: ChartArea, roles: [6,7] },
   { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0,3,4,6,7] },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [0,3] },

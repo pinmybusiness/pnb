@@ -14,7 +14,9 @@ import {
   Calendar,
   MapPin,
   Filter,
-  X
+  X,
+  Briefcase,
+  BookOpen
 } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
 import KPICard from "@/components/ui/KPICard";
@@ -23,28 +25,30 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSelector } from "react-redux";
+import { formatDateWithSuffix } from "@/utils/dateFormat";
 
-const Internships = () => {
+const Opportunities = () => {
   const router = useRouter();
   const { user, token } = useSelector((state) => state.auth);
-  const [internships, setInternships] = useState([]);
+  const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [opportunityTypeFilter, setOpportunityTypeFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [showFilters, setShowFilters] = useState(false);
 
-  // Fetch internships for the user's branch
+  // Fetch opportunities for the user's branch
   useEffect(() => {
-    const fetchInternships = async () => {
+    const fetchOpportunities = async () => {
       if (!token || !user) return;
 
       try {
         setLoading(true);
-        let url = `${process.env.NEXT_PUBLIC_API_URL}/api/internships`;
+        let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities`;
         
         // Add branch filter for branch users
         if (user.branch) {
@@ -58,21 +62,26 @@ const Internships = () => {
         });
 
         if (response.data.success) {
-          setInternships(response.data.data);
+          setOpportunities(response.data.data);
         }
       } catch (error) {
-        toast.error("Failed to fetch internships");
+        toast.error("Failed to fetch opportunities");
         console.error("Fetch error:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchInternships();
+    fetchOpportunities();
   }, [token, user]);
 
   const categories = [
-    'kitchen', 'service', 'management', 'marketing', 'events', 'delivery', 'other'
+    'Kitchen Helper', 'Service Staff', 'Management Trainee', 'Marketing Assistant', 
+    'Events Coordinator', 'Delivery Helper', 'Other'
+  ];
+
+  const opportunityTypes = [
+    'internship', 'job'
   ];
 
   const internshipTypes = [
@@ -89,23 +98,26 @@ const Internships = () => {
     { value: "completed", label: "Completed" }
   ];
 
-  const filteredAndSortedInternships = internships
-    .filter(internship => {
+  const filteredAndSortedOpportunities = opportunities
+    .filter(opportunity => {
       const matchesSearch =
-        internship.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        internship.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        internship.category?.toLowerCase().includes(searchTerm.toLowerCase());
+        opportunity.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        opportunity.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        opportunity.category?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
-        statusFilter === "all" || internship.status?.toLowerCase() === statusFilter.toLowerCase();
+        statusFilter === "all" || opportunity.status?.toLowerCase() === statusFilter.toLowerCase();
 
       const matchesCategory =
-        categoryFilter === "all" || internship.category === categoryFilter;
+        categoryFilter === "all" || opportunity.category === categoryFilter;
+
+      const matchesOpportunityType =
+        opportunityTypeFilter === "all" || opportunity.opportunityType === opportunityTypeFilter;
 
       const matchesType =
-        typeFilter === "all" || internship.internshipType === typeFilter;
+        typeFilter === "all" || opportunity.internshipType === typeFilter;
 
-      return matchesSearch && matchesStatus && matchesCategory && matchesType;
+      return matchesSearch && matchesStatus && matchesCategory && matchesOpportunityType && matchesType;
     })
     .sort((a, b) => {
       let aValue, bValue;
@@ -122,9 +134,9 @@ const Internships = () => {
           aValue = a.status || '';
           bValue = b.status || '';
           break;
-        case "positions":
-          aValue = a.positions?.total || 0;
-          bValue = b.positions?.total || 0;
+        case "numberOfPeople":
+          aValue = a.numberOfPeople || 0;
+          bValue = b.numberOfPeople || 0;
           break;
         case "stipend":
           aValue = a.stipend?.amount || 0;
@@ -134,9 +146,9 @@ const Internships = () => {
           aValue = new Date(a.createdAt);
           bValue = new Date(b.createdAt);
           break;
-        case "deadline":
-          aValue = new Date(a.deadline);
-          bValue = new Date(b.deadline);
+        case "startDate":
+          aValue = new Date(a.schedule?.startDate);
+          bValue = new Date(b.schedule?.startDate);
           break;
         default:
           return 0;
@@ -161,7 +173,7 @@ const Internships = () => {
   };
 
   const calculateKPIs = () => {
-    if (internships.length === 0) return { 
+    if (opportunities.length === 0) return { 
       total: 0, 
       active: 0, 
       totalPositions: 0, 
@@ -169,13 +181,13 @@ const Internships = () => {
       avgStipend: 0 
     };
     
-    const active = internships.filter(i => i.status === 'approved').length;
-    const totalPositions = internships.reduce((sum, i) => sum + (i.positions?.total || 0), 0);
-    const filledPositions = internships.reduce((sum, i) => sum + (i.positions?.filled || 0), 0);
-    const avgStipend = internships.reduce((sum, i) => sum + (i.stipend?.amount || 0), 0) / internships.length;
+    const active = opportunities.filter(i => i.status === 'approved').length;
+    const totalPositions = opportunities.reduce((sum, i) => sum + (i.numberOfPeople || 0), 0);
+    const filledPositions = opportunities.reduce((sum, i) => sum + (i.filledPositions || 0), 0);
+    const avgStipend = opportunities.reduce((sum, i) => sum + (i.stipend?.amount || 0), 0) / opportunities.length;
     
     return {
-      total: internships.length,
+      total: opportunities.length,
       active,
       totalPositions,
       filledPositions,
@@ -208,6 +220,24 @@ const Internships = () => {
     return typeMap[type] || type;
   };
 
+  const getOpportunityTypeIcon = (type) => {
+    return type === 'job' ? Briefcase : BookOpen;
+  };
+
+  const getStipendText = (stipend) => {
+    if (!stipend || !stipend.amount) return 'Unpaid';
+    
+    const paymentTypeMap = {
+      'daily': 'day',
+      'weekly': 'week',
+      'monthly': 'month',
+      'after_completion': 'completion'
+    };
+    
+    const period = paymentTypeMap[stipend.paymentType] || 'month';
+    return `${stipend.currency || '₹'}${stipend.amount.toLocaleString()}/${period}`;
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -221,21 +251,23 @@ const Internships = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-dark">Internship Management</h1>
-          <p className="text-gray-500">Manage internships for your branch</p>
+          <h1 className="text-2xl font-bold text-dark">Opportunity Management</h1>
+          <p className="text-gray-500">Manage opportunities for your branch</p>
         </div>
-        <Link href='/dashboard/internship/add'>
-          <Button className="rounded-lg bg-primary hover:bg-primary/90">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Internship
-          </Button>
-        </Link>
+       {[6, 7].includes(user?.role) && (
+          <Link href="/dashboard/opportunities/add">
+            <Button className="rounded-lg bg-primary hover:bg-primary/90">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Opportunity
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <KPICard 
-          title="Total Internships" 
+          title="Total Opportunities" 
           value={kpiData.total} 
           icon={TrendingUp}
           className="bg-primary-light border-primary"
@@ -271,7 +303,7 @@ const Internships = () => {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
-              placeholder="Search internships..."
+              placeholder="Search opportunities..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
@@ -289,7 +321,7 @@ const Internships = () => {
         </div>
 
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-4 bg-gray-light rounded-md">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 p-4 bg-gray-light rounded-md">
             <div>
               <label className="block text-sm font-medium text-dark mb-2">Status</label>
               <select
@@ -315,20 +347,36 @@ const Internships = () => {
                 <option value="all">All Categories</option>
                 {categories.map(cat => (
                   <option key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    {cat}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-dark mb-2">Type</label>
+              <label className="block text-sm font-medium text-dark mb-2">Opportunity Type</label>
+              <select
+                value={opportunityTypeFilter}
+                onChange={(e) => setOpportunityTypeFilter(e.target.value)}
+                className="w-full px-3 py-2 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="all">All Types</option>
+                {opportunityTypes.map(type => (
+                  <option key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-dark mb-2">Work Type</label>
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
                 className="w-full px-3 py-2 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               >
-                <option value="all">All Types</option>
+                <option value="all">All Work Types</option>
                 {internshipTypes.map(type => (
                   <option key={type} value={type}>
                     {getTypeLabel(type)}
@@ -340,7 +388,7 @@ const Internships = () => {
         )}
       </div>
 
-      {/* Internships Table */}
+      {/* Opportunities Table */}
       <div className="bg-white rounded-lg border border-soft overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -368,7 +416,7 @@ const Internships = () => {
                   Type
                 </th>
                 <th 
-                  onClick={() => handleSort("positions")} 
+                  onClick={() => handleSort("numberOfPeople")} 
                   className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
@@ -381,7 +429,7 @@ const Internships = () => {
                   className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    Stipend
+                    Stipend/Salary
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </th>
@@ -395,11 +443,11 @@ const Internships = () => {
                   </div>
                 </th>
                 <th 
-                  onClick={() => handleSort("deadline")} 
+                  onClick={() => handleSort("startDate")} 
                   className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
-                    Deadline
+                    Start Date
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </th>
@@ -409,96 +457,107 @@ const Internships = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-soft">
-              {filteredAndSortedInternships.map((internship) => (
-                <tr key={internship._id} className="hover:bg-gray-light">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="font-medium text-dark">{internship.title}</div>
-                      <div className="text-sm text-gray-500 line-clamp-2">
-                        {internship.description.substring(0, 60)}...
+              {filteredAndSortedOpportunities.map((opportunity) => {
+                const OpportunityTypeIcon = getOpportunityTypeIcon(opportunity.opportunityType);
+                return (
+                  <tr key={opportunity._id} className="hover:bg-gray-light">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div>
+                        <div className="font-medium text-dark">{opportunity.title}</div>
+                        <div className="text-sm text-gray-500 line-clamp-2">
+                          {opportunity.description?.substring(0, 60)}...
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-light text-primary">
-                      {internship.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <Clock className="h-4 w-4" />
-                      {getTypeLabel(internship.internshipType)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {internship.positions?.filled || 0}/{internship.positions?.total || 0}
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                      <div 
-                        className="bg-primary h-1.5 rounded-full" 
-                        style={{ 
-                          width: `${((internship.positions?.filled || 0) / (internship.positions?.total || 1)) * 100}%` 
-                        }}
-                      />
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-4 w-4 text-green-custom" />
-                      <span className="font-medium text-dark">
-                        ₹{internship.stipend?.amount || 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-light text-primary">
+                        {opportunity.category}
                       </span>
-                      <span className="text-sm text-gray-500">/{internship.stipend?.paymentType}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(internship.status)}`}>
-                      {internship.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {new Date(internship.deadline).toLocaleDateString()}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {Math.ceil((new Date(internship.deadline) - new Date()) / (1000 * 60 * 60 * 24))} days left
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => router.push(`/dashboard/internships/${internship._id}`)}
-                        className="p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-md"
-                        title="View"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => router.push(`/dashboard/internships/${internship._id}/edit`)}
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md"
-                        title="Edit"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <OpportunityTypeIcon className="h-4 w-4" />
+                        <span className="capitalize">{opportunity.opportunityType}</span>
+                        {opportunity.opportunityType === 'internship' && (
+                          <>
+                            <span>•</span>
+                            <span>{getTypeLabel(opportunity.internshipType)}</span>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {opportunity.filledPositions || 0}/{opportunity.numberOfPeople || 0}
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                        <div 
+                          className="bg-primary h-1.5 rounded-full" 
+                          style={{ 
+                            width: `${((opportunity.filledPositions || 0) / (opportunity.numberOfPeople || 1)) * 100}%` 
+                          }}
+                        />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <DollarSign className="h-4 w-4 text-green-custom" />
+                        <span className="font-medium text-dark">
+                          ₹{opportunity.stipend?.amount || 0}
+                        </span>
+                        <span className="text-sm text-gray-500">/{opportunity.stipend?.paymentType}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(opportunity.status)}`}>
+                        {opportunity.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {opportunity.schedule?.startDate ? formatDateWithSuffix(opportunity.schedule.startDate) : 'Not set'}
+                      </div>
+                      {opportunity.schedule?.startDate && (
+                        <div className="text-xs text-gray-500">
+                          {Math.ceil((new Date(opportunity.schedule.startDate) - new Date()) / (1000 * 60 * 60 * 24))} days to start
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => router.push(`/dashboard/opportunities/${opportunity._id}`)}
+                          className="p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-md"
+                          title="View"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => router.push(`/dashboard/opportunities/${opportunity._id}/edit`)}
+                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md"
+                          title="Edit"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
 
-        {filteredAndSortedInternships.length === 0 && (
+        {filteredAndSortedOpportunities.length === 0 && (
           <div className="p-12 text-center">
             <div className="h-12 w-12 text-gray-400 mx-auto mb-4">
               <TrendingUp className="h-12 w-12" />
             </div>
-            <h3 className="text-lg font-medium text-dark mb-2">No internships found</h3>
+            <h3 className="text-lg font-medium text-dark mb-2">No opportunities found</h3>
             <p className="text-gray-500">
-              {searchTerm || statusFilter !== "all" || categoryFilter !== "all" || typeFilter !== "all"
+              {searchTerm || statusFilter !== "all" || categoryFilter !== "all" || opportunityTypeFilter !== "all" || typeFilter !== "all"
                 ? "Try adjusting your search or filter criteria"
-                : "Get started by creating your first internship"}
+                : "Get started by creating your first opportunity"}
             </p>
           </div>
         )}
@@ -517,4 +576,4 @@ const Button = ({ children, className = "", ...props }) => (
   </button>
 );
 
-export default Internships;
+export default Opportunities;

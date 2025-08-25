@@ -24,12 +24,12 @@ export const allMenus = [
   { name: "Entry", href: "/dashboard/entry", icon: UserPlus, roles: [6,7] },
   { name: "Waiting List", href: "/dashboard/waiting-list", icon: Hourglass, roles: [6,7] },
   { 
-    name: "Internship", 
+    name: "Opportunities", 
     icon: GraduationCap, 
-    roles: [6,7], 
+    roles: [0,1,6,7], 
     children: [
-      { name: "Internships", href: "/dashboard/internship" },
-      { name: "Add Internship", href: "/dashboard/internship/add" },
+      { name: "opportunities", href: "/dashboard/opportunities", roles: [0,1,6,7] },
+      { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [6,7] },
     ]
   },
   { name: "Analytics", href: "/dashboard/analytics", icon: ChartArea, roles: [6,7] },

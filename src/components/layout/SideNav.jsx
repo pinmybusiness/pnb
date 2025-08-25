@@ -132,10 +132,12 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
                     </Link>
                   )}
 
-                  {/* Submenu */}
-                  {hasChildren && isOpen && sidebarOpen && (
-                    <div className="ml-10 mt-1 space-y-1">
-                      {item.children.map((sub) => {
+                {/* Submenu */}
+                {hasChildren && isOpen && sidebarOpen && (
+                  <div className="ml-10 mt-1 space-y-1">
+                    {item.children
+                      .filter((sub) => !sub.roles || sub.roles.includes(user?.role))
+                      .map((sub) => {
                         const subActive = pathname === sub.href;
                         return (
                           <Link
@@ -152,8 +154,9 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
                           </Link>
                         );
                       })}
-                    </div>
-                  )}
+                  </div>
+                )}
+
                 </div>
               );
             })}

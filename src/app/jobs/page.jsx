@@ -7,19 +7,19 @@ import Link from 'next/link';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export default function StudentInternshipsPage() {
-  const [internships, setInternships] = useState([]);
-  const [filteredInternships, setFilteredInternships] = useState([]);
+export default function StudentOpportunitiesPage() {
+  const [opportunities, setOpportunities] = useState([]);
+  const [filteredOpportunities, setFilteredOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [appliedInternships, setAppliedInternships] = useState(new Set());
+  const [appliedOpportunities, setAppliedOpportunities] = useState(new Set());
   const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [selectedInternship, setSelectedInternship] = useState(null);
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [coverLetter, setCoverLetter] = useState('');
   const [filters, setFilters] = useState({
     category: '',
-    type: '',
+    opportunityType: '',
     location: '',
-    duration: '',
+    durationUnit: '',
     minStipend: '',
     search: ''
   });
@@ -28,42 +28,44 @@ export default function StudentInternshipsPage() {
 
   useEffect(() => {
     checkAuth();
-    fetchInternships();
+    fetchOpportunities();
   }, []);
 
   useEffect(() => {
-    filterInternships();
-  }, [filters, internships]);
+    filterOpportunities();
+  }, [filters, opportunities]);
 
   const checkAuth = () => {
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);
   };
 
-  const fetchInternships = async () => {
+  console.log("filteredOpportunities", filteredOpportunities.branch)
+
+  const fetchOpportunities = async () => {
     try {
       setLoading(true);
-      // Call your public internships API (no auth required)
-      const response = await fetch(`http://localhost:5000/api/internships/public?limit=20`);
+      // Call your public opportunities API (no auth required)
+      const response = await fetch(`http://localhost:5000/api/opportunities/public?limit=20`);
       const data = await response.json();
       
       if (data.success) {
-        setInternships(data.data);
-        setFilteredInternships(data.data);
+        setOpportunities(data.data);
+        setFilteredOpportunities(data.data);
         
-        // Only fetch applied internships if user is authenticated
+        // Only fetch applied opportunities if user is authenticated
         if (isAuthenticated) {
-          fetchAppliedInternships();
+          fetchAppliedOpportunities();
         }
       }
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching internships:', error);
+      console.error('Error fetching opportunities:', error);
       setLoading(false);
     }
   };
 
-  const fetchAppliedInternships = async () => {
+  const fetchAppliedOpportunities = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -87,8 +89,8 @@ export default function StudentInternshipsPage() {
       const data = await response.json();
       
       if (data.success) {
-        const appliedIds = data.data.map(app => app.internship._id);
-        setAppliedInternships(new Set(appliedIds));
+        const appliedIds = data.data.map(app => app.opportunity._id);
+        setAppliedOpportunities(new Set(appliedIds));
       }
     } catch (error) {
       console.error('Error fetching applications:', error);
@@ -99,51 +101,51 @@ export default function StudentInternshipsPage() {
     }
   };
 
-  const filterInternships = () => {
-    let results = [...internships];
+  const filterOpportunities = () => {
+    let results = [...opportunities];
     
     if (filters.category) {
-      results = results.filter(internship => 
-        internship.category === filters.category
+      results = results.filter(opportunity => 
+        opportunity.category === filters.category
       );
     }
     
-    if (filters.type) {
-      results = results.filter(internship => 
-        internship.internshipType === filters.type
+    if (filters.opportunityType) {
+      results = results.filter(opportunity => 
+        opportunity.opportunityType === filters.opportunityType
       );
     }
     
     if (filters.location) {
-      results = results.filter(internship => 
-        internship.branch?.address?.toLowerCase().includes(filters.location.toLowerCase()) ||
-        internship.restaurant?.address?.toLowerCase().includes(filters.location.toLowerCase())
+      results = results.filter(opportunity => 
+        opportunity.branch?.address?.toLowerCase().includes(filters.location.toLowerCase()) ||
+        opportunity.branch?.location?.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
     
-    if (filters.duration) {
-      results = results.filter(internship => 
-        internship.duration?.unit === filters.duration
+    if (filters.durationUnit) {
+      results = results.filter(opportunity => 
+        opportunity.durationUnit === filters.durationUnit
       );
     }
     
     if (filters.minStipend) {
-      results = results.filter(internship => 
-        internship.stipend?.amount >= parseInt(filters.minStipend)
+      results = results.filter(opportunity => 
+        opportunity.stipend?.amount >= parseInt(filters.minStipend)
       );
     }
     
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
-      results = results.filter(internship => 
-        internship.title.toLowerCase().includes(searchTerm) ||
-        internship.description.toLowerCase().includes(searchTerm) ||
-        internship.restaurant?.name.toLowerCase().includes(searchTerm) ||
-        internship.tags?.some(tag => tag.toLowerCase().includes(searchTerm))
+      results = results.filter(opportunity => 
+        opportunity.title.toLowerCase().includes(searchTerm) ||
+        opportunity.description.toLowerCase().includes(searchTerm) ||
+        opportunity.branch?.name.toLowerCase().includes(searchTerm) ||
+        opportunity.tags?.some(tag => tag.toLowerCase().includes(searchTerm))
       );
     }
     
-    setFilteredInternships(results);
+    setFilteredOpportunities(results);
   };
 
   const handleFilterChange = (key, value) => {
@@ -153,23 +155,22 @@ export default function StudentInternshipsPage() {
   const clearFilters = () => {
     setFilters({
       category: '',
-      type: '',
+      opportunityType: '',
       location: '',
-      duration: '',
+      durationUnit: '',
       minStipend: '',
       search: ''
     });
   };
 
-  const handleApply = (internship) => {
+  const handleApply = (opportunity) => {
     if (!isAuthenticated) {
-      // Redirect to login or show login modal
-      alert('Please login to apply for internships');
+      alert('Please login to apply for opportunities');
       router.push('/login');
       return;
     }
     
-    setSelectedInternship(internship);
+    setSelectedOpportunity(opportunity);
     setCoverLetter('');
     setShowApplicationModal(true);
   };
@@ -190,7 +191,7 @@ export default function StudentInternshipsPage() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          internshipId: selectedInternship._id,
+          opportunityId: selectedOpportunity._id,
           coverLetter: coverLetter
         })
       });
@@ -206,14 +207,14 @@ export default function StudentInternshipsPage() {
       const data = await response.json();
       
       if (data.success) {
-        // Add to applied internships
-        setAppliedInternships(prev => new Set([...prev, selectedInternship._id]));
+        // Add to applied opportunities
+        setAppliedOpportunities(prev => new Set([...prev, selectedOpportunity._id]));
         
         // Close modal
         setShowApplicationModal(false);
         
         // Show success message
-        alert(`Application submitted for ${selectedInternship.title}!`);
+        alert(`Application submitted for ${selectedOpportunity.title}!`);
       } else {
         alert(`Error: ${data.message}`);
       }
@@ -230,7 +231,7 @@ export default function StudentInternshipsPage() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
-    setAppliedInternships(new Set());
+    setAppliedOpportunities(new Set());
     alert('Logged out successfully');
   };
 
@@ -239,17 +240,36 @@ export default function StudentInternshipsPage() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const getDaysLeft = (dateString) => {
-    const today = new Date();
-    const deadline = new Date(dateString);
-    const diffTime = deadline - today;
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  };
-
   const getStipendText = (stipend) => {
     if (!stipend || !stipend.amount) return 'Unpaid';
     
-    return `${stipend.currency || '₹'}${stipend.amount.toLocaleString()}/${stipend.period || 'month'}`;
+    const paymentTypeMap = {
+      'daily': 'day',
+      'weekly': 'week',
+      'monthly': 'month',
+      'after_completion': 'completion'
+    };
+    
+    const period = paymentTypeMap[stipend.paymentType] || 'month';
+    return `${stipend.currency || '₹'}${stipend.amount.toLocaleString()}/${period}`;
+  };
+
+  const getDurationText = (opportunity) => {
+    if (!opportunity.duration || !opportunity.durationUnit) return '';
+    return `${opportunity.duration} ${opportunity.durationUnit}`;
+  };
+
+  const getTypeBadgeColor = (type) => {
+    const colors = {
+      'internship': 'bg-blue-100 text-blue-800',
+      'job': 'bg-green-100 text-green-800',
+      'daily': 'bg-purple-100 text-purple-800',
+      'weekly': 'bg-orange-100 text-orange-800',
+      'weekend': 'bg-pink-100 text-pink-800',
+      'full_time': 'bg-red-100 text-red-800',
+      'part_time': 'bg-indigo-100 text-indigo-800'
+    };
+    return colors[type] || 'bg-gray-100 text-gray-800';
   };
 
   return (
@@ -258,15 +278,15 @@ export default function StudentInternshipsPage() {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
- {/* Logo */}
-         <Link href='/'>
-          <div className="flex items-center">
-            <Sparkles className="h-8 w-8 text-primary" />
-            <span className="ml-2 text-xl font-bold text-gray-900">ListenLift.ai</span>
-          </div>
-         </Link>
+            {/* Logo */}
+            <Link href='/'>
+              <div className="flex items-center">
+                <Sparkles className="h-8 w-8 text-primary" />
+                <span className="ml-2 text-xl font-bold text-gray-900">ListenLift.ai</span>
+              </div>
+            </Link>
             <div className="flex items-center space-x-4">
-              <a href="#" className="text-dark hover:text-primary px-3 py-2">Internships</a>
+              <a href="#" className="text-dark hover:text-primary px-3 py-2">Opportunities</a>
               {isAuthenticated && (
                 <a href="#" className="text-dark hover:text-primary px-3 py-2">My Applications</a>
               )}
@@ -286,17 +306,17 @@ export default function StudentInternshipsPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
-        <div className=" mb-8">
-          <h1 className="text-3xl font-bold mb-4">Find Your Daily Internship</h1>
-          <p className="text-lg mb-6">Gain real-world experience with top restaurants near you</p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-4">Find Opportunities</h1>
+          <p className="text-lg mb-6">Discover internships and jobs with top restaurants near you</p>
           
           {!isAuthenticated && (
-            <div className="bg-white/20 p-4 rounded-lg mb-4">
-              <p className="flex items-center">
+            <div className="bg-blue-50 p-4 rounded-lg mb-4">
+              <p className="flex items-center text-blue-700">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                 </svg>
-                <span>Login to apply for internships and track your applications</span>
+                <span>Login to apply for opportunities and track your applications</span>
               </p>
             </div>
           )}
@@ -306,8 +326,8 @@ export default function StudentInternshipsPage() {
               type="text" 
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="w-full p-4 rounded-lg text-dark focus:ring-2 focus:ring-orange border border-soft focus:outline-none"
-              placeholder="Search internships by title, restaurant, or location..."
+              className="w-full p-4 rounded-lg text-dark focus:ring-2 focus:ring-orange border border-gray-300 focus:outline-none"
+              placeholder="Search opportunities by title, branch, or location..."
             />
             <button className="absolute right-2 top-2 bg-primary text-white p-2 rounded-md">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -330,20 +350,66 @@ export default function StudentInternshipsPage() {
                   <select 
                     value={filters.category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
-                    className="w-full p-2 border border-soft rounded-md focus:ring-primary focus:border-primary"
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
                   >
                     <option value="">All Categories</option>
-                    <option value="development">Development</option>
-                    <option value="design">Design</option>
-                    <option value="marketing">Marketing</option>
-                    <option value="content">Content</option>
-                    <option value="culinary">Culinary</option>
-                    <option value="management">Management</option>
+                    <option value="Kitchen Helper">Kitchen Helper</option>
+                    <option value="Service Staff">Service Staff</option>
+                    <option value="Management Trainee">Management Trainee</option>
+                    <option value="Marketing Assistant">Marketing Assistant</option>
+                    <option value="Events Coordinator">Events Coordinator</option>
+                    <option value="Delivery Helper">Delivery Helper</option>
+                    <option value="Other">Other</option>
                   </select>
                 </div>
                 
-                {/* Other filter inputs remain the same */}
-                {/* ... */}
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Opportunity Type</h3>
+                  <select 
+                    value={filters.opportunityType}
+                    onChange={(e) => handleFilterChange('opportunityType', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                  >
+                    <option value="">All Types</option>
+                    <option value="internship">Internship</option>
+                    <option value="job">Job</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Location</h3>
+                  <input 
+                    type="text" 
+                    value={filters.location}
+                    onChange={(e) => handleFilterChange('location', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                    placeholder="Enter location"
+                  />
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Duration Unit</h3>
+                  <select 
+                    value={filters.durationUnit}
+                    onChange={(e) => handleFilterChange('durationUnit', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                  >
+                    <option value="">Any Duration</option>
+                    <option value="days">Days</option>
+                    <option value="weeks">Weeks</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-2">Minimum Stipend</h3>
+                  <input 
+                    type="number" 
+                    value={filters.minStipend}
+                    onChange={(e) => handleFilterChange('minStipend', e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                    placeholder="₹ Minimum amount"
+                  />
+                </div>
               </div>
               
               <button 
@@ -355,11 +421,11 @@ export default function StudentInternshipsPage() {
             </div>
           </div>
 
-          {/* Internships List */}
+          {/* Opportunities List */}
           <div className="w-full md:w-3/4">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold text-dark">
-                {filteredInternships.length} Internships Available
+                {filteredOpportunities.length} Opportunities Available
               </h2>
               <div className="text-sm text-gray-500">
                 Sorted by: <select className="border-none bg-transparent focus:ring-0">
@@ -385,36 +451,42 @@ export default function StudentInternshipsPage() {
                   </div>
                 ))}
               </div>
-            ) : filteredInternships.length > 0 ? (
+            ) : filteredOpportunities.length > 0 ? (
               <div className="grid grid-cols-1 gap-6">
-                {filteredInternships.map((internship) => (
-                  <div key={internship._id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
+                {filteredOpportunities.map((opportunity) => (
+                  <div key={opportunity._id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
                     <div className="p-6">
                       <div className="flex flex-col sm:flex-row sm:justify-between">
                         <div className="flex items-start space-x-4">
                           <div className="flex-shrink-0">
                             <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center">
                               <span className="text-lg font-bold text-primary">
-                                {internship.restaurant?.name?.charAt(0) || 'I'}
+                                {opportunity.branch?.name?.charAt(0) || 'O'}
                               </span>
                             </div>
                           </div>
                           <div>
-                            <h3 className="text-lg font-semibold text-dark">{internship.title}</h3>
+                            <h3 className="text-lg font-semibold text-dark">{opportunity.title}</h3>
                             <p className="text-gray-600">
-                              {internship.restaurant?.name}
-                              {internship.branch?.name && ` • ${internship.branch.name}`}
-                            </p>
+                              {opportunity.branch?.name}
+                              {opportunity.branch?.location && 
+                                ` • ${opportunity.branch.location.city}, ${opportunity.branch.location.state}, ${opportunity.branch.location.country}`}
+                             </p>
                             <div className="flex flex-wrap gap-2 mt-2">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                {internship.internshipType || 'Part-time'}
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeBadgeColor(opportunity.opportunityType)}`}>
+                                {opportunity.opportunityType}
                               </span>
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                {internship.branch?.address || internship.restaurant?.address || 'Location not specified'}
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeBadgeColor(opportunity.internshipType)}`}>
+                                {opportunity.internshipType}
                               </span>
-                              {internship.duration && (
+                              {opportunity.branch?.address && (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                  {opportunity.branch.address}
+                                </span>
+                              )}
+                              {opportunity.duration && (
                                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                  {internship.duration.value} {internship.duration.unit}
+                                  {getDurationText(opportunity)}
                                 </span>
                               )}
                             </div>
@@ -422,39 +494,39 @@ export default function StudentInternshipsPage() {
                         </div>
                         <div className="mt-4 sm:mt-0 sm:text-right">
                           <div className="text-lg font-bold text-dark">
-                            {getStipendText(internship.stipend)}
+                            {getStipendText(opportunity.stipend)}
                           </div>
                           <div className="text-sm text-gray-500 mt-1">
-                            Apply by {formatDate(internship.deadline)}
+                            Starts on {formatDate(opportunity.schedule?.startDate)}
                           </div>
                         </div>
                       </div>
                       
-                      <p className="mt-4 text-gray-600 line-clamp-2">{internship.description}</p>
+                      <p className="mt-4 text-gray-600 line-clamp-2">{opportunity.description}</p>
                       
                       <div className="mt-6 flex flex-col sm:flex-row sm:justify-between sm:items-center">
                         <div className="text-sm text-gray-500">
-                          {internship.applications && internship.applications.length > 0 && (
+                          {opportunity.applications && opportunity.applications.length > 0 && (
                             <span className="inline-flex items-center">
                               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                               </svg>
-                              {internship.applications.length} applications
+                              {opportunity.applications.length} applications
                             </span>
                           )}
-                          {getDaysLeft(internship.deadline) > 0 && (
+                          {opportunity.schedule?.startDate && (
                             <span className="ml-3 inline-flex items-center">
                               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                               </svg>
-                              {getDaysLeft(internship.deadline)} days left
+                              Starting soon
                             </span>
                           )}
                         </div>
                         
                         <div className="mt-4 sm:mt-0">
-                          {appliedInternships.has(internship._id) ? (
-                            <span className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-green-light text-green-custom">
+                          {appliedOpportunities.has(opportunity._id) ? (
+                            <span className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-green-100 text-green-800">
                               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                               </svg>
@@ -462,7 +534,7 @@ export default function StudentInternshipsPage() {
                             </span>
                           ) : (
                             <button 
-                              onClick={() => handleApply(internship)}
+                              onClick={() => handleApply(opportunity)}
                               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
                             >
                               {isAuthenticated ? 'Apply Now' : 'Login to Apply'}
@@ -479,7 +551,7 @@ export default function StudentInternshipsPage() {
                 <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <h3 className="mt-4 text-lg font-medium text-dark">No internships found</h3>
+                <h3 className="mt-4 text-lg font-medium text-dark">No opportunities found</h3>
                 <p className="mt-2 text-gray-500">Try adjusting your search filters to find more opportunities.</p>
                 <button
                   onClick={clearFilters}
@@ -494,12 +566,12 @@ export default function StudentInternshipsPage() {
       </div>
 
       {/* Application Modal */}
-      {showApplicationModal && selectedInternship && (
+      {showApplicationModal && selectedOpportunity && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-dark">Apply for Internship</h3>
+                <h3 className="text-lg font-semibold text-dark">Apply for Opportunity</h3>
                 <button 
                   onClick={() => setShowApplicationModal(false)}
                   className="text-gray-400 hover:text-gray-500"
@@ -511,16 +583,19 @@ export default function StudentInternshipsPage() {
               </div>
               
               <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-dark">{selectedInternship.title}</h4>
+                <h4 className="font-medium text-dark">{selectedOpportunity.title}</h4>
                 <p className="text-gray-600">
-                  {selectedInternship.restaurant?.name}
-                  {selectedInternship.branch?.name && ` • ${selectedInternship.branch.name}`}
+                  {selectedOpportunity.branch?.name}
+                  {selectedOpportunity.branch?.location && ` • ${selectedOpportunity.branch.location}`}
                 </p>
                 <p className="text-sm text-gray-500 mt-2">
-                  Stipend: {getStipendText(selectedInternship.stipend)}
+                  Stipend: {getStipendText(selectedOpportunity.stipend)}
                 </p>
                 <p className="text-sm text-gray-500">
-                  Duration: {selectedInternship.duration?.value} {selectedInternship.duration?.unit}
+                  Duration: {getDurationText(selectedOpportunity)}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Type: {selectedOpportunity.opportunityType} • {selectedOpportunity.internshipType}
                 </p>
               </div>
               
@@ -532,8 +607,8 @@ export default function StudentInternshipsPage() {
                   value={coverLetter}
                   onChange={(e) => setCoverLetter(e.target.value)}
                   rows={4}
-                  className="w-full p-3 border border-soft rounded-md focus:ring-primary focus:border-primary"
-                  placeholder="Why are you interested in this internship?"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                  placeholder="Why are you interested in this opportunity?"
                 ></textarea>
               </div>
               
@@ -541,7 +616,7 @@ export default function StudentInternshipsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Resume
                 </label>
-                <div className="flex items-center justify-between p-3 border border-soft rounded-md">
+                <div className="flex items-center justify-between p-3 border border-gray-300 rounded-md">
                   <div className="flex items-center">
                     <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>

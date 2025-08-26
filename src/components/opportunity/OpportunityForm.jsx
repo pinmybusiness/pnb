@@ -37,7 +37,6 @@ const OpportunityForm = ({ editData = null }) => {
     numberOfPeople: 1,
     duration: 1,
     durationUnit: 'days',
-    specificDays: [],
     schedule: { 
       days: [], 
       shift: 'flexible', 
@@ -145,7 +144,6 @@ const OpportunityForm = ({ editData = null }) => {
         numberOfPeople,
         duration,
         durationUnit,
-        specificDays,
         schedule,
         stipend,
         title,
@@ -162,7 +160,6 @@ const OpportunityForm = ({ editData = null }) => {
         numberOfPeople,
         duration,
         durationUnit,
-        specificDays: specificDays || [],
         schedule: {
           days: schedule?.days || [],
           shift: schedule?.shift || 'flexible',
@@ -216,7 +213,7 @@ const OpportunityForm = ({ editData = null }) => {
       if (formData.durationUnit === 'days') {
         return formData.stipend.amount * formData.duration;
       } else if (formData.durationUnit === 'weeks') {
-        let daysPerWeek = formData.specificDays.length;
+        let daysPerWeek = formData.schedule.days.length;
         if (formData.internshipType === 'weekend') {
           daysPerWeek = 2;
         }
@@ -237,31 +234,31 @@ const OpportunityForm = ({ editData = null }) => {
   };
 
   // Language toggle handler
-const handleLanguageToggle = (type, language, isChecked) => {
-  setFormData(prev => {
-    const otherType = type === 'required' ? 'preferred' : 'required';
-    
-    // If adding to one list, remove from the other
-    const updatedLanguages = {
-      ...prev.languages,
-      [type]: isChecked
-        ? [...prev.languages[type], language]
-        : prev.languages[type].filter(lang => lang !== language)
-    };
-    
-    // Remove from other list if adding to this one
-    if (isChecked) {
-      updatedLanguages[otherType] = updatedLanguages[otherType].filter(
-        lang => lang !== language
-      );
-    }
-    
-    return {
-      ...prev,
-      languages: updatedLanguages
-    };
-  });
-};
+  const handleLanguageToggle = (type, language, isChecked) => {
+    setFormData(prev => {
+      const otherType = type === 'required' ? 'preferred' : 'required';
+      
+      // If adding to one list, remove from the other
+      const updatedLanguages = {
+        ...prev.languages,
+        [type]: isChecked
+          ? [...prev.languages[type], language]
+          : prev.languages[type].filter(lang => lang !== language)
+      };
+      
+      // Remove from other list if adding to this one
+      if (isChecked) {
+        updatedLanguages[otherType] = updatedLanguages[otherType].filter(
+          lang => lang !== language
+        );
+      }
+      
+      return {
+        ...prev,
+        languages: updatedLanguages
+      };
+    });
+  };
 
   // Auto-set duration unit based on internship type
   useEffect(() => {
@@ -312,13 +309,19 @@ const handleLanguageToggle = (type, language, isChecked) => {
     if (formData.internshipType === 'weekend') {
       setFormData(prev => ({
         ...prev,
-        specificDays: ['saturday', 'sunday']
+        schedule: {
+          ...prev.schedule,
+          days: ['saturday', 'sunday']
+        }
       }));
     } else if (formData.internshipType === 'weekly') {
-      if (formData.specificDays.length === 0) {
+      if (formData.schedule.days.length === 0) {
         setFormData(prev => ({
           ...prev,
-          specificDays: ['saturday']
+          schedule: {
+            ...prev.schedule,
+            days: ['saturday']
+          }
         }));
       }
     }
@@ -328,7 +331,7 @@ const handleLanguageToggle = (type, language, isChecked) => {
   useEffect(() => {
     if (opportunityType === 'internship' && 
         formData.internshipType === 'weekly' && 
-        formData.specificDays.length > 0) {
+        formData.schedule.days.length > 0) {
       
       const today = new Date();
       const todayDay = today.getDay();
@@ -343,7 +346,7 @@ const handleLanguageToggle = (type, language, isChecked) => {
         const checkDay = (todayDay + i) % 7;
         const dayName = dayNames[checkDay];
         
-        if (formData.specificDays.includes(dayName)) {
+        if (formData.schedule.days.includes(dayName)) {
           daysToAdd = i;
           found = true;
           break;
@@ -360,7 +363,7 @@ const handleLanguageToggle = (type, language, isChecked) => {
         }
       }
     }
-  }, [formData.specificDays, formData.internshipType, opportunityType]);
+  }, [formData.schedule.days, formData.internshipType, opportunityType]);
 
   // Auto-set hours when job type changes to part_time
   useEffect(() => {
@@ -402,9 +405,12 @@ const handleLanguageToggle = (type, language, isChecked) => {
   const toggleDay = (day) => {
     setFormData(prev => ({
       ...prev,
-      specificDays: prev.specificDays.includes(day)
-        ? prev.specificDays.filter(d => d !== day)
-        : [...prev.specificDays, day]
+      schedule: {
+        ...prev.schedule,
+        days: prev.schedule.days.includes(day)
+          ? prev.schedule.days.filter(d => d !== day)
+          : [...prev.schedule.days, day]
+      }
     }));
   };
 
@@ -420,8 +426,8 @@ const handleLanguageToggle = (type, language, isChecked) => {
         newErrors.startDate = 'Please specify a start date';
       }
     } else {
-      if (formData.internshipType === 'weekly' && formData.specificDays.length === 0) {
-        newErrors.specificDays = 'Please select at least one day';
+      if (formData.internshipType === 'weekly' && formData.schedule.days.length === 0) {
+        newErrors.days = 'Please select at least one day';
       }
       if (!formData.schedule.startDate) {
         newErrors.startDate = 'Please specify a start date';
@@ -545,7 +551,6 @@ const handleLanguageToggle = (type, language, isChecked) => {
   const isJob = opportunityType === 'job';
   const isWeeklyOrWeekend = formData.internshipType === 'weekly' || formData.internshipType === 'weekend';
   const totalAmount = calculateTotalAmount();
-
 
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 font-sans">
@@ -731,7 +736,7 @@ const handleLanguageToggle = (type, language, isChecked) => {
                         onClick={() => toggleDay(day.value)}
                         disabled={formData.internshipType === 'weekend' && !['saturday', 'sunday'].includes(day.value)}
                         className={`p-2 rounded-md text-sm font-medium transition-colors ${
-                          formData.specificDays.includes(day.value)
+                          formData.schedule.days.includes(day.value)
                             ? 'bg-blue-500 text-white border border-blue-500'
                             : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                         } ${
@@ -744,9 +749,9 @@ const handleLanguageToggle = (type, language, isChecked) => {
                       </button>
                     ))}
                   </div>
-                  {errors.specificDays && (
+                  {errors.days && (
                     <p className="text-red-600 text-sm mt-1 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" /> {errors.specificDays}
+                      <AlertCircle className="h-4 w-4 mr-1" /> {errors.days}
                   </p>
                   )}
                 </div>
@@ -884,8 +889,8 @@ const handleLanguageToggle = (type, language, isChecked) => {
                       </div>
                       <p className="text-xs text-blue-600 mt-1">
                         {formData.duration} {formData.durationUnit} × ₹{formData.stipend.amount} per day
-                        {formData.durationUnit === 'weeks' && formData.specificDays.length > 0 && 
-                          ` × ${formData.specificDays.length} days/week`
+                        {formData.durationUnit === 'weeks' && formData.schedule.days.length > 0 && 
+                          ` × ${formData.schedule.days.length} days/week`
                         }
                       </p>
                     </div>
@@ -955,80 +960,80 @@ const handleLanguageToggle = (type, language, isChecked) => {
             </div>
           </div>
 
-{/* Languages Section */}
-<div className="bg-white p-6 rounded-lg border border-gray-200">
-  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-    <Globe className="h-5 w-5 mr-2 text-blue-600" />
-    Language Requirements
-  </h3>
-  
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Required Languages *
-      </label>
-      <div className="space-y-2">
-        {languages.map(language => {
-          const isPreferred = formData.languages.preferred.includes(language);
-          return (
-            <div key={language} className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.languages.required.includes(language)}
-                onChange={(e) => handleLanguageToggle('required', language, e.target.checked)}
-                disabled={isPreferred}
-                className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
-                  isPreferred ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              />
-              <span className={`ml-2 text-sm ${
-                isPreferred ? 'text-gray-400' : 'text-gray-700'
-              }`}>
-                {language}
-                {isPreferred && ' (Selected in Preferred)'}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-      {errors.requiredLanguages && (
-        <p className="text-red-600 text-sm mt-1 flex items-center">
-          <AlertCircle className="h-4 w-4 mr-1" /> {errors.requiredLanguages}
-        </p>
-      )}
-    </div>
+          {/* Languages Section */}
+          <div className="bg-white p-6 rounded-lg border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Globe className="h-5 w-5 mr-2 text-blue-600" />
+              Language Requirements
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Required Languages *
+                </label>
+                <div className="space-y-2">
+                  {languages.map(language => {
+                    const isPreferred = formData.languages.preferred.includes(language);
+                    return (
+                      <div key={language} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.languages.required.includes(language)}
+                          onChange={(e) => handleLanguageToggle('required', language, e.target.checked)}
+                          disabled={isPreferred}
+                          className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
+                            isPreferred ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        />
+                        <span className={`ml-2 text-sm ${
+                          isPreferred ? 'text-gray-400' : 'text-gray-700'
+                        }`}>
+                          {language}
+                          {isPreferred && ' (Selected in Preferred)'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {errors.requiredLanguages && (
+                  <p className="text-red-600 text-sm mt-1 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.requiredLanguages}
+                  </p>
+                )}
+              </div>
 
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Preferred Languages (Optional)
-      </label>
-      <div className="space-y-2">
-        {languages.map(language => {
-          const isRequired = formData.languages.required.includes(language);
-          return (
-            <div key={language} className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.languages.preferred.includes(language)}
-                onChange={(e) => handleLanguageToggle('preferred', language, e.target.checked)}
-                disabled={isRequired}
-                className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
-                  isRequired ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              />
-              <span className={`ml-2 text-sm ${
-                isRequired ? 'text-gray-400' : 'text-gray-700'
-              }`}>
-                {language}
-                {isRequired && ' (Selected in Required)'}
-              </span>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preferred Languages (Optional)
+                </label>
+                <div className="space-y-2">
+                  {languages.map(language => {
+                    const isRequired = formData.languages.required.includes(language);
+                    return (
+                      <div key={language} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.languages.preferred.includes(language)}
+                          onChange={(e) => handleLanguageToggle('preferred', language, e.target.checked)}
+                          disabled={isRequired}
+                          className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
+                            isRequired ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        />
+                        <span className={`ml-2 text-sm ${
+                          isRequired ? 'text-gray-400' : 'text-gray-700'
+                        }`}>
+                          {language}
+                          {isRequired && ' (Selected in Required)'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          );
-        })}
-      </div>
-    </div>
-  </div>
-</div>
+          </div>
 
           {/* Title and Description */}
           <div className="bg-green-50 p-6 rounded-lg border border-green-200">

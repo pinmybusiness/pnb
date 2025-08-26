@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react';
 import { Inter } from 'next/font/google';
 import { useRouter } from 'next/navigation';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Search, Filter, MapPin, Calendar, Users, FileText, X } from 'lucide-react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -24,6 +25,7 @@ export default function StudentOpportunitiesPage() {
     search: ''
   });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -40,20 +42,16 @@ export default function StudentOpportunitiesPage() {
     setIsAuthenticated(!!token);
   };
 
-  console.log("filteredOpportunities", filteredOpportunities.branch)
-
   const fetchOpportunities = async () => {
     try {
       setLoading(true);
-      // Call your public opportunities API (no auth required)
-      const response = await fetch(`http://localhost:5000/api/opportunities/public?limit=20`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=20`);
       const data = await response.json();
       
       if (data.success) {
         setOpportunities(data.data);
         setFilteredOpportunities(data.data);
         
-        // Only fetch applied opportunities if user is authenticated
         if (isAuthenticated) {
           fetchAppliedOpportunities();
         }
@@ -73,14 +71,13 @@ export default function StudentOpportunitiesPage() {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/applications', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
       if (response.status === 401) {
-        // Token expired or invalid
         localStorage.removeItem('token');
         setIsAuthenticated(false);
         return;
@@ -116,12 +113,12 @@ export default function StudentOpportunitiesPage() {
       );
     }
     
-    if (filters.location) {
-      results = results.filter(opportunity => 
-        opportunity.branch?.address?.toLowerCase().includes(filters.location.toLowerCase()) ||
-        opportunity.branch?.location?.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
+results = results.filter(opportunity => 
+  opportunity.branch?.address?.toLowerCase().includes(filters.location.toLowerCase()) ||
+  opportunity.branch?.location?.city?.toLowerCase().includes(filters.location.toLowerCase()) ||
+  opportunity.branch?.location?.state?.toLowerCase().includes(filters.location.toLowerCase())
+);
+
     
     if (filters.durationUnit) {
       results = results.filter(opportunity => 
@@ -184,7 +181,7 @@ export default function StudentOpportunitiesPage() {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/applications', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,13 +204,8 @@ export default function StudentOpportunitiesPage() {
       const data = await response.json();
       
       if (data.success) {
-        // Add to applied opportunities
         setAppliedOpportunities(prev => new Set([...prev, selectedOpportunity._id]));
-        
-        // Close modal
         setShowApplicationModal(false);
-        
-        // Show success message
         alert(`Application submitted for ${selectedOpportunity.title}!`);
       } else {
         alert(`Error: ${data.message}`);
@@ -241,7 +233,7 @@ export default function StudentOpportunitiesPage() {
   };
 
   const getStipendText = (stipend) => {
-    if (!stipend || !stipend.amount) return 'Unpaid';
+    if (!stipend || !stipend.totalAmount) return 'Unpaid';
     
     const paymentTypeMap = {
       'daily': 'day',
@@ -251,7 +243,7 @@ export default function StudentOpportunitiesPage() {
     };
     
     const period = paymentTypeMap[stipend.paymentType] || 'month';
-    return `${stipend.currency || '₹'}${stipend.amount.toLocaleString()}/${period}`;
+    return `${stipend.currency || '₹'}${stipend.totalAmount?.toLocaleString()}/${period}`;
   };
 
   const getDurationText = (opportunity) => {
@@ -261,59 +253,31 @@ export default function StudentOpportunitiesPage() {
 
   const getTypeBadgeColor = (type) => {
     const colors = {
-      'internship': 'bg-blue-100 text-blue-800',
-      'job': 'bg-green-100 text-green-800',
-      'daily': 'bg-purple-100 text-purple-800',
-      'weekly': 'bg-orange-100 text-orange-800',
-      'weekend': 'bg-pink-100 text-pink-800',
-      'full_time': 'bg-red-100 text-red-800',
-      'part_time': 'bg-indigo-100 text-indigo-800'
+      'internship': 'bg-blue-50 text-blue-700 border border-blue-200',
+      'job': 'bg-green-50 text-green-700 border border-green-200',
+      'daily': 'bg-purple-50 text-purple-700 border border-purple-200',
+      'weekly': 'bg-orange-50 text-orange-700 border border-orange-200',
+      'weekend': 'bg-pink-50 text-pink-700 border border-pink-200',
+      'full_time': 'bg-red-50 text-red-700 border border-red-200',
+      'part_time': 'bg-indigo-50 text-indigo-700 border border-indigo-200'
     };
-    return colors[type] || 'bg-gray-100 text-gray-800';
+    return colors[type] || 'bg-gray-50 text-gray-700 border border-gray-200';
   };
 
   return (
     <div className={`min-h-screen bg-gray-50 ${inter.className}`}>
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <Link href='/'>
-              <div className="flex items-center">
-                <Sparkles className="h-8 w-8 text-primary" />
-                <span className="ml-2 text-xl font-bold text-gray-900">ListenLift.ai</span>
-              </div>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <a href="#" className="text-dark hover:text-primary px-3 py-2">Opportunities</a>
-              {isAuthenticated && (
-                <a href="#" className="text-dark hover:text-primary px-3 py-2">My Applications</a>
-              )}
-              {isAuthenticated ? (
-                <button onClick={handleLogout} className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90">
-                  Logout
-                </button>
-              ) : (
-                <button onClick={handleLogin} className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90">
-                  Login
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Header activeLink="/jobs"  />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-4">Find Opportunities</h1>
-          <p className="text-lg mb-6">Discover internships and jobs with top restaurants near you</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Opportunities</h1>
+          <p className="text-gray-600 mb-6">Discover internships and jobs with top restaurants near you</p>
           
           {!isAuthenticated && (
-            <div className="bg-blue-50 p-4 rounded-lg mb-4">
-              <p className="flex items-center text-blue-700">
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+              <p className="flex items-center text-blue-700 text-sm">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                 </svg>
                 <span>Login to apply for opportunities and track your applications</span>
@@ -322,35 +286,41 @@ export default function StudentOpportunitiesPage() {
           )}
           
           <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-gray-400" />
+            </div>
             <input 
               type="text" 
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="w-full p-4 rounded-lg text-dark focus:ring-2 focus:ring-orange border border-gray-300 focus:outline-none"
+              className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Search opportunities by title, branch, or location..."
             />
-            <button className="absolute right-2 top-2 bg-primary text-white p-2 rounded-md">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-              </svg>
-            </button>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Filters Sidebar */}
-          <div className="w-full md:w-1/4">
-            <div className="bg-white rounded-xl shadow-sm p-6 sticky top-4">
-              <h2 className="text-lg font-semibold text-dark mb-4">Filters</h2>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Filters Sidebar - Desktop */}
+          <div className="hidden lg:block lg:w-1/4">
+            <div className="bg-white rounded-lg shadow-sm p-5 sticky top-4 border border-gray-200">
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+                <button 
+                  onClick={clearFilters}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Clear all
+                </button>
+              </div>
               
               <div className="space-y-5">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Category</h3>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
                   <select 
                     value={filters.category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                   >
                     <option value="">All Categories</option>
                     <option value="Kitchen Helper">Kitchen Helper</option>
@@ -364,11 +334,11 @@ export default function StudentOpportunitiesPage() {
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Opportunity Type</h3>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Opportunity Type</label>
                   <select 
                     value={filters.opportunityType}
                     onChange={(e) => handleFilterChange('opportunityType', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                   >
                     <option value="">All Types</option>
                     <option value="internship">Internship</option>
@@ -377,22 +347,27 @@ export default function StudentOpportunitiesPage() {
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Location</h3>
-                  <input 
-                    type="text" 
-                    value={filters.location}
-                    onChange={(e) => handleFilterChange('location', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                    placeholder="Enter location"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input 
+                      type="text" 
+                      value={filters.location}
+                      onChange={(e) => handleFilterChange('location', e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter location"
+                    />
+                  </div>
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Duration Unit</h3>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
                   <select 
                     value={filters.durationUnit}
                     onChange={(e) => handleFilterChange('durationUnit', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                   >
                     <option value="">Any Duration</option>
                     <option value="days">Days</option>
@@ -401,34 +376,142 @@ export default function StudentOpportunitiesPage() {
                 </div>
                 
                 <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">Minimum Stipend</h3>
-                  <input 
-                    type="number" 
-                    value={filters.minStipend}
-                    onChange={(e) => handleFilterChange('minStipend', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
-                    placeholder="₹ Minimum amount"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Stipend</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm">₹</span>
+                    </div>
+                    <input 
+                      type="number" 
+                      value={filters.minStipend}
+                      onChange={(e) => handleFilterChange('minStipend', e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Minimum amount"
+                    />
+                  </div>
                 </div>
               </div>
-              
-              <button 
-                onClick={clearFilters}
-                className="w-full mt-6 text-primary hover:text-primary/80 font-medium text-sm"
-              >
-                Clear all filters
-              </button>
             </div>
           </div>
 
+          {/* Mobile Filter Button */}
+          <div className="lg:hidden mb-4">
+            <button 
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center justify-center w-full px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-50"
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Filters
+            </button>
+          </div>
+
+          {/* Mobile Filters */}
+          {showFilters && (
+            <div className="lg:hidden bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-200">
+              <div className="flex justify-between items-center mb-5">
+                <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+                <div className="flex items-center">
+                  <button 
+                    onClick={clearFilters}
+                    className="text-sm text-blue-600 hover:text-blue-800 mr-3"
+                  >
+                    Clear all
+                  </button>
+                  <button onClick={() => setShowFilters(false)}>
+                    <X className="h-5 w-5 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                  <select 
+                    value={filters.category}
+                    onChange={(e) => handleFilterChange('category', e.target.value)}
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                  >
+                    <option value="">All Categories</option>
+                    <option value="Kitchen Helper">Kitchen Helper</option>
+                    <option value="Service Staff">Service Staff</option>
+                    <option value="Management Trainee">Management Trainee</option>
+                    <option value="Marketing Assistant">Marketing Assistant</option>
+                    <option value="Events Coordinator">Events Coordinator</option>
+                    <option value="Delivery Helper">Delivery Helper</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Opportunity Type</label>
+                  <select 
+                    value={filters.opportunityType}
+                    onChange={(e) => handleFilterChange('opportunityType', e.target.value)}
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                  >
+                    <option value="">All Types</option>
+                    <option value="internship">Internship</option>
+                    <option value="job">Job</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <input 
+                      type="text" 
+                      value={filters.location}
+                      onChange={(e) => handleFilterChange('location', e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter location"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+                  <select 
+                    value={filters.durationUnit}
+                    onChange={(e) => handleFilterChange('durationUnit', e.target.value)}
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                  >
+                    <option value="">Any Duration</option>
+                    <option value="days">Days</option>
+                    <option value="weeks">Weeks</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Stipend</label>
+                  <div className="mt-1 relative rounded-md shadow-sm">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 sm:text-sm">₹</span>
+                    </div>
+                    <input 
+                      type="number" 
+                      value={filters.minStipend}
+                      onChange={(e) => handleFilterChange('minStipend', e.target.value)}
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Minimum amount"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Opportunities List */}
-          <div className="w-full md:w-3/4">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-dark">
+          <div className="w-full lg:w-3/4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
                 {filteredOpportunities.length} Opportunities Available
               </h2>
-              <div className="text-sm text-gray-500">
-                Sorted by: <select className="border-none bg-transparent focus:ring-0">
+              <div className="text-sm text-gray-500 flex items-center">
+                <span className="mr-2">Sort by:</span>
+                <select className="border-none bg-transparent focus:ring-0 py-1 pl-0 pr-7">
                   <option>Most Recent</option>
                   <option>Highest Stipend</option>
                   <option>Nearest Location</option>
@@ -437,9 +520,9 @@ export default function StudentOpportunitiesPage() {
             </div>
 
             {loading ? (
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 gap-5">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="bg-white rounded-xl shadow-sm p-6 animate-pulse">
+                  <div key={i} className="bg-white rounded-lg shadow-sm p-5 animate-pulse border border-gray-200">
                     <div className="flex space-x-4">
                       <div className="rounded-full bg-gray-200 h-12 w-12"></div>
                       <div className="flex-1 space-y-3">
@@ -452,27 +535,27 @@ export default function StudentOpportunitiesPage() {
                 ))}
               </div>
             ) : filteredOpportunities.length > 0 ? (
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 gap-5">
                 {filteredOpportunities.map((opportunity) => (
-                  <div key={opportunity._id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-200">
-                    <div className="p-6">
+                  <div key={opportunity._id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 hover:border-blue-300 transition-colors duration-200">
+                    <div className="p-5">
                       <div className="flex flex-col sm:flex-row sm:justify-between">
                         <div className="flex items-start space-x-4">
                           <div className="flex-shrink-0">
-                            <div className="w-12 h-12 bg-primary-light rounded-lg flex items-center justify-center">
-                              <span className="text-lg font-bold text-primary">
+                            <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-100">
+                              <span className="text-lg font-bold text-blue-600">
                                 {opportunity.branch?.name?.charAt(0) || 'O'}
                               </span>
                             </div>
                           </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-dark">{opportunity.title}</h3>
-                            <p className="text-gray-600">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-semibold text-gray-900 truncate">{opportunity.title}</h3>
+                            <p className="text-gray-600 text-sm mt-1">
                               {opportunity.branch?.name}
                               {opportunity.branch?.location && 
-                                ` • ${opportunity.branch.location.city}, ${opportunity.branch.location.state}, ${opportunity.branch.location.country}`}
-                             </p>
-                            <div className="flex flex-wrap gap-2 mt-2">
+                                ` • ${opportunity.branch.location.city}, ${opportunity.branch.location.state}`}
+                            </p>
+                            <div className="flex flex-wrap gap-2 mt-3">
                               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeBadgeColor(opportunity.opportunityType)}`}>
                                 {opportunity.opportunityType}
                               </span>
@@ -480,45 +563,43 @@ export default function StudentOpportunitiesPage() {
                                 {opportunity.internshipType}
                               </span>
                               {opportunity.branch?.address && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
+                                  <MapPin className="w-3 h-3 mr-1" />
                                   {opportunity.branch.address}
                                 </span>
                               )}
                               {opportunity.duration && (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200">
                                   {getDurationText(opportunity)}
                                 </span>
                               )}
                             </div>
                           </div>
                         </div>
-                        <div className="mt-4 sm:mt-0 sm:text-right">
-                          <div className="text-lg font-bold text-dark">
+                        <div className="mt-4 sm:mt-0 sm:text-right sm:pl-4">
+                          <div className="text-lg font-bold text-gray-900">
                             {getStipendText(opportunity.stipend)}
                           </div>
-                          <div className="text-sm text-gray-500 mt-1">
-                            Starts on {formatDate(opportunity.schedule?.startDate)}
+                          <div className="text-sm text-gray-500 mt-1 flex items-center sm:justify-end">
+                            <Calendar className="w-4 h-4 mr-1" />
+                            <span>Starts {formatDate(opportunity.schedule?.startDate)}</span>
                           </div>
                         </div>
                       </div>
                       
-                      <p className="mt-4 text-gray-600 line-clamp-2">{opportunity.description}</p>
+                      <p className="mt-4 text-gray-600 line-clamp-2 text-sm">{opportunity.description}</p>
                       
                       <div className="mt-6 flex flex-col sm:flex-row sm:justify-between sm:items-center">
-                        <div className="text-sm text-gray-500">
+                        <div className="text-sm text-gray-500 flex items-center flex-wrap">
                           {opportunity.applications && opportunity.applications.length > 0 && (
-                            <span className="inline-flex items-center">
-                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                              </svg>
+                            <span className="inline-flex items-center mr-4 mb-2 sm:mb-0">
+                              <Users className="w-4 h-4 mr-1" />
                               {opportunity.applications.length} applications
                             </span>
                           )}
                           {opportunity.schedule?.startDate && (
-                            <span className="ml-3 inline-flex items-center">
-                              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                              </svg>
+                            <span className="inline-flex items-center">
+                              <Calendar className="w-4 h-4 mr-1" />
                               Starting soon
                             </span>
                           )}
@@ -526,7 +607,7 @@ export default function StudentOpportunitiesPage() {
                         
                         <div className="mt-4 sm:mt-0">
                           {appliedOpportunities.has(opportunity._id) ? (
-                            <span className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-green-100 text-green-800">
+                            <span className="inline-flex items-center px-4 py-2 rounded-md text-sm font-medium bg-green-100 text-green-800 border border-green-200">
                               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                               </svg>
@@ -535,7 +616,7 @@ export default function StudentOpportunitiesPage() {
                           ) : (
                             <button 
                               onClick={() => handleApply(opportunity)}
-                              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-black focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
                               {isAuthenticated ? 'Apply Now' : 'Login to Apply'}
                             </button>
@@ -547,15 +628,15 @@ export default function StudentOpportunitiesPage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-                <svg className="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <div className="bg-white rounded-lg shadow-sm p-8 text-center border border-gray-200">
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <h3 className="mt-4 text-lg font-medium text-dark">No opportunities found</h3>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">No opportunities found</h3>
                 <p className="mt-2 text-gray-500">Try adjusting your search filters to find more opportunities.</p>
                 <button
                   onClick={clearFilters}
-                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                  className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Clear all filters
                 </button>
@@ -567,36 +648,43 @@ export default function StudentOpportunitiesPage() {
 
       {/* Application Modal */}
       {showApplicationModal && selectedOpportunity && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl shadow-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 z-50 transition-opacity">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-dark">Apply for Opportunity</h3>
+                <h3 className="text-lg font-medium text-gray-900">Apply for Opportunity</h3>
                 <button 
                   onClick={() => setShowApplicationModal(false)}
-                  className="text-gray-400 hover:text-gray-500"
+                  className="text-gray-400 hover:text-gray-500 focus:outline-none"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
+                  <X className="w-6 h-6" />
                 </button>
               </div>
               
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-medium text-dark">{selectedOpportunity.title}</h4>
-                <p className="text-gray-600">
+              <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <h4 className="font-medium text-gray-900">{selectedOpportunity.title}</h4>
+                <p className="text-gray-600 text-sm">
                   {selectedOpportunity.branch?.name}
                   {selectedOpportunity.branch?.location && ` • ${selectedOpportunity.branch.location}`}
                 </p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Stipend: {getStipendText(selectedOpportunity.stipend)}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Duration: {getDurationText(selectedOpportunity)}
-                </p>
-                <p className="text-sm text-gray-500">
-                  Type: {selectedOpportunity.opportunityType} • {selectedOpportunity.internshipType}
-                </p>
+                <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-500">
+                  <div className="flex items-center">
+                    <span className="font-medium mr-1">Stipend:</span>
+                    {getStipendText(selectedOpportunity.stipend)}
+                  </div>
+                  <div className="flex items-center">
+                    <span className="font-medium mr-1">Duration:</span>
+                    {getDurationText(selectedOpportunity)}
+                  </div>
+                  <div className="flex items-center">
+                    <span className="font-medium mr-1">Type:</span>
+                    {selectedOpportunity.opportunityType}
+                  </div>
+                  <div className="flex items-center">
+                    <span className="font-medium mr-1">Schedule:</span>
+                    {selectedOpportunity.internshipType}
+                  </div>
+                </div>
               </div>
               
               <div className="mb-6">
@@ -607,7 +695,7 @@ export default function StudentOpportunitiesPage() {
                   value={coverLetter}
                   onChange={(e) => setCoverLetter(e.target.value)}
                   rows={4}
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-primary focus:border-primary"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   placeholder="Why are you interested in this opportunity?"
                 ></textarea>
               </div>
@@ -616,20 +704,19 @@ export default function StudentOpportunitiesPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Resume
                 </label>
-                <div className="flex items-center justify-between p-3 border border-gray-300 rounded-md">
+                <div className="flex items-center justify-between p-3 border border-gray-300 rounded-md bg-gray-50">
                   <div className="flex items-center">
-                    <svg className="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
+                    <FileText className="w-5 h-5 text-gray-400 mr-2" />
                     <span className="text-sm text-gray-600">my_resume.pdf</span>
                   </div>
-                  <button className="text-sm text-primary hover:text-primary/80">Change</button>
+                  <button className="text-sm text-blue-600 hover:text-blue-800">Change</button>
                 </div>
+                <p className="mt-1 text-xs text-gray-500">We'll use the resume from your profile</p>
               </div>
               
               <button
                 onClick={submitApplication}
-                className="w-full bg-primary text-white py-3 rounded-md font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="w-full bg-blue-600 text-white py-2.5 rounded-md font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
                 Submit Application
               </button>

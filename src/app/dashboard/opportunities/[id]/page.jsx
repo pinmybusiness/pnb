@@ -19,7 +19,8 @@ import {
   Building,
   Mail,
   Phone,
-  Globe
+  Globe,
+  Languages
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
@@ -137,17 +138,17 @@ const OpportunityView = () => {
   };
 
   const getStipendText = (stipend) => {
-    if (!stipend || !stipend.amount) return 'Unpaid';
+    if (!stipend || !stipend.totalAmount) return 'Unpaid';
     
     const paymentTypeMap = {
-      'daily': 'per day',
-      'weekly': 'per week',
-      'monthly': 'per month',
-      'after_completion': 'after completion'
+      'daily': 'Per Day',
+      'weekly': 'Per Week',
+      'monthly': 'Per Month',
+      'after_completion': 'After Completion'
     };
     
     const period = paymentTypeMap[stipend.paymentType] || 'per month';
-    return `₹${stipend.amount.toLocaleString()} ${period}`;
+    return `₹${stipend.totalAmount.toLocaleString()} ${period}`;
   };
 
   const formatDate = (dateString) => {
@@ -166,6 +167,15 @@ const OpportunityView = () => {
     const diffTime = start - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays > 0 ? `${diffDays} days to start` : 'Started';
+  };
+
+  const capitalizeFirstLetter = (string) => {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+  };
+
+  const formatDays = (days) => {
+    if (!days || days.length === 0) return 'Not specified';
+    return days.map(day => capitalizeFirstLetter(day)).join(', ');
   };
 
   if (loading) {
@@ -219,23 +229,23 @@ const OpportunityView = () => {
           
           {opportunity.status === 'pending' && user.role <= 2 && (
             <>
-              <Button variant="success" onClick={handleApprove}>
+              <Button variant="success" onClick={handleApprove} className="!bg-green-600 !hover:bg-green-700 text-white">
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Approve
               </Button>
-              <Button variant="danger" onClick={handleReject}>
+              <Button variant="danger" onClick={handleReject} className="!bg-red-600 !hover:bg-red-700 text-white">
                 <XCircle className="h-4 w-4 mr-2" />
                 Reject
               </Button>
             </>
           )}
           
-          {opportunity.status === 'approved' && canEdit && (
+          {/* {opportunity.status === 'approved' && canEdit && (
             <Button variant="secondary" onClick={handleClose}>
               <XCircle className="h-4 w-4 mr-2" />
               Close
             </Button>
-          )}
+          )} */}
         </div>
       </div>
 
@@ -356,10 +366,53 @@ const OpportunityView = () => {
                   <div>
                     <p className="text-sm text-gray-500">Working Days</p>
                     <p className="font-semibold text-dark">
-                      {opportunity.schedule.days.map(day => 
-                        day.charAt(0).toUpperCase() + day.slice(1)
-                      ).join(', ')}
+                      {formatDays(opportunity.schedule.days)}
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Specific Days for Weekly/Weekend Internships */}
+              {(opportunity.internshipType === 'weekly' || opportunity.internshipType === 'weekend') && opportunity.specificDays && (
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-100 rounded-lg">
+                    <Calendar className="h-5 w-5 text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Specific Days</p>
+                    <p className="font-semibold text-dark">
+                      {formatDays(opportunity.specificDays)}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Languages */}
+              {opportunity.languages && (
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gray-100 rounded-lg">
+                    <Languages className="h-5 w-5 text-gray-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Languages</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {opportunity.languages.required && opportunity.languages.required.length > 0 && (
+                        <div>
+                          <span className="text-xs font-semibold text-dark">Required: </span>
+                          <span className="text-sm text-dark">
+                            {opportunity.languages.required.join(', ')}
+                          </span>
+                        </div>
+                      )}
+                      {opportunity.languages.preferred && opportunity.languages.preferred.length > 0 && (
+                        <div>
+                          <span className="text-xs font-semibold text-dark">Preferred: </span>
+                          <span className="text-sm text-dark">
+                            {opportunity.languages.preferred.join(', ')}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

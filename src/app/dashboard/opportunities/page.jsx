@@ -139,8 +139,8 @@ const Opportunities = () => {
           bValue = b.numberOfPeople || 0;
           break;
         case "stipend":
-          aValue = a.stipend?.amount || 0;
-          bValue = b.stipend?.amount || 0;
+          aValue = a.stipend?.totalAmount || 0;
+          bValue = b.stipend?.totalAmount || 0;
           break;
         case "createdAt":
           aValue = new Date(a.createdAt);
@@ -184,7 +184,7 @@ const Opportunities = () => {
     const active = opportunities.filter(i => i.status === 'approved').length;
     const totalPositions = opportunities.reduce((sum, i) => sum + (i.numberOfPeople || 0), 0);
     const filledPositions = opportunities.reduce((sum, i) => sum + (i.filledPositions || 0), 0);
-    const avgStipend = opportunities.reduce((sum, i) => sum + (i.stipend?.amount || 0), 0) / opportunities.length;
+    const avgStipend = opportunities.reduce((sum, i) => sum + (i.stipend?.totalAmount || 0), 0) / opportunities.length;
     
     return {
       total: opportunities.length,
@@ -225,7 +225,7 @@ const Opportunities = () => {
   };
 
   const getStipendText = (stipend) => {
-    if (!stipend || !stipend.amount) return 'Unpaid';
+    if (!stipend || !stipend.totalAmount) return 'Unpaid';
     
     const paymentTypeMap = {
       'daily': 'day',
@@ -235,7 +235,7 @@ const Opportunities = () => {
     };
     
     const period = paymentTypeMap[stipend.paymentType] || 'month';
-    return `${stipend.currency || '₹'}${stipend.amount.toLocaleString()}/${period}`;
+    return `${stipend.currency || '₹'}${stipend.totalAmount.toLocaleString()}/${period}`;
   };
 
   if (loading) {
@@ -503,7 +503,7 @@ const Opportunities = () => {
                       <div className="flex items-center gap-1">
                         <DollarSign className="h-4 w-4 text-green-custom" />
                         <span className="font-medium text-dark">
-                          ₹{opportunity.stipend?.amount || 0}
+                          ₹{opportunity.stipend?.totalAmount || 0}
                         </span>
                         <span className="text-sm text-gray-500">/{opportunity.stipend?.paymentType}</span>
                       </div>

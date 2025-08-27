@@ -128,114 +128,112 @@ export default function PublicOpportunityDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header activeLink="/jobs"  />
+<div className="min-h-screen bg-orange-50">
+      <Header activeLink="/jobs" />
 
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         {/* Back Button */}
         <Link
           href="/jobs"
-          className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium"
+          className="inline-flex items-center text-orange-600 hover:text-orange-700 font-medium"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Opportunities
         </Link>
 
-{/* Header Card */}
-<div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-  <div className="flex flex-col gap-4">
-    
-    {/* Top Row: Title + Branch Left | Logo Right */}
-    <div className="flex items-start justify-between">
-      <div>
-        <h1 className="!text-lg font-bold text-gray-900 mb-2">
-          {opportunity.title}
-        </h1>
+        {/* Header Card */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100">
+          <div className="flex flex-col gap-4">
+            
+            {/* Top Row: Title + Branch Left | Logo Right */}
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="!text-lg font-bold text-gray-900 mb-2">
+                  {opportunity.title}
+                </h1>
 
-        <p className="text-gray-700 flex items-center">
-          <Building className="h-4 w-4 mr-2" />
-          {opportunity.branch?.name}
-        </p>
-      </div>
+                <p className="text-gray-700 flex items-center">
+                  <Building className="h-4 w-4 mr-2 text-orange-500" />
+                  {opportunity.branch?.name}
+                </p>
+              </div>
 
-      {/* Logo (always top-right) */}
-      <div className="flex-shrink-0 ml-4">
-        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center border border-blue-100">
-          <Building className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+              {/* Logo */}
+              <div className="flex-shrink-0 ml-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-orange-50 to-amber-100 flex items-center justify-center border border-orange-100">
+                  <Building className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* Location */}
+            <p className="text-gray-600 flex items-center md:max-w-[80%]">
+              <MapPin className="h-4 w-4 mr-2 text-red-500" />
+              {opportunity.branch?.location?.address}
+            </p>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2">
+              {opportunity.opportunityType && (
+                <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium flex items-center">
+                  <Briefcase className="w-4 h-4 mr-1" />
+                  {opportunity.opportunityType === "internship"
+                    ? "Internship"
+                    : "Job"}
+                </span>
+              )}
+              {opportunity.category && (
+                <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
+                  {getCategoryText(opportunity.category)}
+                </span>
+              )}
+              {opportunity.internshipType && (
+                <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium flex items-center">
+                  <Clock className="w-4 h-4 mr-1" />
+                  {getInternshipTypeText(opportunity.internshipType)}
+                </span>
+              )}
+              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center">
+                <DollarSign className="w-4 h-4 mr-1" />
+                {getStipendText(opportunity.stipend)}
+              </span>
+            </div>
+
+            {/* CTA & Applicants */}
+            <div className="flex items-center gap-4 flex-wrap mt-4">
+              {!appliedOpportunities.has(opportunity._id) ? (
+                <button
+                  onClick={handleApply}
+                  className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg font-semibold hover:from-orange-700 hover:to-amber-700 shadow-md transition"
+                >
+                  {isAuthenticated ? "Apply Now" : "Login to Apply"}
+                </button>
+              ) : (
+                <div className="inline-flex items-center px-6 py-3 rounded-lg bg-green-50 border border-green-200">
+                  <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+                  <span className="font-semibold text-green-700">
+                    Already Applied
+                  </span>
+                </div>
+              )}
+
+              {/* Applicants Count */}
+              <div className="flex items-center text-gray-600 text-sm">
+                <Users className="h-4 w-4 mr-1 text-orange-600" />
+                <span>
+                  {opportunity.applicantsCount || 0} Applicants
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-
-    {/* Location */}
-    <p className="text-gray-600 flex items-center md:max-w-[80%]">
-      <MapPin className="h-4 w-4 mr-2 text-red-500" />
-      {opportunity.branch?.location?.address}
-    </p>
-
-    {/* Tags */}
-    <div className="flex flex-wrap gap-2">
-      {opportunity.opportunityType && (
-        <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium flex items-center">
-          <Briefcase className="w-4 h-4 mr-1" />
-          {opportunity.opportunityType === "internship"
-            ? "Internship"
-            : "Job"}
-        </span>
-      )}
-      {opportunity.category && (
-        <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-          {getCategoryText(opportunity.category)}
-        </span>
-      )}
-      {opportunity.internshipType && (
-        <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium flex items-center">
-          <Clock className="w-4 h-4 mr-1" />
-          {getInternshipTypeText(opportunity.internshipType)}
-        </span>
-      )}
-      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center">
-        <DollarSign className="w-4 h-4 mr-1" />
-        {getStipendText(opportunity.stipend)}
-      </span>
-    </div>
-
-    {/* CTA & Applicants */}
-    <div className="flex items-center gap-4 flex-wrap mt-4">
-      {!appliedOpportunities.has(opportunity._id) ? (
-        <button
-          onClick={handleApply}
-          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold hover:from-blue-700 hover:to-indigo-700 shadow-md transition"
-        >
-          {isAuthenticated ? "Apply Now" : "Login to Apply"}
-        </button>
-      ) : (
-        <div className="inline-flex items-center px-6 py-3 rounded-lg bg-green-50 border border-green-200">
-          <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-          <span className="font-semibold text-green-700">
-            Already Applied
-          </span>
-        </div>
-      )}
-
-      {/* Applicants Count */}
-      <div className="flex items-center text-gray-600 text-sm">
-        <Users className="h-4 w-4 mr-1 text-blue-600" />
-        <span>
-          {opportunity.applicantsCount || 0} Applicants
-        </span>
-      </div>
-    </div>
-  </div>
-</div>
-
-
 
         {/* Grid Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Schedule */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+              <Calendar className="h-5 w-5 mr-2 text-orange-600" />
               Schedule
             </h3>
             <ul className="space-y-2 text-sm text-gray-700">
@@ -253,8 +251,6 @@ export default function PublicOpportunityDetail() {
                   </span>
                 </li>
               )}
-              
-              {/* Working Days - This is what you specifically asked for */}
               {opportunity.schedule?.days && opportunity.schedule.days.length > 0 && (
                 <li>
                   <div className="flex justify-between mb-1">
@@ -267,7 +263,7 @@ export default function PublicOpportunityDetail() {
                     {opportunity.schedule.days.map((day, index) => (
                       <span 
                         key={index}
-                        className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium capitalize"
+                        className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium capitalize"
                       >
                         {getDayName(day)}
                       </span>
@@ -275,7 +271,6 @@ export default function PublicOpportunityDetail() {
                   </div>
                 </li>
               )}
-              
               {opportunity.schedule?.shift && (
                 <li className="flex justify-between">
                   <span>Shift:</span>
@@ -304,7 +299,7 @@ export default function PublicOpportunityDetail() {
           </div>
 
           {/* Positions & Benefits */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
               <UserCheck className="h-5 w-5 mr-2 text-green-600" />
               Positions & Benefits
@@ -356,30 +351,30 @@ export default function PublicOpportunityDetail() {
 
         {/* Languages */}
         {opportunity.languages && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100">
             <h3 className="text-lg font-semibold mb-4 flex items-center">
-              <Languages className="h-5 w-5 mr-2 text-purple-600" />
+              <Languages className="h-5 w-5 mr-2 text-orange-600" />
               Language Requirements
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              {opportunity.languages.required && opportunity.languages.required.length > 0 && (
+              {opportunity.languages.required?.length > 0 && (
                 <div>
                   <h4 className="font-medium mb-2 text-gray-700">Required Languages</h4>
                   <div className="flex flex-wrap gap-2">
                     {opportunity.languages.required.map((lang, index) => (
-                      <span key={index} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full">
+                      <span key={index} className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full">
                         {lang}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
-              {opportunity.languages.preferred && opportunity.languages.preferred.length > 0 && (
+              {opportunity.languages.preferred?.length > 0 && (
                 <div>
                   <h4 className="font-medium mb-2 text-gray-700">Preferred Languages</h4>
                   <div className="flex flex-wrap gap-2">
                     {opportunity.languages.preferred.map((lang, index) => (
-                      <span key={index} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full">
+                      <span key={index} className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full">
                         {lang}
                       </span>
                     ))}
@@ -391,9 +386,9 @@ export default function PublicOpportunityDetail() {
         )}
 
         {/* Description */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100">
           <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <FileText className="h-5 w-5 mr-2 text-purple-600" />
+            <FileText className="h-5 w-5 mr-2 text-orange-600" />
             Job Description
           </h3>
           <p className="text-gray-700 leading-relaxed whitespace-pre-line">
@@ -403,8 +398,8 @@ export default function PublicOpportunityDetail() {
 
         {/* Requirements */}
         {opportunity.requirements?.length > 0 && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-semibold mb-4">Requirements</h3>
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100">
+            <h3 className="text-lg font-semibold mb-4 text-orange-700">Requirements</h3>
             <ul className="space-y-2 text-sm">
               {opportunity.requirements.map((req, index) => (
                 <li

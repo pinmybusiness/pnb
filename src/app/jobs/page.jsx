@@ -222,17 +222,6 @@ export default function StudentOpportunitiesPage() {
     }
   };
 
-  const handleLogin = () => {
-    router.push('/login');
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setIsAuthenticated(false);
-    setAppliedOpportunities(new Set());
-    alert('Logged out successfully');
-  };
-
   const getTypeBadgeColor = (type) => {
     const colors = {
       'internship': 'bg-blue-50 text-blue-700 border border-blue-200',
@@ -251,15 +240,20 @@ export default function StudentOpportunitiesPage() {
       <Header activeLink="/jobs"  />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Section */}
-        <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Discover Culinary Opportunities</h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Find internships and jobs with top restaurants and culinary establishments
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 md:p-8 mb-8 md:mb-12 shadow-sm">
+        <div className="max-w-3xl mx-auto text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 leading-snug md:leading-tight">
+            Restaurant & Hospitality <span className="text-orange-600">Opportunities</span>
+          </h1>
+          <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 px-2">
+            Explore opportunities across{" "}
+            <span className="font-medium">Kitchen, Service, Management, Marketing, Delivery</span> 
+            and more. Kickstart your career in the food & hospitality industry today.
           </p>
-          
+
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto relative">
+          <div className="mt-6 sm:mt-8 relative max-w-md sm:max-w-xl mx-auto">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-gray-400" />
             </div>
@@ -267,233 +261,233 @@ export default function StudentOpportunitiesPage() {
               type="text" 
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
-              className="block w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
-              placeholder="Search by title, skills, or location..."
+              className="block w-full pl-12 pr-4 py-3 sm:py-4 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm text-sm sm:text-base"
+              placeholder="Search by role, skills, or location..."
             />
           </div>
-          
+
           {!isAuthenticated && (
-            <div className="mt-6 bg-blue-50 p-4 rounded-xl border border-blue-100 max-w-2xl mx-auto">
-              <p className="flex items-center justify-center text-blue-700 text-sm">
-                <Award className="w-4 h-4 mr-2" />
-                <span>Create an account to apply for opportunities and track your applications</span>
-              </p>
+            <div className="mt-5 sm:mt-6 inline-flex items-center bg-white border border-orange-200 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-orange-700 shadow-sm">
+              <Award className="w-4 h-4 mr-2" />
+              Create a free account to apply and track your applications
             </div>
           )}
         </div>
 
+        {/* Decorative illustration (optional) */}
+        <div className="absolute right-3 sm:right-6 top-3 sm:top-6 hidden md:block opacity-10 text-orange-500">
+          <Briefcase className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32" />
+        </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar - Desktop */}
-          <div className="hidden lg:block lg:w-80">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 sticky top-4">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
-                <button 
-                  onClick={clearFilters}
-                  className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                >
-                  Clear all
-                </button>
-              </div>
-              
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <div className="relative">
-                    <select 
-                      value={filters.category}
-                      onChange={(e) => handleFilterChange('category', e.target.value)}
-                      className="block w-full pl-3 pr-10 py-3 text-base border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 appearance-none"
-                    >
-                      <option value="">All Categories</option>
-                      <option value="Kitchen Helper">Kitchen Helper</option>
-                      <option value="Service Staff">Service Staff</option>
-                      <option value="Management Trainee">Management Trainee</option>
-                      <option value="Marketing Assistant">Marketing Assistant</option>
-                      <option value="Events Coordinator">Events Coordinator</option>
-                      <option value="Delivery Helper">Delivery Helper</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Opportunity Type</label>
-                  <div className="relative">
-                    <select 
-                      value={filters.opportunityType}
-                      onChange={(e) => handleFilterChange('opportunityType', e.target.value)}
-                      className="block w-full pl-3 pr-10 py-3 text-base border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 appearance-none"
-                    >
-                      <option value="">All Types</option>
-                      <option value="internship">Internship</option>
-                      <option value="job">Job</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                  <div className="relative rounded-lg shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <input 
-                      type="text" 
-                      value={filters.location}
-                      onChange={(e) => handleFilterChange('location', e.target.value)}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
-                      placeholder="City or area"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
-                  <div className="relative">
-                    <select 
-                      value={filters.durationUnit}
-                      onChange={(e) => handleFilterChange('durationUnit', e.target.value)}
-                      className="block w-full pl-3 pr-10 py-3 text-base border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 appearance-none"
-                    >
-                      <option value="">Any Duration</option>
-                      <option value="days">Days</option>
-                      <option value="weeks">Weeks</option>
-                      <option value="months">Months</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Stipend</label>
-                  <div className="relative rounded-lg shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <input 
-                      type="number" 
-                      value={filters.minStipend}
-                      onChange={(e) => handleFilterChange('minStipend', e.target.value)}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50"
-                      placeholder="Minimum amount"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Filter Button */}
-          <div className="lg:hidden mb-4">
-            <button 
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm"
-            >
-              <Filter className="h-5 w-5 mr-2" />
-              Filters
-              {Object.values(filters).some(value => value !== '') && (
-                <span className="ml-2 bg-blue-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {Object.values(filters).filter(value => value !== '').length}
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* Mobile Filters */}
-          {showFilters && (
-            <div className="lg:hidden bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
-                <div className="flex items-center">
-                  <button 
-                    onClick={clearFilters}
-                    className="text-sm text-blue-600 hover:text-blue-800 font-medium mr-3"
-                  >
-                    Clear all
-                  </button>
-                  <button onClick={() => setShowFilters(false)}>
-                    <X className="h-5 w-5 text-gray-500" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="space-y-6">
-                {/* Mobile filter inputs (same as desktop but mobile optimized) */}
-                {/* ... */}
-              </div>
-            </div>
-          )}
-
-          {/* Opportunities List */}
-          <div className="w-full lg:flex-1">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
-                {filteredOpportunities.length} Opportunities Available
-              </h2>
-              <div className="text-sm text-gray-500 flex items-center">
-                <span className="mr-2">Sort by:</span>
-                <div className="relative">
-                  <select className="pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 appearance-none">
-                    <option>Most Recent</option>
-                    <option>Highest Stipend</option>
-                    <option>Nearest Location</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                    <ChevronDown className="h-4 w-4" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {loading ? (
-              <div className="grid grid-cols-1 gap-5">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="bg-white rounded-xl p-6 animate-pulse border border-gray-100">
-                    <div className="flex space-x-4">
-                      <div className="rounded-lg bg-gray-200 h-14 w-14"></div>
-                      <div className="flex-1 space-y-3">
-                        <div className="h-5 bg-gray-200 rounded w-3/4"></div>
-                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : filteredOpportunities.length > 0 ? (
-              <div className="grid grid-cols-1 gap-5">
-                {filteredOpportunities.map((opportunity) => (
-                  <OpportunityCard key={opportunity._id} opportunity={opportunity} appliedOpportunities ={appliedOpportunities} isAuthenticated={isAuthenticated} />
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-xl p-8 text-center border border-gray-100">
-                <div className="mx-auto h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <Search className="h-8 w-8 text-gray-400" />
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No opportunities found</h3>
-                <p className="text-gray-500 mb-4">Try adjusting your search filters to find more opportunities.</p>
-                <button
-                  onClick={clearFilters}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  Clear all filters
-                </button>
-              </div>
-            )}
+<div className="flex flex-col lg:flex-row gap-8">
+{/* Filters Sidebar - Desktop */}
+<div className="hidden lg:block lg:w-80">
+  <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-4">
+    <div className="flex justify-between items-center mb-6">
+      <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+      <button 
+        onClick={clearFilters}
+        className="text-sm text-amber-600 hover:text-amber-700 font-medium"
+      >
+        Clear all
+      </button>
+    </div>
+    
+    <div className="space-y-6">
+      {/* Category */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+        <div className="relative">
+          <select 
+            value={filters.category}
+            onChange={(e) => handleFilterChange('category', e.target.value)}
+            className="block w-full pl-3 pr-10 py-3 text-base border border-gray-200 rounded-lg 
+                       focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 
+                       bg-gray-50 appearance-none transition-colors duration-200"
+          >
+            <option value="">All Categories</option>
+            <option value="Kitchen Helper">Kitchen Helper</option>
+            <option value="Service Staff">Service Staff</option>
+            <option value="Management Trainee">Management Trainee</option>
+            <option value="Marketing Assistant">Marketing Assistant</option>
+            <option value="Events Coordinator">Events Coordinator</option>
+            <option value="Delivery Helper">Delivery Helper</option>
+            <option value="Other">Other</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+            <ChevronDown className="h-4 w-4" />
           </div>
         </div>
+      </div>
+
+      {/* Opportunity Type */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Opportunity Type</label>
+        <div className="relative">
+          <select 
+            value={filters.opportunityType}
+            onChange={(e) => handleFilterChange('opportunityType', e.target.value)}
+            className="block w-full pl-3 pr-10 py-3 text-base border border-gray-200 rounded-lg 
+                       focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 
+                       bg-gray-50 appearance-none transition-colors duration-200"
+          >
+            <option value="">All Types</option>
+            <option value="internship">Internship</option>
+            <option value="job">Job</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+            <ChevronDown className="h-4 w-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* Location */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+        <div className="relative rounded-lg shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <MapPin className="h-4 w-4 text-gray-400" />
+          </div>
+          <input 
+            type="text" 
+            value={filters.location}
+            onChange={(e) => handleFilterChange('location', e.target.value)}
+            className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg 
+                       focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 
+                       bg-gray-50 transition-colors duration-200"
+            placeholder="City or area"
+          />
+        </div>
+      </div>
+
+      {/* Duration */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
+        <div className="relative">
+          <select 
+            value={filters.durationUnit}
+            onChange={(e) => handleFilterChange('durationUnit', e.target.value)}
+            className="block w-full pl-3 pr-10 py-3 text-base border border-gray-200 rounded-lg 
+                       focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 
+                       bg-gray-50 appearance-none transition-colors duration-200"
+          >
+            <option value="">Any Duration</option>
+            <option value="days">Days</option>
+            <option value="weeks">Weeks</option>
+            <option value="months">Months</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+            <ChevronDown className="h-4 w-4" />
+          </div>
+        </div>
+      </div>
+
+      {/* Minimum Stipend */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Stipend</label>
+        <div className="relative rounded-lg shadow-sm">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <DollarSign className="h-4 w-4 text-gray-400" />
+          </div>
+          <input 
+            type="number" 
+            value={filters.minStipend}
+            onChange={(e) => handleFilterChange('minStipend', e.target.value)}
+            className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg 
+                       focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 
+                       bg-gray-50 transition-colors duration-200"
+            placeholder="Minimum amount"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{/* Mobile Filter Button */}
+<div className="lg:hidden mb-4">
+  <button 
+    onClick={() => setShowFilters(!showFilters)}
+    className="flex items-center justify-center w-full px-4 py-3 border border-gray-200 rounded-xl 
+               bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm"
+  >
+    <Filter className="h-5 w-5 mr-2" />
+    Filters
+    {Object.values(filters).some(value => value !== '') && (
+      <span className="ml-2 bg-amber-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+        {Object.values(filters).filter(value => value !== '').length}
+      </span>
+    )}
+  </button>
+</div>
+
+  {/* Opportunities List */}
+  <div className="w-full lg:flex-1">
+    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
+      <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
+        {filteredOpportunities.length} Opportunities Available
+      </h2>
+      <div className="text-sm text-gray-500 flex items-center">
+        <span className="mr-2">Sort by:</span>
+        <div className="relative">
+          <select className="pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 appearance-none">
+            <option>Most Recent</option>
+            <option>Highest Stipend</option>
+            <option>Nearest Location</option>
+          </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+            <ChevronDown className="h-4 w-4" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Loading */}
+    {loading ? (
+      <div className="grid grid-cols-1 gap-5">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="bg-white rounded-xl p-6 animate-pulse border border-gray-100">
+            <div className="flex space-x-4">
+              <div className="rounded-lg bg-gray-200 h-14 w-14"></div>
+              <div className="flex-1 space-y-3">
+                <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : filteredOpportunities.length > 0 ? (
+      <div className="grid grid-cols-1 gap-5">
+        {filteredOpportunities.map((opportunity) => (
+          <OpportunityCard 
+            key={opportunity._id} 
+            opportunity={opportunity} 
+            appliedOpportunities={appliedOpportunities} 
+            isAuthenticated={isAuthenticated} 
+          />
+        ))}
+      </div>
+    ) : (
+      <div className="bg-white rounded-xl p-8 text-center border border-gray-100">
+        <div className="mx-auto h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+          <Search className="h-8 w-8 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No opportunities found</h3>
+        <p className="text-gray-500 mb-4">Try adjusting your search filters to find more opportunities.</p>
+        <button
+          onClick={clearFilters}
+          className="px-4 py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+        >
+          Clear all filters
+        </button>
+      </div>
+    )}
+  </div>
+</div>
+
       </div>
 
       {/* Application Modal */}

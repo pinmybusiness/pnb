@@ -562,7 +562,7 @@ const OpportunityView = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Total Views</span>
-                <span className="font-semibold text-dark">0</span>
+                <span className="font-semibold text-dark">{opportunity.views}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Applications</span>

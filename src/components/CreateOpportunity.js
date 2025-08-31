@@ -208,7 +208,8 @@ const CreateOpportunity = () => {
       // For internships, set payment type to after_completion
       handleNestedChange('stipend', 'paymentType', 'after_completion');
     }
-  }, [formData.internshipType, opportunityType]);
+// eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.internshipType, opportunityType, formData.durationUnit]);
 
   // Auto-set job-specific values when job type changes
   useEffect(() => {
@@ -226,37 +227,31 @@ const CreateOpportunity = () => {
   }, [opportunityType, formData.internshipType]);
 
   // Auto-calculate end date when start date or duration changes
-  useEffect(() => {
-    if (formData.schedule.startDate && formData.duration > 0 && opportunityType === 'internship') {
-      const endDate = calculateEndDate(
-        formData.schedule.startDate, 
-        formData.duration, 
-        formData.durationUnit
-      );
-      
-      if (endDate !== formData.schedule.endDate) {
-        handleNestedChange('schedule', 'endDate', endDate);
-      }
-    }
-  }, [formData.schedule.startDate, formData.duration, formData.durationUnit, opportunityType]);
+useEffect(() => {
+  if (formData.schedule.startDate && formData.duration > 0 && opportunityType === 'internship') {
+    const endDate = calculateEndDate(
+      formData.schedule.startDate, 
+      formData.duration, 
+      formData.durationUnit
+    );
+    handleNestedChange('schedule', 'endDate', endDate);
+  }
+}, [formData.schedule.startDate, formData.duration, formData.durationUnit, opportunityType]);
 
   // Auto-select weekend days when weekend type is selected
   useEffect(() => {
-    if (formData.internshipType === 'weekend') {
+    if (formData.internshipType === 'weekend' && !formData.specificDays.includes('saturday')) {
       setFormData(prev => ({
         ...prev,
         specificDays: ['saturday', 'sunday']
       }));
-    } else if (formData.internshipType === 'weekly') {
-      // Keep previously selected days but ensure at least one is selected
-      if (formData.specificDays.length === 0) {
-        setFormData(prev => ({
-          ...prev,
-          specificDays: ['monday']
-        }));
-      }
+    } else if (formData.internshipType === 'weekly' && formData.specificDays.length === 0) {
+      setFormData(prev => ({
+        ...prev,
+        specificDays: ['monday']
+      }));
     }
-  }, [formData.internshipType]);
+  }, [formData.internshipType, formData.specificDays]);
 
   // Auto-set hours when job type changes to part_time
   useEffect(() => {
@@ -294,7 +289,9 @@ const CreateOpportunity = () => {
       
       handleNestedChange('schedule', 'startDate', startDate.toISOString().split('T')[0]);
     }
-  }, [formData.specificDays, formData.internshipType, opportunityType]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [formData.specificDays, formData.internshipType, opportunityType]);
 
   // Auto-generate title based on form data
   useEffect(() => {
@@ -305,11 +302,9 @@ const CreateOpportunity = () => {
       const newTitle = `${formData.category} - ${typeDetails?.label || ''}`;
       setFormData(prev => ({ ...prev, title: newTitle }));
     }
-  }, [
-    formData.category, 
-    formData.internshipType,
-    opportunityType
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.category, formData.internshipType, opportunityType]);
+  
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({

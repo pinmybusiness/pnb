@@ -436,7 +436,7 @@ export default function CandidateProfilePage() {
     <div className={`min-h-screen bg-gradient-to-b from-${theme.backgroundGradientFrom} to-${theme.backgroundGradientTo} py-8 px-4`}>
       <div className="max-w-3xl mx-auto bg-white rounded-lg shadow-lg p-6">
         <h1 className={`text-2xl font-semibold text-${theme.textPrimary} mb-2 flex items-center`}>
-          <Utensils className={`mr-2 text-${theme.textSecondary}`} size={24} /> Complete Your RestoJobs Profile
+          <Utensils className={`mr-2 text-${theme.textSecondary}`} size={24} /> Complete Your Hirewaala Profile
         </h1>
         <p className={`text-${theme.textSecondary} mb-6 text-sm`}>Showcase your culinary and hospitality skills to top restaurants.</p>
 

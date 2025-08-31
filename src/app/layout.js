@@ -4,8 +4,8 @@ import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 
 export const metadata = {
-  title: "ListenLift",
-  description: "Listen Smarter, Grow Faster.",
+  title: "Hirewaala",
+  description: "Find the Right Restaurant Job | India’s #1 Restaurant Job Platform",
    icons: {
     icon: '/favicon.png',
   },

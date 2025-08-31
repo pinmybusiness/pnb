@@ -43,7 +43,7 @@ export default function BookDemoPage() {
             <div className="bg-primary/10 p-2 rounded-lg">
               <Calendar className="h-6 w-6 text-primary" />
             </div>
-            <span className="ml-2 text-xl font-bold text-gray-800">RestoPro</span>
+            <span className="ml-2 text-xl font-bold text-gray-800">Hirewaala</span>
           </div>
           <div className="w-10"></div> {/* Spacer for alignment */}
         </div>
@@ -56,7 +56,7 @@ export default function BookDemoPage() {
           <div className="bg-white rounded-2xl border border-soft shadow-sm p-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Book a Demo</h1>
             <p className="text-gray-600 mb-8">
-              Schedule a personalized demo to see how RestoPro can transform your restaurant operations.
+              Schedule a personalized demo to see how Hirewaala can transform your restaurant operations.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -208,7 +208,7 @@ export default function BookDemoPage() {
               </div>
               <div className="flex items-start gap-3">
                 <Mail className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                <a href="mailto:demo@restopro.com" className="text-gray-700 hover:text-primary">demo@restopro.com</a>
+                <a href="mailto:demo@Hirewaala.com" className="text-gray-700 hover:text-primary">demo@Hirewaala.com</a>
               </div>
             </div>
 

@@ -40,7 +40,7 @@ export default function AboutPage() {
             Revolutionizing <span className="text-primary">Restaurant Management</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Founded in 2025, RestoPro has helped hundreds of restaurants streamline operations and enhance customer experiences through intelligent technology.
+            Founded in 2025, Hirewaala has helped hundreds of restaurants streamline operations and enhance customer experiences through intelligent technology.
           </p>
         </div>
       </section>

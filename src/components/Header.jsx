@@ -33,7 +33,7 @@ export default function Header({ activeLink = '' }) {
             <a href="/" className="flex items-center group">
               <Sparkles className="h-8 w-8 text-orange-600 group-hover:text-orange-700 transition-colors" />
               <span className="ml-2 text-xl md:text-2xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
-                RestoJobs
+                Hirewaala
               </span>
             </a>
 

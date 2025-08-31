@@ -24,8 +24,8 @@ export default function HomePage() {
 
               <p className="text-lg  text-gray-600 leading-relaxed animate-fade-in delay-200 max-w-lg">
                 Discover jobs for <span className="font-medium">chefs</span>, 
-                <span className="font-medium"> waiters</span> & 
-                <span className="font-medium"> managers</span> — all in one trusted platform for India’s hospitality industry.
+                <span className="font-medium"> waiters</span>, 
+                <span className="font-medium"> managers</span> & more — all in one trusted platform for India’s hospitality industry.
               </p>
 
               {/* CTA Buttons */}

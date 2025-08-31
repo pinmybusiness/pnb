@@ -20,12 +20,9 @@ const WaitingList = () => {
   const currentBranch = user?.branch;
 
   useEffect(() => {
-    if (currentBranch && currentBranch._id) {
-      dispatch(fetchCustomers(currentBranch._id));
+    if (currentBranch) {
+      dispatch(fetchCustomers(currentBranch));
     }
-
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
   }, [dispatch, currentBranch]);
 
   useEffect(() => {

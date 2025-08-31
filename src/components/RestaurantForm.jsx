@@ -8,11 +8,13 @@ import {
   MapPin, 
   X
 } from "lucide-react";
+import { useSelector } from "react-redux";
 
 const RestaurantForm = () => {
   const router = useRouter();
   const params = useParams();
   const isEditMode = !!params.id;
+  const { token } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -34,7 +36,6 @@ const RestaurantForm = () => {
 
   // Add auth token to requests
   api.interceptors.request.use(config => {
-    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

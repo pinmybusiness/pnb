@@ -54,7 +54,8 @@ const Entry = () => {
         phone: "",
       });
     } catch (error) {
-      toast.error(error || "Failed to add customer");
+      console.error("Add customer error:", error); // Log the error for debugging
+      toast.error(error?.message || "Failed to add customer. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -67,11 +68,11 @@ const Entry = () => {
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold text-gray-900">New Customer</h1>
           <p className="text-gray-500">Add to waiting list</p>
-          {user && (
+          {/* {user && (
             <p className="text-sm text-primary font-medium">
               Branch: {user.branch}
             </p>
-          )}
+          )} */}
         </div>
 
         {/* Entry Form */}

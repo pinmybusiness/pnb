@@ -11,6 +11,8 @@ import Link from "next/link";
 import { formatDateWithSuffix } from "@/utils/dateFormat";
 import { getCategoryText, getDayName, getDurationText, getInternshipTypeText, getShiftText, getStipendText } from "@/utils/opportunity";
 import ApplicationModal from "@/components/opportunity/ApplicationModal";
+import { useSelector } from "react-redux";
+import { Toaster, toast } from "react-hot-toast"; // Import react-hot-toast
 
 export default function PublicOpportunityDetail() {
   const params = useParams();
@@ -24,6 +26,7 @@ export default function PublicOpportunityDetail() {
   const [appliedOpportunities, setAppliedOpportunities] = useState(new Set());
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
+  const { user, token } = useSelector((state) => state.auth);
 
   console.log("oper", opportunity?._id);
 
@@ -39,7 +42,6 @@ export default function PublicOpportunityDetail() {
   }, [isAuthenticated]);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
     if (token) {
       try {
@@ -77,7 +79,6 @@ export default function PublicOpportunityDetail() {
 
   const fetchAppliedOpportunities = async () => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) return;
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -96,12 +97,17 @@ export default function PublicOpportunityDetail() {
 
   const handleApply = () => {
     if (!isAuthenticated) {
-      alert("Please login to apply for this opportunity");
+      toast.error("Please login to apply for this opportunity");
       router.push("/login");
       return;
     }
+    if (user?.role !== 10) {
+      toast.error("Only users can apply for opportunities");
+      return;
+    }
+
     if (!hasProfile) {
-      alert("Please complete your candidate profile before applying");
+      toast.error("Please complete your candidate profile before applying");
       router.push("/candidate-profile");
       return;
     }
@@ -110,15 +116,14 @@ export default function PublicOpportunityDetail() {
 
   const submitApplication = async () => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
-        alert("Please login to apply");
+        toast.error("Please login to apply");
         router.push("/login");
         return;
       }
       if (!opportunity?._id) {
         console.error("Error: opportunity._id is undefined");
-        alert("Error: Opportunity ID is missing. Please try again.");
+        toast.error("Error: Opportunity ID is missing. Please try again.");
         return;
       }
 
@@ -137,7 +142,7 @@ export default function PublicOpportunityDetail() {
       if (response.status === 401) {
         localStorage.removeItem("token");
         setIsAuthenticated(false);
-        alert("Session expired. Please login again.");
+        toast.error("Session expired. Please login again.");
         router.push("/login");
         return;
       }
@@ -146,13 +151,13 @@ export default function PublicOpportunityDetail() {
       if (data.success) {
         setAppliedOpportunities((prev) => new Set([...prev, opportunity._id]));
         setShowApplicationModal(false);
-        alert(`Application submitted for ${opportunity.title}!`);
+        toast.success(`Application submitted for ${opportunity.title}!`);
       } else {
-        alert(`Error: ${data.message}`);
+        toast.error(`Error: ${data.message}`);
       }
     } catch (error) {
       console.error("Application error:", error);
-      alert("Error submitting application. Please try again.");
+      toast.error("Error submitting application. Please try again.");
     }
   };
 
@@ -160,6 +165,7 @@ export default function PublicOpportunityDetail() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
+        <Toaster position="top-right" reverseOrder={false} /> {/* Add Toaster */}
         <div className="max-w-4xl mx-auto px-4 py-8 animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
           <div className="h-96 bg-gray-200 rounded"></div>
@@ -172,6 +178,7 @@ export default function PublicOpportunityDetail() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
+        <Toaster position="top-right" reverseOrder={false} /> {/* Add Toaster */}
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
           <div className="text-6xl mb-4">😢</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Opportunity Not Found</h2>
@@ -191,6 +198,7 @@ export default function PublicOpportunityDetail() {
   return (
     <div className="min-h-screen bg-orange-50">
       <Header activeLink="/jobs" />
+      <Toaster position="top-right" reverseOrder={false} /> {/* Add Toaster */}
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <Link
           href="/jobs"
@@ -220,15 +228,11 @@ export default function PublicOpportunityDetail() {
                 <Users className="w-4 h-4 mr-1" />
                 {opportunity.numberOfPeople} Open Positions
               </span>
-              {/* <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-base font-bold flex items-center">
-                <Eye className="w-4 h-4 mr-1" />
-                {opportunity.views || 0} Views
-              </span> */}
             </div>
-              <p className="text-gray-600 flex items-start md:max-w-[80%]">
-                <MapPin className="h-4 w-4 md:h-4 md:w-4 mr-1 mt-1.5 text-red-500 flex-shrink-0" />
-                <span className="leading-relaxed">{opportunity.branch?.location?.address}</span>
-              </p>
+            <p className="text-gray-600 flex items-start md:max-w-[80%]">
+              <MapPin className="h-4 w-4 md:h-4 md:w-4 mr-1 mt-1.5 text-red-500 flex-shrink-0" />
+              <span className="leading-relaxed">{opportunity.branch?.location?.address}</span>
+            </p>
             <div className="flex flex-wrap gap-2 mt-4">
               {opportunity.opportunityType && (
                 <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium flex items-center">
@@ -236,11 +240,6 @@ export default function PublicOpportunityDetail() {
                   {opportunity.opportunityType === "internship" ? "Internship" : "Job"}
                 </span>
               )}
-              {/* {opportunity.category && (
-                <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">
-                  {getCategoryText(opportunity.category)}
-                </span>
-              )} */}
               {opportunity.internshipType && (
                 <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium flex items-center">
                   <Clock className="w-4 h-4 mr-1" />
@@ -417,13 +416,13 @@ export default function PublicOpportunityDetail() {
       </div>
       {showApplicationModal && (
         <ApplicationModal
-        isOpen={showApplicationModal}
-        onClose={() => setShowApplicationModal(false)}
-        opportunity={opportunity}
-        coverLetter={coverLetter}
-        setCoverLetter={setCoverLetter}
-        onSubmit={submitApplication}
-      />
+          isOpen={showApplicationModal}
+          onClose={() => setShowApplicationModal(false)}
+          opportunity={opportunity}
+          coverLetter={coverLetter}
+          setCoverLetter={setCoverLetter}
+          onSubmit={submitApplication}
+        />
       )}
     </div>
   );

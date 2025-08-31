@@ -12,10 +12,13 @@ import Header from "@/components/Header";
 import { OpportunityCard } from "@/components/opportunity/OpportunityCard";
 import { getDurationText, getStipendText } from "@/utils/opportunity";
 import ApplicationModal from "@/components/opportunity/ApplicationModal";
+import { useSelector } from "react-redux";
+import { toast } from "react-hot-toast"; 
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function StudentOpportunitiesPage() {
+  const { user, token } = useSelector((state) => state.auth);
   const [opportunities, setOpportunities] = useState([]);
   const [filteredOpportunities, setFilteredOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +61,6 @@ export default function StudentOpportunitiesPage() {
   }, [filters, opportunities]);
 
   const checkAuth = async () => {
-    const token = localStorage.getItem("token");
     setIsAuthenticated(!!token);
     if (token) {
       try {
@@ -97,7 +99,6 @@ export default function StudentOpportunitiesPage() {
   const fetchAppliedOpportunities = async () => {
     try {
       setAppliedLoading(true);
-      const token = localStorage.getItem("token");
       if (!token) {
         setIsAuthenticated(false);
         return;
@@ -175,12 +176,17 @@ export default function StudentOpportunitiesPage() {
 
   const handleApply = (opportunity) => {
     if (!isAuthenticated) {
-      alert("Please login to apply for opportunities");
+      toast.error("Please login to apply for opportunities");
       router.push("/login");
       return;
     }
+    if (user?.role !== 10) {
+      toast.error("Only users can apply for opportunities");
+      return;
+    }
+
     if (!hasProfile) {
-      alert("Please complete your candidate profile before applying");
+      toast.error("Please complete your candidate profile before applying");
       router.push("/candidate-profile");
       return;
     }
@@ -195,15 +201,14 @@ export default function StudentOpportunitiesPage() {
     if (file && file.type === "application/pdf") {
       setResume(file);
     } else {
-      alert("Please upload a PDF file.");
+      toast.error("Please upload a PDF file.");
     }
   };
 
   const submitApplication = async () => {
     try {
-      const token = localStorage.getItem("token");
       if (!token) {
-        alert("Please login to apply");
+        toast.error("Please login to apply");
         router.push("/login");
         return;
       }
@@ -225,7 +230,7 @@ export default function StudentOpportunitiesPage() {
         localStorage.removeItem("token");
         setIsAuthenticated(false);
         setHasProfile(false);
-        alert("Session expired. Please login again.");
+        toast.error("Session expired. Please login again.");
         router.push("/login");
         return;
       }
@@ -234,13 +239,13 @@ export default function StudentOpportunitiesPage() {
       if (data.success) {
         setAppliedOpportunities((prev) => new Set([...prev, selectedOpportunity._id]));
         setShowApplicationModal(false);
-        alert(`Application submitted for ${selectedOpportunity.title}!`);
+        toast.success(`Application submitted for ${selectedOpportunity.title}!`);
       } else {
-        alert(`Error: ${data.message}`);
+        toast.error(`Error: ${data.message}`);
       }
     } catch (error) {
       console.error("Application error:", error);
-      alert("Error submitting application. Please try again.");
+      toast.error("Error submitting application. Please try again.");
     }
   };
 
@@ -472,7 +477,7 @@ export default function StudentOpportunitiesPage() {
         </div>
       </div>
 
- {/* Application Modal */}
+      {/* Application Modal */}
       <ApplicationModal
         isOpen={showApplicationModal}
         onClose={() => setShowApplicationModal(false)}

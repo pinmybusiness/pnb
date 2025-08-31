@@ -13,9 +13,13 @@ const register = async (userData) => {
 };
 
 // Login user
-const login = async (userData) => {
-  const response = await axios.post(`${API_URL}/login`, userData, {
-    withCredentials: true, // Ensure cookies are included
+const login = async ({ mobile, password, rememberMe }) => {
+  const response = await axios.post(`${API_URL}/login`, {
+    mobile,
+    password,
+    rememberMe,
+  }, {
+    withCredentials: true // Needed if backend sets token cookie
   });
   return response.data;
 };
@@ -29,9 +33,18 @@ const getMe = async () => {
 };
 
 // Logout user
-const logout = async () => {
+const logout = async (token) => {
   const response = await axios.get(`${API_URL}/logout`, {
-    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}` // Send token from Redux
+    }
+  });
+  return response.data;
+};
+
+const googleLogin = async (authCode) => {
+  const response = await axios.post(`${API_URL}/google-client-login`, {
+    code: authCode,
   });
   return response.data;
 };
@@ -41,4 +54,5 @@ export const authService = {
   login,
   getMe,
   logout,
+  googleLogin
 };

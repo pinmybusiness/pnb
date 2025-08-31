@@ -7,7 +7,6 @@ import TopNav from "./TopNav";
 export default function DashboardLayout({ children }) {
   const { user } = useSelector((state) => state.auth);
   const roleNumber = user?.role;
-
   // ✅ fast filter using number
   const roleMenus = allMenus.filter(menu => menu.roles.includes(roleNumber));
   const config = panelInfo[roleNumber] || { title: "Dashboard", subtitle: "Portal" };

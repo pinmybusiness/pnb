@@ -8,7 +8,8 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "@/store/authSlice";
+import { logoutUser } from "@/store/authThunks";
+import toast from "react-hot-toast";
 
 export default function SideNav({ navigation, title = "Dashboard", subtitle = "Portal" }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -18,9 +19,15 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    router.push("/login");
+    const handleLogout = async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      toast.success("Logged out successfully!");
+      router.push("/");
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error(error.message || "Logout failed. Please try again.");
+    }
   };
 
   const toggleSubMenu = (name) => {

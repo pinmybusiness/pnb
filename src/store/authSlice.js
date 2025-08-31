@@ -1,10 +1,12 @@
-// store/authSlice.js
+// store/authSlice.js (partial)
 import { createSlice } from '@reduxjs/toolkit';
-import { loginUser } from './authThunks';
+import { loginUser, googleLoginUser } from './authThunks';
 
+// authSlice.js
+const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 const initialState = {
-  user: null,    // isme user.role aa jayega
-  token: null,
+  user: null,
+  token,
   isLoading: false,
   error: null,
 };
@@ -40,13 +42,27 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
         state.token = action.payload.token;
+         localStorage.setItem('token', action.payload.token); 
         state.isLoading = false;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+      .addCase(googleLoginUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(googleLoginUser.fulfilled, (state, action) => {
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isLoading = false;
+      })
+      .addCase(googleLoginUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
       });
-  }
+  },
 });
 
 export const { setCredentials, logout, setLoading, setError, clearError } = authSlice.actions;

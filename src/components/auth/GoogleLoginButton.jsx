@@ -1,11 +1,39 @@
 "use client";
+
 import { useGoogleLogin } from "@react-oauth/google";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { googleLoginUser } from "@/store/authThunks";
+import { toast } from "react-hot-toast";
 
-export default function GoogleLoginButton() {
+export default function GoogleLoginButton({ onSuccess }) {
   const router = useRouter();
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { user, token, isLoading, error } = useSelector((state) => state.auth);
+  const [localError, setLocalError] = useState(null);
+
+  // Handle navigation based on Redux state
+  useEffect(() => {
+    if (token && user) {
+      if (user.role !== 10) {
+        setLocalError("User is not a candidate");
+        toast.error("User is not a candidate");
+        return;
+      }
+      if (onSuccess) onSuccess();
+      if (!user.candidateProfile?.gender) {
+        console.log("yes", user.candidateProfile?.gender)
+        router.push("/candidate-profile");
+      } else {
+        router.push("/jobs");
+      }
+    }
+    if (error) {
+      setLocalError(error);
+      toast.error(error || "Google login failed. Please try again.");
+    }
+  }, [token, user, error, router, onSuccess]);
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (authResult) => {
@@ -13,64 +41,17 @@ export default function GoogleLoginButton() {
         if (!authResult.code) {
           throw new Error("No authorization code received");
         }
-
-        // Exchange code for JWT
-        const loginResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google-client-login?code=${authResult.code}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-
-        const loginData = await loginResponse.json();
-
-        if (!loginResponse.ok || !loginData.success) {
-          throw new Error(loginData.message || "Google login failed");
-        }
-
-        const { token, user } = loginData;
-
-        // Store JWT
-        localStorage.setItem("token", token);
-        document.cookie = `isLoggedIn=1; max-age=${7 * 24 * 60 * 60}; path=/`;
-        document.cookie = `xSessionID=${token}; path=/; ${
-          process.env.NODE_ENV === "production" ? "Secure; SameSite=None" : ""
-        }; max-age=${60 * 60}`;
-
-        // Check candidate profile
-        const profileResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!profileResponse.ok) {
-          throw new Error("Failed to fetch user profile");
-        }
-
-        const profileData = await profileResponse.json();
-        console.log("profileData", profileData)
-        if (!profileData.success) {
-          throw new Error(profileData.message || "Error fetching user profile");
-        }
-
-        if (profileData.data.role !== 10) {
-          throw new Error("User is not a candidate");
-        }
-
-        // Redirect based on candidateProfile existence
-        if (!profileData.data.candidateProfile?.gender) {
-          router.push("/candidate-profile");
-        } else {
-          router.push("/jobs");
-        }
+        await dispatch(googleLoginUser(authResult.code)).unwrap();
+        toast.success("Google login successful!");
       } catch (err) {
-        console.error("Google login error:", err);
-        setError(err.message || "Google login failed. Please try again.");
+        setLocalError(err.message || "Google login failed");
+        toast.error(err.message || "Google login failed. Please try again.");
       }
     },
     onError: (errorResponse) => {
       console.error("Google login error:", errorResponse);
-      setError("Google login failed. Please try again.");
+      setLocalError("Google login failed. Please try again.");
+      toast.error("Google login failed. Please try again.");
     },
     flow: "auth-code",
     scope: "openid email profile",
@@ -78,10 +59,13 @@ export default function GoogleLoginButton() {
 
   return (
     <div className="relative">
-      {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
+      {localError && <p className="text-red-600 text-sm mb-2">{localError}</p>}
       <button
         onClick={googleLogin}
-        className="flex items-center justify-center w-full gap-3 px-6 py-3 rounded-full bg-white border border-gray-300 shadow-md hover:shadow-lg hover:bg-gray-50 transition duration-200 cursor-pointer"
+        disabled={isLoading}
+        className={`flex items-center justify-center w-full gap-3 px-6 py-3 rounded-full bg-white border border-gray-300 shadow-md transition duration-200 ${
+          isLoading ? "opacity-70 cursor-not-allowed" : "hover:shadow-lg hover:bg-gray-50"
+        }`}
       >
         <svg className="w-5 h-5" viewBox="0 0 533.5 544.3">
           <path
@@ -101,7 +85,9 @@ export default function GoogleLoginButton() {
             d="M272 107.7c39.4 0 74.7 13.5 102.5 40.2l76.9-76.9C405.4 24 344.5 0 272 0 168.2 0 76.7 61.8 32.3 149.6l89 69.5C142.5 154.9 201.9 107.7 272 107.7z"
           />
         </svg>
-        <span className="text-base font-semibold text-gray-700">Continue with Google</span>
+        <span className="text-base font-semibold text-gray-700">
+          {isLoading ? "Logging in..." : "Continue with Google"}
+        </span>
       </button>
     </div>
   );

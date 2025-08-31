@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { X, Plus, Calendar, MapPin, Briefcase, Star, Languages, Mars, Venus, Transgender, Search, Binoculars, XCircle, Utensils } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui";
+import { useSelector } from "react-redux";
 
 // Dynamic theme configuration
 const theme = {
@@ -24,7 +25,7 @@ const theme = {
 
 export default function CandidateProfilePage() {
   const router = useRouter();
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const { token } = useSelector((state) => state.auth);
   const [profile, setProfile] = useState({
     firstName: "",
     lastName: "",

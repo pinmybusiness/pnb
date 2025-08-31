@@ -36,7 +36,7 @@ export default function HomePage() {
                     <ArrowRight className="w-6 h-6 ml-2 group-hover:translate-x-1 transition-transform" />
                   </button>
                 </Link>
-                <Link href="/employers">
+                <Link href="/login">
                   <button className="px-8 py-4 border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 text-lg font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center">
                     <Building2 className="w-6 h-6 mr-2" />
                     Hire Staff

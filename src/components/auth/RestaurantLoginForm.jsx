@@ -1,3 +1,4 @@
+// components/auth/RestaurantLoginForm.jsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -15,14 +16,17 @@ export default function RestaurantLoginForm({ onSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
-  const { role, token } = useSelector((state) => state.auth);
+  const { user, token, role, error } = useSelector((state) => state.auth);
+
+  // console.log('RestaurantLoginForm auth state:', { user, token, role, error });
 
   useEffect(() => {
-    if (token && role) {
+    if (token && user && role) {
+      console.log('Login successful, redirecting to /dashboard');
       if (onSuccess) onSuccess();
       router.push("/dashboard");
     }
-  }, [token, role, router, onSuccess]);
+  }, [user, token, role, onSuccess, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,9 +35,9 @@ export default function RestaurantLoginForm({ onSuccess }) {
     try {
       await dispatch(loginUser({ mobile, password, rememberMe })).unwrap();
       toast.success("Login successful!");
-      if (onSuccess) onSuccess();
       router.push("/dashboard");
     } catch (error) {
+      console.error('Login error:', error);
       toast.error(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
@@ -48,7 +52,6 @@ export default function RestaurantLoginForm({ onSuccess }) {
       </p>
 
       <form onSubmit={handleSubmit}>
-        {/* Mobile */}
         <div className="mb-4">
           <label className="text-sm font-medium text-dark mb-1 block">Mobile Number</label>
           <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
@@ -66,7 +69,6 @@ export default function RestaurantLoginForm({ onSuccess }) {
           </div>
         </div>
 
-        {/* Password */}
         <div className="mb-4">
           <label className="text-sm font-medium text-dark mb-1 block">Password</label>
           <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
@@ -90,28 +92,6 @@ export default function RestaurantLoginForm({ onSuccess }) {
           </div>
         </div>
 
-        {/* Actions */}
-        {/* Uncomment if needed
-        <div className="flex items-center justify-between mb-4">
-          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
-            <input
-              type="checkbox"
-              className="rounded border-gray-300 text-primary focus:ring-primary"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />
-            Remember me
-          </label>
-          <a
-            href="/auth/forgot-password"
-            className="text-sm text-primary hover:underline"
-            onClick={(e) => e.preventDefault()}
-          >
-            Forgot password?
-          </a>
-        </div>
-        */}
-
         <button
           type="submit"
           className={`w-full bg-primary text-white py-3 rounded-lg text-sm font-medium transition-all ${
@@ -123,12 +103,12 @@ export default function RestaurantLoginForm({ onSuccess }) {
         </button>
       </form>
 
-      <p className="text-xs text-gray-500 text-center mt-4">
+      {/* <p className="text-xs text-gray-500 text-center mt-4">
         Don't have an account?{" "}
         <a href="/auth/signup" className="text-primary hover:underline">
           Sign up
         </a>
-      </p>
+      </p> */}
     </div>
   );
 }

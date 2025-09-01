@@ -131,7 +131,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <div className="text-3xl font-bold">₹650</div>
-              <div className="text-sm font-medium">Each Customer Spends</div>
+              <div className="text-sm font-medium">Each Customer&apos;s Spend</div>
               <div className="text-xs text-gray-500">Average customer value</div>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function DashboardPage() {
             <div>
               <div className="text-3xl font-bold text-green-custom">₹0</div>
               <div className="text-sm font-medium">Total Revenue Opportunity Today</div>
-              <div className="text-xs text-gray-500">Based on today's served guests</div>
+              <div className="text-xs text-gray-500">Based on today&apos;s served guests</div>
             </div>
           </div>
         </div>
@@ -152,7 +152,7 @@ export default function DashboardPage() {
           <div className="bg-white border border-soft rounded-2xl p-5 shadow-sm flex flex-col gap-3">
             <h3 className="text-sm font-semibold">Export Data</h3>
             <p className="text-xs text-gray-500">
-              Download today's customer data as a CSV file for your records.
+              Download today&apos;s customer data as a CSV file for your records.
             </p>
             <button className="flex items-center justify-center gap-2 bg-primary hover:opacity-90 text-white py-3 rounded-lg text-sm cursor-pointer">
               <Download className="w-4 h-4" /> Export to CSV
@@ -164,7 +164,7 @@ export default function DashboardPage() {
               Remove all customer data from today. This action cannot be undone.
             </p>
             <button className="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg text-sm cursor-pointer">
-              <Trash2 className="w-4 h-4" /> Clear Today's Data
+              <Trash2 className="w-4 h-4" /> Clear Today&apos;s Data
             </button>
           </div>
         </div>

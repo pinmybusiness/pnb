@@ -4,8 +4,25 @@ import { MapPin, Calendar, Clock, Building, Users, CheckCircle, ExternalLink, Br
 import { formatDateWithSuffix } from "@/utils/dateFormat";
 import { getDurationText, getStipendText } from "@/utils/opportunity";
 
-export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthenticated, hasProfile, handleApply }) => {
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const R = 6371; // Earth's radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthenticated, hasProfile, handleApply, userLat, userLon }) => {
   const router = useRouter();
+
+  let distance = null;
+  if (userLat && userLon && opportunity.branch?.location?.coordinates) {
+    const [jobLon, jobLat] = opportunity.branch.location.coordinates;
+    distance = calculateDistance(parseFloat(userLat), parseFloat(userLon), jobLat, jobLon);
+  }
 
   return (
     <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
@@ -25,6 +42,12 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
                   <span className="flex items-center">
                     <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 text-red-500" />
                     {opportunity.branch.location.city}
+                  </span>
+                )}
+                {distance !== null && (
+                  <span className="flex items-center">
+                    <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 text-blue-500" />
+                    {distance.toFixed(1)} km away
                   </span>
                 )}
                 <span>{getStipendText(opportunity.stipend)}</span>

@@ -1,97 +1,54 @@
-"use client";
+import Image from "next/image";
+import { CheckCircle, Zap, ShieldCheck, Smartphone } from "lucide-react";
+import CtaButton from "../CtaButton";
 
-import { ArrowRight } from "lucide-react";
+// Note: The icons in the image are custom SVGs, not directly from lucide-react.
+// For this code, I'm using lucide-react as a placeholder.
+// To perfectly match the image, you would need to use those specific SVG assets.
+const features = [
+  { title: "Verified Jobs", icon: <ShieldCheck className="w-8 h-8 text-orange-500" /> }, // Shield icon from lucide-react
+  { title: "Fast Hiring", icon: <Zap className="w-8 h-8 text-orange-500" /> }, // Zap icon for speed, best match
+  { title: "Trusted Employers", icon: <CheckCircle className="w-8 h-8 text-orange-500" /> }, // CheckCircle for trusted, as a placeholder for people icon
+  { title: "Easy Apply", icon: <Smartphone className="w-8 h-8 text-orange-500" /> }, // Smartphone for easy apply, as a placeholder for document icon
+];
 
 export default function WhyChooseUs() {
   return (
-    <section className="bg-gradient-to-b from-white to-orange-50/30 py-24 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Heading */}
-        <div className="mb-16 text-left">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight animate-slide-in">
-            Why We’re <span className="text-orange-600 relative">
-              Your Top Pick
-              <span className="absolute -bottom-2 left-0 w-full h-1 bg-orange-600/50 rounded-full animate-scale-in" />
-            </span>
-          </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-lg animate-slide-in" style={{ animationDelay: "0.2s" }}>
-            The ultimate platform to land restaurant jobs or hire top talent, fast and hassle-free.
-          </p>
-        </div>
+    <section className="relative bg-white  py-20 overflow-hidden">
+      {/* Orange wave/shape in the bottom right */}
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500 rounded-tl-full" style={{ transform: 'translateX(50%) translateY(50%)' }}></div>
 
-        {/* Features List */}
-        <div className="space-y-8">
-          {[
-            {
-              title: "Unrivaled Network",
-              subtitle: "Connect with India’s Best",
-              description: "Link up with 10,000+ job seekers and 500+ restaurants, with new openings daily.",
-            },
-            {
-              title: "Perfect Fit Jobs",
-              subtitle: "Tailored for You",
-              description: "Discover chef, waiter, or manager roles that match your skills and goals effortlessly.",
-            },
-            {
-              title: "Lightning-Fast Hiring",
-              subtitle: "Hire with Ease",
-              description: "Restaurants find top talent in no time with our smart, streamlined platform.",
-            },
-          ].map((item, index) => (
-            <div
-              key={index}
-              className="group relative flex items-center gap-8 py-8 pl-6 pr-4 bg-white/80 rounded-lg shadow-sm hover:shadow-lg hover:bg-orange-50/70 transition-all duration-500 ease-out animate-slide-in"
-              style={{ animationDelay: `${0.3 * (index + 1)}s` }}
-            >
-              <div className="absolute left-0 top-0 h-full w-2 bg-orange-600 group-hover:w-3 transition-all duration-500" />
-              <div className="flex-1">
-                <span className="text-sm font-semibold text-orange-600 uppercase tracking-wide">{item.subtitle}</span>
-                <h3 className="text-2xl font-bold text-gray-900 mt-1 tracking-tight">{item.title}</h3>
-                <p className="mt-2 text-base text-gray-600 leading-relaxed max-w-md">{item.description}</p>
-              </div>
-              <div className="flex-shrink-0 relative">
-                <ArrowRight className="w-7 h-7 text-orange-600 group-hover:translate-x-3 transition-transform duration-500" />
-                <div className="absolute inset-0 -z-10 bg-orange-200/20 rounded-full blur-xl group-hover:bg-orange-200/30 transition-all duration-500" />
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="max-w-[1440px] mx-auto px-6 relative z-10">
+        <div className=" rounded-3xl shadow-sm p-8 md:p-16">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">
+              Why Choose <span className="text-orange-600">FasterQ.in</span>
+            </h2>
+            <p className="mt-3 text-lg text-gray-600">
+              We connect talent with opportunities in the hospitality industry
+            </p>
+          </div>
 
-        {/* CTA */}
-        {/* <div className="mt-16 flex items-center gap-6 animate-slide-in" style={{ animationDelay: "0.9s" }}>
-          <a
-            href="/jobs"
-            className="inline-flex items-center px-8 py-3.5 bg-orange-600 text-white text-lg font-semibold rounded-lg hover:bg-orange-700 hover:scale-105 transition-all duration-300 shadow-md hover:shadow-lg"
-          >
-            Grab Your Job
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </a>
-          <a
-            href="/login"
-            className="inline-flex items-center px-8 py-3.5 border-2 border-orange-600 text-orange-600 text-lg font-semibold rounded-lg hover:bg-orange-50 hover:scale-105 transition-all duration-300"
-          >
-            Hire Top Talent
-          </a>
-        </div> */}
+          <div className="grid grid-cols-2 md:flex md:flex-row items-center justify-center gap-8 md:gap-12 lg:gap-16">
+            {/* Features surrounding the handshake */}
+            {features.map((feature, index) => (
+              <div key={index} className="flex flex-col items-center text-center w-36 sm:w-40">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-2 border-orange-300 flex items-center justify-center mb-4">
+                  {/* The image uses distinct icons, for this code, I'm just showing the Lucide icons.
+                      You'd replace this with your specific SVG/Image components. */}
+                  {feature.icon}
+                </div>
+                <p className="text-lg font-semibold text-gray-800">{feature.title}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA Button */}
+          <div className="flex justify-center mt-16">
+            <CtaButton href="/jobs" text="Get Started Today" />
+          </div>
+        </div>
       </div>
-
-      {/* Animation Styles */}
-      <style jsx>{`
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(-40px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes scaleIn {
-          from { width: 0; }
-          to { width: 100%; }
-        }
-        .animate-slide-in {
-          animation: slideIn 0.8s ease-out forwards;
-        }
-        .animate-scale-in {
-          animation: scaleIn 0.8s ease-out forwards;
-        }
-      `}</style>
     </section>
   );
 }

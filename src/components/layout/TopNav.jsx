@@ -1,5 +1,6 @@
 "use client";
 import { Bell } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export default function TopNav({ navigation }) {
@@ -21,9 +22,9 @@ export default function TopNav({ navigation }) {
           <Bell className="h-5 w-5 text-gray-600" />
           <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
         </button>
-        <button className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 cursor-pointer">
-          Switch Branch
-        </button>
+        <Link href='/dashboard/branch' className="px-3 py-1 border border-gray-300 rounded text-sm hover:bg-gray-50 cursor-pointer">
+          Branch Details
+        </Link>
       </div>
     </header>
   );

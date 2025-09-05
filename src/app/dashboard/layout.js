@@ -2,6 +2,7 @@
 import React from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import "./dashboard.css";
 
 export default function Dashboard({ children }) {
   return (

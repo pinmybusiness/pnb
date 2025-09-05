@@ -1,7 +1,7 @@
 // config/menus.js
 import { 
   Store, Users, BarChart3, MapPin, Settings, 
-  UserPlus, Hourglass, FileBarChart, LayoutDashboard, GraduationCap, ChartArea 
+  FileBarChart, LayoutDashboard, GraduationCap 
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
@@ -21,8 +21,17 @@ export const allMenus = [
   { name: "Leads", href: "/dashboard/leads", icon: BarChart3, roles: [1] },
   { name: "Customers", href: "/dashboard/customers", icon: Users, roles: [1] },
   { name: "Orders", href: "/dashboard/orders", icon: BarChart3, roles: [4] },
-  { name: "Entry", href: "/dashboard/entry", icon: UserPlus, roles: [6,7] },
-  { name: "Waiting List", href: "/dashboard/waiting-list", icon: Hourglass, roles: [6,7] },
+
+  { 
+    name: "WaitPro", 
+    icon: GraduationCap, 
+    roles: [6,7,8], 
+    children: [
+      { name: "Entry", href: "/dashboard/entry", roles: [6,7,8] },
+      { name: "Waiting List", href: "/dashboard/waiting-list", roles: [6,7,8] },
+      { name: "Analytics", href: "/dashboard/analytics", roles: [6,7] },
+    ]
+  },
   { 
     name: "Opportunities", 
     icon: GraduationCap, 
@@ -32,8 +41,7 @@ export const allMenus = [
       { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [6,7] },
     ]
   },
-  { name: "Analytics", href: "/dashboard/analytics", icon: ChartArea, roles: [6,7] },
-  { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0,3,4,6,7] },
+  { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0] },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [0,3] },
 ];
 

@@ -10,7 +10,7 @@ import QuickStats from '@/components/home/QuickStats';
 export default function Home() {
   return (
   <main className="min-h-screen bg-[#FFF5EC]">
-    <Header activeLink="/" />
+    {/* <Header activeLink="/" /> */}
     <HeroSection />          {/* Grab attention */}
     <QuickStats />
     <PopularJobRoles />      {/* Show opportunities */}

@@ -34,8 +34,6 @@ export default function AboutPage() {
 
   return (
     <div className="bg-white min-h-screen font-sans">
-      <Header activeLink="/about" />
-
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-white to-orange-50 py-20 md:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

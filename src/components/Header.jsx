@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import Image from "next/image";
 import { Menu, X, User, Building, LogOut } from "lucide-react";
@@ -13,6 +13,8 @@ import CtaButton from "./CtaButton";
 
 export default function Header({ activeLink = "" }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false); // State for profile dropdown
+  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false); // New state for login dropdown
   const [modalOpen, setModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("candidate"); // "candidate" or "restaurant"
   const dispatch = useDispatch();
@@ -29,6 +31,7 @@ export default function Header({ activeLink = "" }) {
     setActiveTab(tab);
     setModalOpen(true);
     setMobileOpen(false);
+    setLoginDropdownOpen(false); // Close login dropdown when modal opens
   };
 
   const handleLogout = async () => {
@@ -36,6 +39,8 @@ export default function Header({ activeLink = "" }) {
       await dispatch(logoutUser()).unwrap();
       toast.success("Logged out successfully!");
       setMobileOpen(false);
+      setProfileOpen(false);
+      setLoginDropdownOpen(false);
       router.push("/");
     } catch (error) {
       console.error("Logout error:", error);
@@ -45,14 +50,14 @@ export default function Header({ activeLink = "" }) {
 
   return (
     <>
-      <header className="w-full z-50">
+      <header className="w-full z-50 bg-[#FFF5EC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <a href="/" className="flex items-center group">
               <Image
                 src="/logo.png"
-                alt="Hirewaala Logo"
+                alt="FasterQ.in Logo"
                 width={185}
                 height={48}
                 className="object-contain"
@@ -86,17 +91,15 @@ export default function Header({ activeLink = "" }) {
                     size="md"
                     variant="filled"
                     className="bg-orange-50/50 hover:bg-orange-100 text-gray-700 hover:text-orange-600"
-                    onClick={() =>
-                      router.push(user.role === 10 ? "/candidate-profile" : "/dashboard")
-                    }
+                    onClick={() => setProfileOpen(!profileOpen)}
                     asButton={true}
                   />
                   <div
                     className={`absolute top-full right-0 mt-2 w-56 z-50 bg-white rounded-xl shadow-xl border border-orange-100 ${
-                      mobileOpen ? "block" : "hidden"
+                      profileOpen ? "block" : "hidden"
                     }`}
                   >
-                    <div className="py-2">
+                    <div className="p-2">
                       <a
                         href={user.role === 10 ? "/candidate-profile" : "/dashboard"}
                         className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
@@ -105,7 +108,7 @@ export default function Header({ activeLink = "" }) {
                         {user.role === 10 ? "Candidate Profile" : "Restaurant Dashboard"}
                       </a>
                       <CtaButton
-                        text="Logout"
+                        text="Log Out"
                         icon={LogOut}
                         size="sm"
                         variant="outline"
@@ -118,26 +121,52 @@ export default function Header({ activeLink = "" }) {
                 </div>
               ) : (
                 <div className="relative flex gap-4">
-                  <CtaButton
-                    text="Login"
-                    icon={User}
-                    size="md"
-                    variant="outline"
-                    onClick={() => openModal("candidate")}
-                    asButton={true}
-                  />
+                  <div className="relative">
+                    <CtaButton
+                      text="Login"
+                      icon={User}
+                      size="md"
+                      variant="outline"
+                      onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
+                      asButton={true}
+                    />
+                    <div
+                      className={`absolute top-full right-0 mt-2 w-56 z-50 bg-white rounded-xl shadow-xl border border-orange-100 ${
+                        loginDropdownOpen ? "block" : "hidden"
+                      }`}
+                    >
+                      <div className="p-2 flex flex-col gap-2">
+                        <CtaButton
+                          text="Candidate Login"
+                          icon={User}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openModal("candidate")}
+                          asButton={true}
+                        />
+                        <CtaButton
+                          text="Restaurant Login"
+                          icon={Building}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openModal("restaurant")}
+                          asButton={true}
+                        />
+                      </div>
+                    </div>
+                  </div>
                   <CtaButton
                     text="Register"
                     icon={Building}
                     size="md"
                     variant="filled"
                     className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
-                    onClick={() => setMobileOpen(!mobileOpen)}
+                    onClick={() => setProfileOpen(!profileOpen)}
                     asButton={true}
                   />
                   <div
                     className={`absolute top-full right-0 mt-2 w-56 z-50 bg-white rounded-xl shadow-xl border border-orange-100 ${
-                      mobileOpen ? "block" : "hidden"
+                      profileOpen ? "block" : "hidden"
                     }`}
                   >
                     <div className="p-2 flex flex-col gap-2">
@@ -146,8 +175,8 @@ export default function Header({ activeLink = "" }) {
                         icon={User}
                         size="sm"
                         variant="outline"
-                        href="/candidate-register"
-                        onClick={() => setMobileOpen(false)}
+                        href="/candidate/register"
+                        onClick={() => setProfileOpen(false)}
                         asButton={false}
                       />
                       <CtaButton
@@ -155,8 +184,8 @@ export default function Header({ activeLink = "" }) {
                         icon={Building}
                         size="sm"
                         variant="outline"
-                        href="/restaurant-register"
-                        onClick={() => setMobileOpen(false)}
+                        href="/restaurant/register"
+                        onClick={() => setProfileOpen(false)}
                         asButton={false}
                       />
                     </div>
@@ -207,7 +236,7 @@ export default function Header({ activeLink = "" }) {
                       {user.role === 10 ? "Candidate Profile" : "Restaurant Dashboard"}
                     </a>
                     <CtaButton
-                      text="Logout"
+                      text="Log Out"
                       icon={LogOut}
                       size="md"
                       variant="outline"
@@ -219,7 +248,7 @@ export default function Header({ activeLink = "" }) {
                 ) : (
                   <>
                     <CtaButton
-                      text="Login"
+                      text="Candidate Login"
                       icon={User}
                       size="md"
                       variant="outline"
@@ -228,11 +257,20 @@ export default function Header({ activeLink = "" }) {
                       asButton={true}
                     />
                     <CtaButton
+                      text="Restaurant Login"
+                      icon={Building}
+                      size="md"
+                      variant="outline"
+                      className="w-full text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                      onClick={() => openModal("restaurant")}
+                      asButton={true}
+                    />
+                    <CtaButton
                       text="Candidate Register"
                       icon={User}
                       size="md"
                       variant="outline"
-                      href="/candidate-register"
+                      href="/candidate/register"
                       className="w-full text-gray-700 hover:text-orange-600 hover:bg-orange-50"
                       onClick={() => setMobileOpen(false)}
                       asButton={false}
@@ -242,7 +280,7 @@ export default function Header({ activeLink = "" }) {
                       icon={Building}
                       size="md"
                       variant="filled"
-                      href="/restaurant-register"
+                      href="/restaurant/register"
                       className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
                       onClick={() => setMobileOpen(false)}
                       asButton={false}

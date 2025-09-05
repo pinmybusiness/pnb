@@ -91,7 +91,6 @@ p, a, input, textarea {
 
 input, textarea {
   border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
   outline: none;
   transition: border 0.2s, box-shadow 0.2s;
 }

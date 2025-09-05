@@ -24,7 +24,7 @@ export default function GoogleLoginButton({ onSuccess }) {
       if (onSuccess) onSuccess();
       if (!user.candidateProfile?.gender) {
         console.log("yes", user.candidateProfile?.gender)
-        router.push("/candidate-profile");
+        router.push("/candidate/profile");
       } else {
         router.push("/jobs");
       }

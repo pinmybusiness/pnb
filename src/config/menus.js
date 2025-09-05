@@ -1,6 +1,6 @@
 // config/menus.js
 import { 
-  Building2, Store, Users, BarChart3, Home, MapPin, Settings, 
+  Store, Users, BarChart3, MapPin, Settings, 
   UserPlus, Hourglass, FileBarChart, LayoutDashboard, GraduationCap, ChartArea 
 } from "lucide-react";
 

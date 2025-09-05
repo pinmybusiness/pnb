@@ -1,5 +1,4 @@
 // app/dashboard/layout.js
-import React from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import "./dashboard.css";

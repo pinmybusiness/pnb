@@ -47,7 +47,7 @@ export default function AboutPage() {
           </p>
           <div className="relative w-full max-w-4xl mx-auto h-64 sm:h-80 md:h-96 rounded-3xl overflow-hidden shadow-2xl">
             <img 
-              src="/images/about-hero-image.png" 
+              src="/images/about-hero-image.webp" 
               alt="Diverse team of professionals in a restaurant setting" 
               className="absolute inset-0 w-full h-full object-cover object-center"
             />

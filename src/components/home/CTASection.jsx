@@ -14,7 +14,7 @@ export default function CTASection() {
             {/* Left Side: Image */}
             <div className="md:w-1/2 flex justify-center animate-slide-in-left">
               <img
-                src="/images/restaurant-staff-cta.png" // You can replace this with a higher-quality or different image if needed
+                src="/images/restaurant-staff-cta.webp" // You can replace this with a higher-quality or different image if needed
                 alt="Restaurant staff smiling"
                 className="w-full max-w-xs sm:max-w-sm md:max-w-md h-auto rounded-xl transform hover:scale-105 transition-transform duration-300"
               />

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Sparkles, Briefcase, LogIn, Menu, X, User, Building, LogOut, UserPlus } from "lucide-react";
+import { Menu, X, User, Building, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
@@ -13,9 +13,8 @@ import CtaButton from "./CtaButton";
 
 export default function Header({ activeLink = "" }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("candidate");
+  const [activeTab, setActiveTab] = useState("candidate"); // "candidate" or "restaurant"
   const dispatch = useDispatch();
   const router = useRouter();
   const { user } = useSelector((state) => state.auth);
@@ -29,7 +28,6 @@ export default function Header({ activeLink = "" }) {
   const openModal = (tab) => {
     setActiveTab(tab);
     setModalOpen(true);
-    setLoginDropdownOpen(false);
     setMobileOpen(false);
   };
 
@@ -38,7 +36,6 @@ export default function Header({ activeLink = "" }) {
       await dispatch(logoutUser()).unwrap();
       toast.success("Logged out successfully!");
       setMobileOpen(false);
-      setLoginDropdownOpen(false);
       router.push("/");
     } catch (error) {
       console.error("Logout error:", error);
@@ -68,7 +65,7 @@ export default function Header({ activeLink = "" }) {
                 <Link
                   key={link.name}
                   href={link.path}
-                  className={`text-sm md:!text[21px] font-medium transition-colors duration-300 ${
+                  className={`text-sm md:!text-[21px] font-medium transition-colors duration-300 ${
                     activeLink === link.path
                       ? "text-orange-600 border-b-2 font-bold border-orange-600"
                       : "text-gray-700 hover:text-orange-600"
@@ -80,7 +77,7 @@ export default function Header({ activeLink = "" }) {
             </nav>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-3">
               {user ? (
                 <div className="relative">
                   <CtaButton
@@ -89,12 +86,14 @@ export default function Header({ activeLink = "" }) {
                     size="md"
                     variant="filled"
                     className="bg-orange-50/50 hover:bg-orange-100 text-gray-700 hover:text-orange-600"
-                    onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
+                    onClick={() =>
+                      router.push(user.role === 10 ? "/candidate-profile" : "/dashboard")
+                    }
                     asButton={true}
                   />
                   <div
                     className={`absolute top-full right-0 mt-2 w-56 z-50 bg-white rounded-xl shadow-xl border border-orange-100 ${
-                      loginDropdownOpen ? "block" : "hidden"
+                      mobileOpen ? "block" : "hidden"
                     }`}
                   >
                     <div className="py-2">
@@ -118,50 +117,52 @@ export default function Header({ activeLink = "" }) {
                   </div>
                 </div>
               ) : (
-                <div className="relative">
+                <div className="relative flex gap-4">
                   <CtaButton
                     text="Login"
-                    icon={LogIn}
+                    icon={User}
                     size="md"
                     variant="outline"
-                    onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
+                    onClick={() => openModal("candidate")}
+                    asButton={true}
+                  />
+                  <CtaButton
+                    text="Register"
+                    icon={Building}
+                    size="md"
+                    variant="filled"
+                    className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
+                    onClick={() => setMobileOpen(!mobileOpen)}
                     asButton={true}
                   />
                   <div
                     className={`absolute top-full right-0 mt-2 w-56 z-50 bg-white rounded-xl shadow-xl border border-orange-100 ${
-                      loginDropdownOpen ? "block" : "hidden"
+                      mobileOpen ? "block" : "hidden"
                     }`}
                   >
                     <div className="p-2 flex flex-col gap-2">
                       <CtaButton
-                        text="Candidate Login"
+                        text="Candidate Register"
                         icon={User}
                         size="sm"
                         variant="outline"
-
-                        onClick={() => openModal("candidate")}
-                        asButton={true}
+                        href="/candidate-register"
+                        onClick={() => setMobileOpen(false)}
+                        asButton={false}
                       />
                       <CtaButton
-                        text="Restaurant Login"
+                        text="Restaurant Register"
                         icon={Building}
                         size="sm"
                         variant="outline"
-                        onClick={() => openModal("restaurant")}
-                        asButton={true}
+                        href="/restaurant-register"
+                        onClick={() => setMobileOpen(false)}
+                        asButton={false}
                       />
                     </div>
                   </div>
                 </div>
               )}
-              <CtaButton
-                href="/signup"
-                text="Registrar"
-                icon={UserPlus}
-                size="md"
-                variant="filled"
-                className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
-              />
             </div>
 
             {/* Mobile Menu Button */}
@@ -216,9 +217,9 @@ export default function Header({ activeLink = "" }) {
                     />
                   </>
                 ) : (
-                  <div className="flex flex-col gap-2">
+                  <>
                     <CtaButton
-                      text="Candidate Login"
+                      text="Login"
                       icon={User}
                       size="md"
                       variant="outline"
@@ -227,32 +228,38 @@ export default function Header({ activeLink = "" }) {
                       asButton={true}
                     />
                     <CtaButton
-                      text="Restaurant Login"
-                      icon={Building}
+                      text="Candidate Register"
+                      icon={User}
                       size="md"
                       variant="outline"
+                      href="/candidate-register"
                       className="w-full text-gray-700 hover:text-orange-600 hover:bg-orange-50"
-                      onClick={() => openModal("restaurant")}
-                      asButton={true}
+                      onClick={() => setMobileOpen(false)}
+                      asButton={false}
                     />
-                  </div>
+                    <CtaButton
+                      text="Restaurant Register"
+                      icon={Building}
+                      size="md"
+                      variant="filled"
+                      href="/restaurant-register"
+                      className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
+                      onClick={() => setMobileOpen(false)}
+                      asButton={false}
+                    />
+                  </>
                 )}
-                <CtaButton
-                 href="/signup"
-                text="Registrar"
-                icon={UserPlus}
-                  size="md"
-                  variant="filled"
-                  className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
-                  onClick={() => setMobileOpen(false)}
-                />
               </div>
             </nav>
           </div>
         )}
       </header>
 
-      <LoginModal isOpen={modalOpen} onClose={() => setModalOpen(false)} initialTab={activeTab} />
+      <LoginModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        initialTab={activeTab}
+      />
     </>
   );
 }

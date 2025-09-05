@@ -197,7 +197,7 @@ export default function PublicOpportunityDetail() {
 
   return (
     <div className="min-h-screen bg-orange-50">
-      <Header activeLink="/jobs" />
+      {/* <Header activeLink="/jobs" /> */}
       <Toaster position="top-right" reverseOrder={false} /> {/* Add Toaster */}
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <Link

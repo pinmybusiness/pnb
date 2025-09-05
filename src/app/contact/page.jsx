@@ -1,6 +1,5 @@
 "use client";
 
-import Header from "@/components/Header";
 import { MapPin, Phone, Send, User, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
@@ -44,7 +43,6 @@ export default function ContactPage() {
 
   return (
     <div className="bg-gray-50 ">
-      <Header activeLink="/contact" />
 
       {/* Main Section */}
       <section className="py-10">

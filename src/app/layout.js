@@ -3,6 +3,8 @@ import { inter, yesteryear } from '@/lib/fonts';
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
 import Footer from "@/components/Footer";
+import ClientHeaderFooter from "./ClientHeaderFooter";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const metadata = {
   title: "FasterQ.in",
@@ -21,11 +23,18 @@ export default function RootLayout({ children }) {
      </head>
       <body
       >
-        <Providers>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
+          <Providers>
+            <Toaster position="top-center" />
+            <ClientHeaderFooter position="header" />
+            {children}
+            <ClientHeaderFooter position="footer" />
+          </Providers>
+        </GoogleOAuthProvider>
+        {/* <Providers>
           {children}
-          <Footer />
           <Toaster position="top-center" />
-        </Providers>
+        </Providers> */}
       </body>
     </html>
   );

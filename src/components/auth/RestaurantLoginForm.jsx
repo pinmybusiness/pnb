@@ -18,8 +18,6 @@ export default function RestaurantLoginForm({ onSuccess }) {
   const dispatch = useDispatch();
   const { user, token, role, error } = useSelector((state) => state.auth);
 
-  // console.log('RestaurantLoginForm auth state:', { user, token, role, error });
-
   useEffect(() => {
     if (token && user && role) {
       console.log('Login successful, redirecting to /dashboard');

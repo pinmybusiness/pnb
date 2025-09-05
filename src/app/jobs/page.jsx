@@ -8,7 +8,6 @@ import {
   CheckCircle, ExternalLink, Briefcase, FileText
 } from "lucide-react";
 import Link from "next/link";
-import Header from "@/components/Header";
 import { OpportunityCard } from "@/components/opportunity/OpportunityCard";
 import { getDurationText, getStipendText } from "@/utils/opportunity";
 import ApplicationModal from "@/components/opportunity/ApplicationModal";
@@ -305,7 +304,6 @@ export default function StudentOpportunitiesPage() {
 
   return (
     <div className={`min-h-screen bg-gray-50 ${inter.className}`}>
-      <Header activeLink="/jobs" />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 md:p-8 mb-8 md:mb-12 shadow-sm">

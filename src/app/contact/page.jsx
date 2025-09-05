@@ -1,8 +1,10 @@
 "use client";
 
 import Header from "@/components/Header";
-import { MapPin, Phone, Clock, Send, User } from "lucide-react";
+import { MapPin, Phone, Send, User, MessageSquare } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
+import CtaButton from "@/components/CtaButton";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -18,137 +20,124 @@ export default function ContactPage() {
     // Add your form submission logic here (API call, etc.)
   };
 
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.id]: e.target.value,
+    });
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
+
   return (
-    <div className="bg-gray-light min-h-screen">
+    <div className="bg-gray-50 ">
       <Header activeLink="/contact" />
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-primary/5 to-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            Call Us Directly
-          </h1>
-          <div className="mt-8">
-            <a 
-              href="tel:+911234567890" 
-              className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-8 py-4 rounded-lg font-medium shadow-lg text-xl"
-            >
-              <Phone className="w-6 h-6" />
-              +91 12345 67890
-            </a>
-          </div>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mt-8">
-            Prefer to message us? Fill out the form below and we'll call you back.
-          </p>
-        </div>
-      </section>
-
-      {/* Contact Content */}
-      <section className="py-16">
+      {/* Main Section */}
+      <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="text-center mb-12 md:mb-16">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight mb-4">
+              Get in Touch with Us
+            </h1>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              We're here to help! Fill out the form below, and we'll get back to you as soon as possible.
+            </p>
+          </div>
+
+          <div className="max-w-xl mx-auto">
             {/* Contact Form */}
-            <div className="bg-white border border-soft rounded-xl p-8 shadow-sm">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Request a Call Back</h2>
+            <motion.div
+              className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-gray-200"
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+            >
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">
+                Request a Call Back
+              </h2>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-500" />
-                    Your Name
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    <span className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-orange-500" />
+                      Your Name
+                    </span>
                   </label>
                   <input
                     type="text"
                     id="name"
                     value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full px-4 py-3 border border-soft rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                     required
                     placeholder="Enter your full name"
                   />
-                </div>
-                <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-500" />
-                    Mobile Number
+                </motion.div>
+                
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+                    <span className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-orange-500" />
+                      Mobile Number
+                    </span>
                   </label>
                   <input
                     type="tel"
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="w-full px-4 py-3 border border-soft rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                     required
                     placeholder="Enter 10-digit mobile number"
                     pattern="[0-9]{10}"
                   />
-                </div>
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-                    Your Query
+                </motion.div>
+                
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+                    <span className="flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4 text-orange-500" />
+                      Your Query
+                    </span>
                   </label>
                   <textarea
                     id="message"
                     rows="4"
                     value={formData.message}
-                    onChange={(e) => setFormData({...formData, message: e.target.value})}
-                    className="w-full px-4 py-3 border border-soft rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
                     required
                     placeholder="Briefly describe your question or requirement"
                   ></textarea>
-                </div>
-                <button
-                  type="submit"
-                  className="flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-medium shadow-sm w-full"
-                >
-                  Request Call Back <Send className="w-5 h-5" />
-                </button>
+                </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <CtaButton
+                    asButton
+                    text="Request Call Back"
+                    icon={Send}
+                    size="lg"
+                    className="w-full rounded-full"
+                    onClick={handleSubmit} // triggers form submission
+                  />
+                </motion.div>
+
               </form>
-            </div>
-
-            {/* Contact Info */}
-            <div className="space-y-6">
-              <div className="bg-white border border-soft rounded-xl p-6 shadow-sm">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Phone className="w-5 h-5 text-primary" />
-                  Call Us Directly
-                </h3>
-                <div className="space-y-3">
-                  <p className="text-gray-600">
-                    <strong>Sales:</strong> <a href="tel:+911234567891" className="hover:text-primary">+91 12345 67891</a>
-                  </p>
-                  <p className="text-gray-600">
-                    <strong>Support:</strong> <a href="tel:+911234567892" className="hover:text-primary">+91 12345 67892</a>
-                  </p>
-                  <p className="text-gray-600">
-                    <strong>Emergency:</strong> <a href="tel:+911234567893" className="hover:text-primary">+91 12345 67893</a> (24/7)
-                  </p>
-                </div>
-              </div>
-
-              <div className="bg-white border border-soft rounded-xl p-6 shadow-sm">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  Visit Our Office
-                </h3>
-                <p className="text-gray-600">
-                  123 Business Park, Sector 22<br />
-                  Gurugram, Haryana 122001<br />
-                  India
-                </p>
-              </div>
-
-              <div className="bg-white border border-soft rounded-xl p-6 shadow-sm">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-primary" />
-                  Working Hours
-                </h3>
-                <p className="text-gray-600">
-                  <strong>Monday - Friday:</strong> 9:00 AM - 6:00 PM<br />
-                  <strong>Saturday:</strong> 10:00 AM - 4:00 PM<br />
-                  <strong>Sunday:</strong> Closed
-                </p>
-              </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>

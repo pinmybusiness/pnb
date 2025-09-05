@@ -1,53 +1,62 @@
 @import "tailwindcss";
 
-/* Theme variables */
+/* ==============================
+   Theme Variables
+============================== */
 :root {
+  /* Colors */
   --color-primary: #ff5211;
   --color-primary-light: #FFE7E0;
-  --color-green-custom: #38A169;
+  --color-green: #38A169;
   --color-green-light: #E6F4EA;
-  --color-text-dark: #1E1E1E;
+  --color-dark: #1E1E1E;
   --color-gray-light: #F9F9F9;
+  --color-border-soft: #E5E7EB;
+  --color-background: #ffffff;
+  --color-foreground: #1E1E1E;
 
-  --color-border-soft: #E5E7EB; /* Light soft border */
+  /* Fonts */
   --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Inter', sans-serif;
+  --font-body: 'Inter', sans-serif;
 }
 
-/* Utility classes from variables */
+/* ==============================
+   Utility Classes
+============================== */
 .bg-primary { background-color: var(--color-primary); }
 .bg-primary-light { background-color: var(--color-primary-light); }
-.bg-green-custom { background-color: var(--color-green-custom); }
+.bg-green { background-color: var(--color-green); }
 .bg-green-light { background-color: var(--color-green-light); }
 .bg-gray-light { background-color: var(--color-gray-light); }
 
-.border-soft {
-  border-color: var(--color-border-soft);
-}
 .text-primary { color: var(--color-primary); }
-.text-primary-foreground {color: white;}
-.text-green-custom { color: var(--color-green-custom); }
-.text-dark { color: var(--color-text-dark); }
+.text-white { color: #fff; }
+.text-green { color: var(--color-green); }
+.text-dark { color: var(--color-dark); }
+
+.border-soft { border-color: var(--color-border-soft); }
 
 .font-sans { font-family: var(--font-sans); }
 
-/* Focus styles */
+/* Hover & Focus */
 .focus\:ring-primary:focus {
   --tw-ring-color: var(--color-primary);
-  ring-color: var(--color-primary);
 }
 
-.hover\:bg-primary\/90:hover {
+.hover\:bg-primary-90:hover {
   background-color: color-mix(in srgb, var(--color-primary) 90%, transparent);
 }
 
-.hover\:bg-green-custom\/90:hover {
-  background-color: color-mix(in srgb, var(--color-green-custom) 90%, transparent);
+.hover\:bg-green-90:hover {
+  background-color: color-mix(in srgb, var(--color-green) 90%, transparent);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Inter, Helvetica, sans-serif;
+  font-family: var(--font-body);
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
 }
 
 button, Link {
@@ -64,13 +73,31 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* 👇 Compact scale for dashboards */
-/* h1 { font-size: 1.5rem;  } */
-h2 { font-size: 1.25rem; /* 20px */ }
-h3 { font-size: 1.125rem; /* 18px */ }
-h4 { font-size: 1rem;    /* 16px */ }
-h5 { font-size: 0.875rem;/* 14px */ }
-h6 { font-size: 0.75rem; /* 12px */ }
+h1 { font-size: 2.375rem; font-weight: 700;} /* 38px */
+h2 { font-size: 1.875rem; } /* 30px */
+h3 { font-size: 1.5rem;   } /* 24px */
+h4 { font-size: 1.25rem;  } /* 20px */
+h5 { font-size: 1.2rem;     } /* 18px */
+h6 { font-size: 1rem; } /* 16px */
 
+
+/* ==============================
+   Text & Form Elements
+============================== */
 p, a, input, textarea {
   font-family: var(--font-body);
+  line-height: 1.5;
+}
+
+input, textarea {
+  border: 1px solid var(--color-border-soft);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(255, 82, 17, 0.2);
 }

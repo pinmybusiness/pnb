@@ -2,9 +2,10 @@ import "./globals.css";
 import { inter, yesteryear } from '@/lib/fonts';
 import { Providers } from "./providers";
 import { Toaster } from "react-hot-toast";
+import Footer from "@/components/Footer";
 
 export const metadata = {
-  title: "Hirewaala",
+  title: "FasterQ.in",
   description: "Find the Right Restaurant Job | India’s #1 Restaurant Job Platform",
    icons: {
     icon: '/favicon.png',
@@ -20,8 +21,10 @@ export default function RootLayout({ children }) {
      </head>
       <body
       >
-        <Providers>{children}
-           <Toaster position="top-center" />
+        <Providers>
+          {children}
+          <Footer />
+          <Toaster position="top-center" />
         </Providers>
       </body>
     </html>

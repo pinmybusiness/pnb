@@ -1,26 +1,29 @@
 "use client";
 
-import { Sparkles, Briefcase, LogIn, Menu, X, User, Building, LogOut } from "lucide-react";
+import Image from "next/image";
+import { Sparkles, Briefcase, LogIn, Menu, X, User, Building, LogOut, UserPlus } from "lucide-react";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import LoginModal from "./auth/LoginModal";
 import { logoutUser } from "@/store/authThunks";
 import { toast } from "react-hot-toast";
+import Link from "next/link";
+import CtaButton from "./CtaButton";
 
-export default function Header({ activeLink = '' }) {
+export default function Header({ activeLink = "" }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('candidate');
+  const [activeTab, setActiveTab] = useState("candidate");
   const dispatch = useDispatch();
   const router = useRouter();
-  const { user, token, isLoading, error } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
 
   const links = [
-    { name: 'Home', path: '/' },
-    { name: 'Jobs', path: '/jobs' },
-    { name: 'About', path: '/about' },
+    { name: "Home", path: "/" },
+    { name: "Jobs", path: "/jobs" },
+    { name: "About", path: "/about" },
   ];
 
   const openModal = (tab) => {
@@ -38,38 +41,41 @@ export default function Header({ activeLink = '' }) {
       setLoginDropdownOpen(false);
       router.push("/");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
       toast.error(error.message || "Logout failed. Please try again.");
     }
   };
 
   return (
     <>
-      <header className="w-full z-50 shadow-sm">
+      <header className="w-full z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <a href="/" className="flex items-center group">
-              <Sparkles className="h-8 w-8 text-orange-600 group-hover:text-orange-700 transition-colors" />
-              <span className="ml-2 text-xl md:text-2xl font-bold text-gray-900 group-hover:text-orange-600 transition-colors">
-                Hirewaala
-              </span>
+              <Image
+                src="/logo.png"
+                alt="Hirewaala Logo"
+                width={185}
+                height={48}
+                className="object-contain"
+              />
             </a>
 
             {/* Desktop Nav */}
             <nav className="hidden md:flex items-center space-x-8">
               {links.map((link) => (
-                <a
+                <Link
                   key={link.name}
                   href={link.path}
-                  className={`text-sm font-medium transition-colors duration-300 ${
+                  className={`text-sm md:!text[21px] font-medium transition-colors duration-300 ${
                     activeLink === link.path
-                      ? 'text-orange-600 border-b-2 border-orange-600'
-                      : 'text-gray-700 hover:text-orange-600'
+                      ? "text-orange-600 border-b-2 font-bold border-orange-600"
+                      : "text-gray-700 hover:text-orange-600"
                   }`}
                 >
                   {link.name}
-                </a>
+                </Link>
               ))}
             </nav>
 
@@ -77,18 +83,18 @@ export default function Header({ activeLink = '' }) {
             <div className="hidden md:flex items-center space-x-4">
               {user ? (
                 <div className="relative">
-                  <button
-                    onClick={() => {
-                      setLoginDropdownOpen(!loginDropdownOpen);
-                    }}
-                    className="flex items-center px-4 py-2 text-gray-700 hover:text-orange-600 font-medium rounded-lg transition-colors bg-orange-50/50 hover:bg-orange-100"
-                  >
-                    <User className="w-5 h-5 mr-2" />
-                    {user.name || 'Profile'}
-                  </button>
+                  <CtaButton
+                    text={user.name || "Profile"}
+                    icon={User}
+                    size="md"
+                    variant="filled"
+                    className="bg-orange-50/50 hover:bg-orange-100 text-gray-700 hover:text-orange-600"
+                    onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
+                    asButton={true}
+                  />
                   <div
                     className={`absolute top-full right-0 mt-2 w-56 z-50 bg-white rounded-xl shadow-xl border border-orange-100 ${
-                      loginDropdownOpen ? 'block' : 'hidden'
+                      loginDropdownOpen ? "block" : "hidden"
                     }`}
                   >
                     <div className="py-2">
@@ -99,69 +105,74 @@ export default function Header({ activeLink = '' }) {
                         <User className="w-4 h-4 mr-2" />
                         {user.role === 10 ? "Candidate Profile" : "Restaurant Dashboard"}
                       </a>
-                      <button
+                      <CtaButton
+                        text="Logout"
+                        icon={LogOut}
+                        size="sm"
+                        variant="outline"
+                        className="w-full text-gray-700 hover:text-orange-600 hover:bg-orange-50"
                         onClick={handleLogout}
-                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Logout
-                      </button>
+                        asButton={true}
+                      />
                     </div>
                   </div>
                 </div>
               ) : (
                 <div className="relative">
-                  <button
-                    onClick={() => {
-                      setLoginDropdownOpen(!loginDropdownOpen);
-                    }}
-                    className="flex items-center px-4 py-2 text-gray-700 hover:text-orange-600 font-medium rounded-lg transition-colors bg-orange-50/50 hover:bg-orange-100"
-                  >
-                    <LogIn className="w-5 h-5 mr-2" />
-                    Login
-                  </button>
+                  <CtaButton
+                    text="Login"
+                    icon={LogIn}
+                    size="md"
+                    variant="outline"
+                    onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
+                    asButton={true}
+                  />
                   <div
                     className={`absolute top-full right-0 mt-2 w-56 z-50 bg-white rounded-xl shadow-xl border border-orange-100 ${
-                      loginDropdownOpen ? 'block' : 'hidden'
+                      loginDropdownOpen ? "block" : "hidden"
                     }`}
                   >
-                    <div className="py-2">
-                      <button
-                        onClick={() => openModal('candidate')}
-                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Candidate Login
-                      </button>
-                      <button
-                        onClick={() => openModal('restaurant')}
-                        className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
-                      >
-                        <Building className="w-4 h-4 mr-2" />
-                        Restaurant Login
-                      </button>
+                    <div className="p-2 flex flex-col gap-2">
+                      <CtaButton
+                        text="Candidate Login"
+                        icon={User}
+                        size="sm"
+                        variant="outline"
+
+                        onClick={() => openModal("candidate")}
+                        asButton={true}
+                      />
+                      <CtaButton
+                        text="Restaurant Login"
+                        icon={Building}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openModal("restaurant")}
+                        asButton={true}
+                      />
                     </div>
                   </div>
                 </div>
               )}
-              <a
-                href="/book-demo"
-                className="px-6 py-2 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg font-medium hover:from-orange-700 hover:to-amber-700 transition-all shadow-md hover:shadow-lg flex items-center"
-              >
-                <Briefcase className="w-5 h-5 mr-2" />
-                Book Demo
-              </a>
+              <CtaButton
+                href="/signup"
+                text="Registrar"
+                icon={UserPlus}
+                size="md"
+                variant="filled"
+                className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
+              />
             </div>
 
             {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-2 text-gray-700 hover:text-orange-600 rounded-lg hover:bg-orange-50 transition-colors"
-              onClick={() => {
-                setMobileOpen(!mobileOpen);
-              }}
-            >
-              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            <CtaButton
+              icon={mobileOpen ? X : Menu}
+              size="md"
+              variant="outline"
+              className="md:hidden text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              asButton={true}
+            />
           </div>
         </div>
 
@@ -176,14 +187,14 @@ export default function Header({ activeLink = '' }) {
                   onClick={() => setMobileOpen(false)}
                   className={`text-sm font-medium py-2 px-3 rounded-lg transition-colors ${
                     activeLink === link.path
-                      ? 'text-orange-600 bg-orange-50'
-                      : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
+                      ? "text-orange-600 bg-orange-50"
+                      : "text-gray-700 hover:text-orange-600 hover:bg-orange-50"
                   }`}
                 >
                   {link.name}
                 </a>
               ))}
-              <div className="pt-2 border-t border-orange-100">
+              <div className="pt-2 border-t border-orange-100 flex flex-col gap-2">
                 {user ? (
                   <>
                     <a
@@ -194,51 +205,54 @@ export default function Header({ activeLink = '' }) {
                       <User className="w-5 h-5 mr-2" />
                       {user.role === 10 ? "Candidate Profile" : "Restaurant Dashboard"}
                     </a>
-                    <button
+                    <CtaButton
+                      text="Logout"
+                      icon={LogOut}
+                      size="md"
+                      variant="outline"
+                      className="w-full text-gray-700 hover:text-orange-600 hover:bg-orange-50"
                       onClick={handleLogout}
-                      className="flex items-center w-full py-2 px-3 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                    >
-                      <LogOut className="w-5 h-5 mr-2" />
-                      Logout
-                    </button>
+                      asButton={true}
+                    />
                   </>
                 ) : (
-                  <>
-                    <button
-                      onClick={() => openModal('candidate')}
-                      className="flex items-center w-full py-2 px-3 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                    >
-                      <User className="w-5 h-5 mr-2" />
-                      Candidate Login
-                    </button>
-                    <button
-                      onClick={() => openModal('restaurant')}
-                      className="flex items-center w-full py-2 px-3 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
-                    >
-                      <Building className="w-5 h-5 mr-2" />
-                      Restaurant Login
-                    </button>
-                  </>
+                  <div className="flex flex-col gap-2">
+                    <CtaButton
+                      text="Candidate Login"
+                      icon={User}
+                      size="md"
+                      variant="outline"
+                      className="w-full text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                      onClick={() => openModal("candidate")}
+                      asButton={true}
+                    />
+                    <CtaButton
+                      text="Restaurant Login"
+                      icon={Building}
+                      size="md"
+                      variant="outline"
+                      className="w-full text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                      onClick={() => openModal("restaurant")}
+                      asButton={true}
+                    />
+                  </div>
                 )}
-                <a
-                  href="/book-demo"
+                <CtaButton
+                 href="/signup"
+                text="Registrar"
+                icon={UserPlus}
+                  size="md"
+                  variant="filled"
+                  className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center py-2 px-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg font-medium hover:from-orange-700 hover:to-amber-700 transition-all"
-                >
-                  <Briefcase className="w-5 h-5 mr-2" />
-                  Book Demo
-                </a>
+                />
               </div>
             </nav>
           </div>
         )}
       </header>
 
-      <LoginModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        initialTab={activeTab}
-      />
+      <LoginModal isOpen={modalOpen} onClose={() => setModalOpen(false)} initialTab={activeTab} />
     </>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import {
+import { 
+  Home, Store, MapPin, Users, BarChart3, Settings, 
   Menu, X, Building2, UserCircle, LogOut, ChevronDown, ChevronRight
 } from "lucide-react";
 import Link from "next/link";

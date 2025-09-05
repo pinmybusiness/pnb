@@ -32,7 +32,7 @@ export default function HomePage() {
               {/* CTA Buttons */}
               <div className="flex flex-wrap gap-4 animate-fade-in delay-300">
                  <CtaButton href="/jobs" text="Find Jobs" />
-                 <CtaButton href="/employers" text="Hire Staff" variant="outline"/>
+                 <CtaButton href="/dashboard" text="Hire Staff" variant="outline"/>
               </div>
             </div>
 
@@ -40,7 +40,7 @@ export default function HomePage() {
             <div className="lg:w-1/2 relative animate-fade-in-left">
               <div className="relative rounded-2xl  group  duration-500">
                 <Image
-                  src="/images/restaurant-roles.png" // Replace with your local image path
+                  src="/images/restaurant-roles.webp" // Replace with your local image path
                   alt="Restaurant Staff Jobs"
                   width={600}
                   height={400}

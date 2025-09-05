@@ -5,14 +5,14 @@ import Link from "next/link";
 import CtaButton from "../CtaButton";
 
 const jobRoles = [
-  { title: "Chef", image: "/images/jobs/chef.png" },
-  { title: "Manager", image: "/images/jobs/manager.png" },
-  { title: "Waiter/Waitress", image: "/images/jobs/waiter.png" },
-  { title: "Bartender", image: "/images/jobs/bartender.png" },
-  { title: "Host/Hostess", image: "/images/jobs/host.png" },
-  { title: "Dishwasher", image: "/images/jobs/dishwasher.png" },
-  { title: "Barista", image: "/images/jobs/barista.png" },
-  { title: "Sous Chef", image: "/images/jobs/souschef.png" },
+  { title: "Chef", image: "/images/jobs/chef.webp" },
+  { title: "Manager", image: "/images/jobs/manager.webp" },
+  { title: "Waiter/Waitress", image: "/images/jobs/waiter.webp" },
+  { title: "Bartender", image: "/images/jobs/bartender.webp" },
+  { title: "Host/Hostess", image: "/images/jobs/host.webp" },
+  { title: "Dishwasher", image: "/images/jobs/dishwasher.webp" },
+  { title: "Barista", image: "/images/jobs/barista.webp" },
+  { title: "Sous Chef", image: "/images/jobs/souschef.webp" },
 ];
 
 export default function PopularJobRoles() {

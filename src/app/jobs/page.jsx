@@ -9,7 +9,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { OpportunityCard } from "@/components/opportunity/OpportunityCard";
-import { getDurationText, getStipendText } from "@/utils/opportunity";
 import ApplicationModal from "@/components/opportunity/ApplicationModal";
 import { useSelector } from "react-redux";
 import { toast } from "react-hot-toast";

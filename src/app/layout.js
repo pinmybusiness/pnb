@@ -7,8 +7,8 @@ import ClientHeaderFooter from "./ClientHeaderFooter";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const metadata = {
-  title: "FasterQ.in",
-  description: "Find the Right Restaurant Job | India’s #1 Restaurant Job Platform",
+  title: "Restaurant Jobs in India for Students & Freshers | FasterQ",
+  description: "Find verified restaurant jobs in India for waiter, chef, manager, captain, and barista roles for students and freshers. Apply fast and start your hospitality career with FasterQ.",
    icons: {
     icon: '/favicon.png',
   },

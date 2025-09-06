@@ -55,9 +55,9 @@ export default function Testimonials() {
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
             What Our <span className="text-orange-600">Users Say</span>
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+          {/* <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
             Hear from job seekers and restaurant owners who found success with us.
-          </p>
+          </p> */}
         </div>
 
         <motion.div

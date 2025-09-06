@@ -84,11 +84,11 @@ export default function FeaturedJobs() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-12 md:mb-16 text-center">
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight">
-            Latest <span className="text-orange-600">Job Openings</span>
+            Discover the Latest Restaurant Jobs <span className="text-orange-600">Across India</span>
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
+          {/* <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
             Discover top restaurant jobs across India, updated daily for you.
-          </p>
+          </p> */}
         </div>
 
         <motion.div

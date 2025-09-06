@@ -70,7 +70,7 @@ export default function Header({ activeLink = "" }) {
                 <Link
                   key={link.name}
                   href={link.path}
-                  className={`text-sm md:!text-[21px] font-medium transition-colors duration-300 ${
+                  className={`text-sm md:xl font-medium transition-colors duration-300 ${
                     activeLink === link.path
                       ? "text-orange-600 border-b-2 font-bold border-orange-600"
                       : "text-gray-700 hover:text-orange-600"

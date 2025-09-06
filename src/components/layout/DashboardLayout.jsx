@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { allMenus, panelInfo } from "@/config/menus";
 import SideNav from "./SideNav";
 import TopNav from "./TopNav";
+import "./dashboard.css";
 
 export default function DashboardLayout({ children }) {
   const { user } = useSelector((state) => state.auth);
@@ -12,7 +13,7 @@ export default function DashboardLayout({ children }) {
   const config = panelInfo[roleNumber] || { title: "Dashboard", subtitle: "Portal" };
 
   return (
-    <div className="flex h-screen">
+    <div className="dashboard-root flex h-screen">
       <SideNav 
         navigation={roleMenus} 
         title={config.title} 

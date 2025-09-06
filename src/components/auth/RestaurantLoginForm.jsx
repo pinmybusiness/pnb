@@ -20,7 +20,6 @@ export default function RestaurantLoginForm({ onSuccess }) {
 
   useEffect(() => {
     if (token && user && role) {
-      console.log('Login successful, redirecting to /dashboard');
       if (onSuccess) onSuccess();
       router.push("/dashboard");
     }

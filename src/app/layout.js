@@ -25,7 +25,13 @@ export default function RootLayout({ children }) {
       >
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
           <Providers>
-            <Toaster position="top-center" />
+          <Toaster
+            position="top-center"
+            reverseOrder={false}
+            toastOptions={{
+              duration: 3000, // default duration
+            }}
+          />
             <ClientHeaderFooter position="header" />
             {children}
             <ClientHeaderFooter position="footer" />

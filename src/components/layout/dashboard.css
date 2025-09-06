@@ -1,0 +1,36 @@
+/* 👇 Wrap everything inside .dashboard-root to avoid affecting other pages */
+.dashboard-root h1 {
+  font-size: 1.5rem;   /* 24px */
+  font-weight: 600;
+}
+
+.dashboard-root h2 {
+  font-size: 1.25rem;  /* 20px */
+  font-weight: 600;
+}
+
+.dashboard-root h3 {
+  font-size: 1.125rem; /* 18px */
+  font-weight: 500;
+}
+
+.dashboard-root h4 {
+  font-size: 1rem;     /* 16px */
+  font-weight: 500;
+}
+
+.dashboard-root h5 {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+}
+
+.dashboard-root h6 {
+  font-size: 0.75rem;  /* 12px */
+  font-weight: 500;
+}
+
+.dashboard-root p,
+.dashboard-root a {
+  font-family: var(--font-body, "Inter", sans-serif);
+  line-height: 1.5;
+}

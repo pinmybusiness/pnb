@@ -37,7 +37,7 @@ export const allMenus = [
     icon: GraduationCap, 
     roles: [0,1,6,7], 
     children: [
-      { name: "opportunities", href: "/dashboard/opportunities", roles: [0,1,6,7] },
+      { name: "Opportunities", href: "/dashboard/opportunities", roles: [0,1,6,7] },
       { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [6,7] },
     ]
   },

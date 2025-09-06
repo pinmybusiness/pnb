@@ -23,9 +23,9 @@ export default function CTASection() {
             {/* Right Side: Content */}
             <div className="md:w-1/2 text-center md:text-left animate-slide-in-right">
               <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight leading-tight">
-                Grow Your{" "}
+                Build Your {" "}
                 <span className="text-orange-600 relative">
-                  Restaurant Team
+                  Restaurant Dream Team Quickly
                   <span className="absolute -bottom-1 left-0 w-full h-1 bg-orange-600/70 rounded-full" />
                 </span>
               </h2>

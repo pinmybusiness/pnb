@@ -16,17 +16,15 @@ export default function HomePage() {
             <div className="lg:w-1/2 space-y-8">
               <div className="inline-flex items-center px-5 py-2.5 rounded-full bg-white text-sm md:text-base font-semibold animate-fade-in">
                 <Sparkles className="w-5 h-5 mr-2" />
-                India’s #1 Restaurant Job Platform
+                India’s Leading Restaurant Job Platform
               </div>
 
               <h1 className="!text-4xl md:!text-5xl lg:!text-5xl !font-extrabold  leading-tight animate-fade-in delay-100">
-                Find the Right <br/> <span className="text-primary">Restaurant Job</span> 
+               Find Restaurant Jobs <br/> <span className="text-primary">Fast & Easy</span> 
               </h1>
 
               <p className="text-lg  text-gray-600 leading-relaxed animate-fade-in delay-200 max-w-lg">
-                Discover jobs for <span className="font-medium">chefs</span>, 
-                <span className="font-medium"> waiters</span>, 
-                <span className="font-medium"> managers</span> & more — all in one trusted platform for India’s hospitality industry.
+ Find verified restaurant jobs across India for chefs, waiters, managers, baristas, and more. Apply easily and grow your hospitality career with FasterQ.
               </p>
 
               {/* CTA Buttons */}

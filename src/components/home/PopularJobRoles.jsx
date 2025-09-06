@@ -21,11 +21,11 @@ export default function PopularJobRoles() {
       {/* Heading */}
       <div className="text-center mb-12 sm:mb-16">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900">
-          Popular <span className="text-orange-600">Job Roles</span>
+          Explore the Most In-Demand <span className="text-orange-600">Restaurant Jobs</span>
         </h2>
-        <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+        {/* <p className="mt-3 sm:mt-4 text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
           Explore the most in-demand jobs in India’s hospitality industry
-        </p>
+        </p> */}
       </div>
 
       {/* Cards */}

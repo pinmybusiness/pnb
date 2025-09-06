@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import Header from "@/components/Header";
 import Footer from '@/components/Footer';
 import { GoogleOAuthProvider } from '@react-oauth/google';
-import { Toaster } from 'react-hot-toast';
 import { Providers } from './providers';
 
 export default function ClientHeaderFooter({ position }) {
@@ -17,7 +16,6 @@ export default function ClientHeaderFooter({ position }) {
   return (
     <Providers>
       <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
-        <Toaster position="top-center" />
         {position === "header" && <Header />}
         {position === "footer" && <Footer />}
       </GoogleOAuthProvider>

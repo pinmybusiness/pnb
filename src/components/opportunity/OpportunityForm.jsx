@@ -22,18 +22,20 @@ import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
+import Select from 'react-select';
+import { workCategories, languages, internshipTypes, jobTypes, daysOfWeek, shifts } from '@/data/opportunityData';
 
 const OpportunityForm = ({ editData = null }) => {
   const router = useRouter();
   const { user, token, isLoading: authLoading } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [opportunityType, setOpportunityType] = useState('internship');
+  const [opportunityType, setOpportunityType] = useState('job');
   const [formData, setFormData] = useState({
     branch: user?.branch,
     category: '',
-    opportunityType: 'internship',
-    internshipType: 'daily',
+    opportunityType: 'job',
+    internshipType: 'full_time',
     numberOfPeople: 1,
     duration: 1,
     durationUnit: 'days',
@@ -47,7 +49,7 @@ const OpportunityForm = ({ editData = null }) => {
     stipend: { 
       amount: 0, 
       currency: 'INR', 
-      paymentType: 'after_completion',
+      paymentType: 'monthly',
       includesTips: false,
       includesFood: false,
       includesAccommodation: false
@@ -56,85 +58,15 @@ const OpportunityForm = ({ editData = null }) => {
     description: '',
     languages: {
       required: [],
-      preferred: []
+      preferred: ['Telugu', 'Hindi']
     },
     tags: []
   });
+  const [originalCategory, setOriginalCategory] = useState('');
+  const [originalInternshipType, setOriginalInternshipType] = useState('');
 
   const isEdit = Boolean(editData);
-  const categories = [
-    'Kitchen Helper', 'Service Staff', 'Management Trainee', 'Marketing Assistant', 
-    'Events Coordinator', 'Delivery Helper', 'Other'
-  ];
 
-  const languages = [
-    'Hindi', 'English', 'Tamil', 'Telugu',
-  ];
-
-  // Internship types
-  const internshipTypes = [
-    { 
-      value: 'daily', 
-      label: 'Daily Basis', 
-      description: 'Help for specific days',
-      icon: Clock,
-      frequency: 'one_time',
-      durationUnit: 'days'
-    },
-    { 
-      value: 'weekly', 
-      label: 'Weekly', 
-      description: 'Regular help on specific days each week',
-      icon: Calendar,
-      frequency: 'regular',
-      durationUnit: 'weeks'
-    },
-    { 
-      value: 'weekend', 
-      label: 'Weekends Only', 
-      description: 'Regular help on Saturdays and Sundays',
-      icon: Calendar,
-      frequency: 'regular',
-      durationUnit: 'weeks'
-    }
-  ];
-
-  // Job types (only for job opportunityType)
-  const jobTypes = [
-    { 
-      value: 'full_time', 
-      label: 'Full Time', 
-      description: 'Regular working hours (8-9 hours)',
-      icon: Users,
-      frequency: 'regular'
-    },
-    { 
-      value: 'part_time', 
-      label: 'Part Time', 
-      description: 'Few hours daily (3-5 hours)',
-      icon: Clock,
-      frequency: 'regular'
-    }
-  ];
-
-  const daysOfWeek = [
-    { value: 'monday', label: 'Mon' },
-    { value: 'tuesday', label: 'Tue' },
-    { value: 'wednesday', label: 'Wed' },
-    { value: 'thursday', label: 'Thu' },
-    { value: 'friday', label: 'Fri' },
-    { value: 'saturday', label: 'Sat' },
-    { value: 'sunday', label: 'Sun' }
-  ];
-
-  const shifts = [
-    { value: 'morning', label: 'Morning (6AM - 2PM)' },
-    { value: 'evening', label: 'Evening (2PM - 10PM)' },
-    { value: 'night', label: 'Night (10PM - 6AM)' },
-    { value: 'flexible', label: 'Flexible Hours' }
-  ];
-
-  // Initialize form with edit data if available
   useEffect(() => {
     if (editData) {
       const {
@@ -170,27 +102,27 @@ const OpportunityForm = ({ editData = null }) => {
         stipend: {
           amount: stipend?.amount || 0,
           currency: stipend?.currency || 'INR',
-          paymentType: stipend?.paymentType || 'after_completion',
+          paymentType: stipend?.paymentType || 'monthly',
           includesTips: stipend?.includesTips || false,
           includesFood: stipend?.includesFood || false,
           includesAccommodation: stipend?.includesAccommodation || false
         },
         title,
         description,
-        languages: languages || { required: [], preferred: [] },
+        languages: languages || { required: [], preferred: ['Telugu', 'Hindi'] },
         tags: tags || []
       });
 
-      setOpportunityType(opportunityType || 'internship');
+      setOpportunityType(opportunityType || 'job');
+      setOriginalCategory(category || '');
+      setOriginalInternshipType(internshipType || '');
     }
   }, [editData, user?.branch]);
 
-  // Get current date in YYYY-MM-DD format
   const getTodayDate = () => {
     return new Date().toISOString().split('T')[0];
   };
 
-  // Calculate end date based on start date and duration
   const calculateEndDate = (startDate, duration, durationUnit) => {
     if (!startDate) return '';
     
@@ -205,7 +137,6 @@ const OpportunityForm = ({ editData = null }) => {
     return endDate.toISOString().split('T')[0];
   };
 
-  // Calculate total amount based on opportunity type
   const calculateTotalAmount = () => {
     if (opportunityType === 'internship') {
       if (formData.stipend.amount <= 0 || formData.duration <= 0) return 0;
@@ -224,7 +155,6 @@ const OpportunityForm = ({ editData = null }) => {
     return formData.stipend.amount;
   };
 
-  // Get current type details
   const getCurrentTypeDetails = () => {
     if (opportunityType === 'internship') {
       return internshipTypes.find(t => t.value === formData.internshipType);
@@ -233,12 +163,10 @@ const OpportunityForm = ({ editData = null }) => {
     }
   };
 
-  // Language toggle handler
   const handleLanguageToggle = (type, language, isChecked) => {
     setFormData(prev => {
       const otherType = type === 'required' ? 'preferred' : 'required';
       
-      // If adding to one list, remove from the other
       const updatedLanguages = {
         ...prev.languages,
         [type]: isChecked
@@ -246,7 +174,6 @@ const OpportunityForm = ({ editData = null }) => {
           : prev.languages[type].filter(lang => lang !== language)
       };
       
-      // Remove from other list if adding to this one
       if (isChecked) {
         updatedLanguages[otherType] = updatedLanguages[otherType].filter(
           lang => lang !== language
@@ -260,7 +187,6 @@ const OpportunityForm = ({ editData = null }) => {
     });
   };
 
-  // Auto-set duration unit based on internship type
   useEffect(() => {
     if (opportunityType === 'internship') {
       const typeDetails = getCurrentTypeDetails();
@@ -273,10 +199,12 @@ const OpportunityForm = ({ editData = null }) => {
       }
       
       handleNestedChange('stipend', 'paymentType', 'after_completion');
+    } else {
+      handleNestedChange('schedule', 'startDate', null);
+      handleNestedChange('schedule', 'endDate', null);
     }
   }, [formData.internshipType, opportunityType]);
 
-  // Auto-set job-specific values when job type changes
   useEffect(() => {
     if (opportunityType === 'job') {
       handleNestedChange('stipend', 'paymentType', 'monthly');
@@ -289,7 +217,6 @@ const OpportunityForm = ({ editData = null }) => {
     }
   }, [opportunityType, formData.internshipType]);
 
-  // Auto-calculate end date when start date or duration changes
   useEffect(() => {
     if (formData.schedule.startDate && formData.duration > 0 && opportunityType === 'internship') {
       const endDate = calculateEndDate(
@@ -304,7 +231,6 @@ const OpportunityForm = ({ editData = null }) => {
     }
   }, [formData.schedule.startDate, formData.duration, formData.durationUnit, opportunityType]);
 
-  // Auto-select weekend days when weekend type is selected
   useEffect(() => {
     if (formData.internshipType === 'weekend') {
       setFormData(prev => ({
@@ -327,7 +253,6 @@ const OpportunityForm = ({ editData = null }) => {
     }
   }, [formData.internshipType]);
 
-  // For weekly internships, set start date to next occurrence of selected day
   useEffect(() => {
     if (opportunityType === 'internship' && 
         formData.internshipType === 'weekly' && 
@@ -337,11 +262,9 @@ const OpportunityForm = ({ editData = null }) => {
       const todayDay = today.getDay();
       const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
       
-      // Find the next selected day
       let daysToAdd = 0;
       let found = false;
       
-      // Check next 14 days to find the closest selected day
       for (let i = 0; i < 14; i++) {
         const checkDay = (todayDay + i) % 7;
         const dayName = dayNames[checkDay];
@@ -357,7 +280,6 @@ const OpportunityForm = ({ editData = null }) => {
         const startDate = new Date(today);
         startDate.setDate(today.getDate() + daysToAdd);
         
-        // Only set if different from current value
         if (startDate.toISOString().split('T')[0] !== formData.schedule.startDate) {
           handleNestedChange('schedule', 'startDate', startDate.toISOString().split('T')[0]);
         }
@@ -365,22 +287,21 @@ const OpportunityForm = ({ editData = null }) => {
     }
   }, [formData.schedule.days, formData.internshipType, opportunityType]);
 
-  // Auto-set hours when job type changes to part_time
   useEffect(() => {
     if (opportunityType === 'job' && formData.internshipType === 'part_time') {
       handleNestedChange('schedule', 'hoursPerDay', 4);
     }
   }, [formData.internshipType, opportunityType]);
 
-  // Auto-generate title based on form data
   useEffect(() => {
     if (formData.category && (formData.internshipType || opportunityType === 'job')) {
       const typeDetails = getCurrentTypeDetails();
-      
-      const newTitle = `${formData.category} - ${typeDetails?.label || ''}`;
-      setFormData(prev => ({ ...prev, title: newTitle }));
+      if (!isEdit || formData.category !== originalCategory || formData.internshipType !== originalInternshipType) {
+        const newTitle = `${formData.category} - ${typeDetails?.label || ''}`;
+        setFormData(prev => ({ ...prev, title: newTitle }));
+      }
     }
-  }, [formData.category, formData.internshipType, opportunityType]);
+  }, [formData.category, formData.internshipType, opportunityType, isEdit, originalCategory, originalInternshipType]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -400,6 +321,9 @@ const OpportunityForm = ({ editData = null }) => {
         [field]: value
       }
     }));
+    if (errors[`${parent}.${field}`]) {
+      setErrors(prev => ({ ...prev, [`${parent}.${field}`]: '' }));
+    }
   };
 
   const toggleDay = (day) => {
@@ -421,51 +345,57 @@ const OpportunityForm = ({ editData = null }) => {
     
     const typeDetails = getCurrentTypeDetails();
     
-    if (typeDetails?.frequency === 'one_time') {
-      if (!formData.schedule.startDate) {
-        newErrors.startDate = 'Please specify a start date';
-      }
-    } else {
-      if (formData.internshipType === 'weekly' && formData.schedule.days.length === 0) {
-        newErrors.days = 'Please select at least one day';
-      }
-      if (!formData.schedule.startDate) {
-        newErrors.startDate = 'Please specify a start date';
+    if (opportunityType === 'internship') {
+      if (typeDetails?.frequency === 'one_time') {
+        if (!formData.schedule.startDate) {
+          newErrors.startDate = 'Please specify a start date';
+        }
+      } else {
+        if (formData.internshipType === 'weekly' && formData.schedule.days.length === 0) {
+          newErrors.days = 'Please select at least one day';
+        }
+        if (!formData.schedule.startDate) {
+          newErrors.startDate = 'Please specify a start date';
+        }
+        
+        if (formData.schedule.startDate && new Date(formData.schedule.startDate) < new Date()) {
+          newErrors.startDate = 'Start date cannot be in the past';
+        }
       }
       
-      if (formData.schedule.startDate && new Date(formData.schedule.startDate) < new Date()) {
-        newErrors.startDate = 'Start date cannot be in the past';
-      }
-    }
-    
-    if (opportunityType === 'internship') {
-      if (formData.durationUnit === 'days' && (formData.duration < 1 || formData.duration > 30)) {
+      if (!formData.duration || formData.duration <= 0) {
+        newErrors.duration = 'Duration must be at least 1';
+        handleInputChange('duration', 1);
+      } else if (formData.durationUnit === 'days' && formData.duration > 30) {
         newErrors.duration = 'Duration must be between 1-30 days';
       } else if (formData.durationUnit === 'weeks') {
         const maxWeeks = (formData.internshipType === 'weekly' || formData.internshipType === 'weekend') ? 4 : 12;
-        if (formData.duration < 1 || formData.duration > maxWeeks) {
+        if (formData.duration > maxWeeks) {
           newErrors.duration = `Duration must be between 1-${maxWeeks} weeks`;
         }
       }
     }
     
-    if (formData.stipend.amount <= 0) {
+    if (!formData.stipend.amount || formData.stipend.amount <= 0) {
       newErrors.stipendAmount = 'Stipend/Salary amount is required';
+      handleNestedChange('stipend', 'amount', 0);
     }
     
-    if (formData.numberOfPeople <= 0) newErrors.numberOfPeople = 'At least 1 person is required';
+    if (!formData.numberOfPeople || formData.numberOfPeople <= 0) {
+      newErrors.numberOfPeople = 'At least 1 person is required';
+      handleInputChange('numberOfPeople', 1);
+    }
     if (formData.numberOfPeople > 10) newErrors.numberOfPeople = 'Maximum 10 people allowed';
     
-    if (formData.schedule.hoursPerDay <= 0 || formData.schedule.hoursPerDay > 12) {
+    if (!formData.schedule.hoursPerDay || formData.schedule.hoursPerDay <= 0) {
+      newErrors.hoursPerDay = 'Hours per day must be at least 1';
+      handleNestedChange('schedule', 'hoursPerDay', 1);
+    }
+    if (formData.schedule.hoursPerDay > 12) {
       newErrors.hoursPerDay = 'Hours per day must be between 1-12';
     }
     
     if (!formData.title.trim()) newErrors.title = 'Title is required';
-
-    // Language validation
-    if (formData.languages.required.length === 0) {
-      newErrors.requiredLanguages = 'At least one required language is needed';
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -493,7 +423,13 @@ const OpportunityForm = ({ editData = null }) => {
         totalAmount: finalAmount
       },
       opportunityType,
-      isJob: opportunityType === 'job'
+      isJob: opportunityType === 'job',
+      schedule: {
+        ...formData.schedule,
+        ...(opportunityType === 'job' 
+          ? { startDate: null, endDate: null }
+          : { startDate: formData.schedule.startDate, endDate: formData.schedule.endDate })
+      }
     };
 
     setLoading(true);
@@ -547,6 +483,40 @@ const OpportunityForm = ({ editData = null }) => {
         : 'border-gray-300 focus:ring-primary'
     }`;
 
+  const customSelectStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      border: errors.category ? '1px solid #f87171' : '1px solid #d1d5db',
+      backgroundColor: errors.category ? '#fef2f2' : '#fff',
+      borderRadius: '0.375rem',
+      padding: '0.25rem',
+      boxShadow: state.isFocused ? '0 0 0 2px #3b82f6' : 'none',
+      '&:hover': {
+        borderColor: errors.category ? '#f87171' : '#93c5fd'
+      }
+    }),
+    menu: (provided) => ({
+      ...provided,
+      zIndex: 9999
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#f3f4f6' : '#fff',
+      color: state.isSelected ? '#fff' : '#1f2937',
+      '&:hover': {
+        backgroundColor: '#f3f4f6'
+      }
+    }),
+    groupHeading: (provided) => ({
+      ...provided,
+      fontSize: '0.875rem',
+      fontWeight: '600',
+      color: '#1f2937',
+      padding: '0.5rem 1rem',
+      backgroundColor: '#f9fafb'
+    })
+  };
+
   const currentTypeDetails = getCurrentTypeDetails();
   const isJob = opportunityType === 'job';
   const isWeeklyOrWeekend = formData.internshipType === 'weekly' || formData.internshipType === 'weekend';
@@ -569,8 +539,6 @@ const OpportunityForm = ({ editData = null }) => {
 
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
         <div className="space-y-8">
-          
-          {/* Opportunity Type Selection */}
           <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Briefcase className="h-5 w-5 mr-2 text-blue-600" />
@@ -578,20 +546,6 @@ const OpportunityForm = ({ editData = null }) => {
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setOpportunityType('internship')}
-                className={`p-4 rounded-lg border-2 flex flex-col items-center text-center transition-all ${
-                  opportunityType === 'internship'
-                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                    : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-25'
-                }`}
-              >
-                <BookOpen className="h-6 w-6 mb-2" />
-                <span className="text-sm font-medium mb-1">Internship</span>
-                <span className="text-xs text-gray-500">Learning opportunity for students</span>
-              </button>
-
               <button
                 type="button"
                 onClick={() => setOpportunityType('job')}
@@ -605,10 +559,23 @@ const OpportunityForm = ({ editData = null }) => {
                 <span className="text-sm font-medium mb-1">Job</span>
                 <span className="text-xs text-gray-500">Employment opportunity</span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setOpportunityType('internship')}
+                className={`p-4 rounded-lg border-2 flex flex-col items-center text-center transition-all ${
+                  opportunityType === 'internship'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                    : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-25'
+                }`}
+              >
+                <BookOpen className="h-6 w-6 mb-2" />
+                <span className="text-sm font-medium mb-1">Internship / ODC</span>
+                <span className="text-xs text-gray-500">Learning opportunity for students</span>
+              </button>
             </div>
           </div>
           
-          {/* Basic Information */}
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
@@ -616,27 +583,6 @@ const OpportunityForm = ({ editData = null }) => {
             </h3>
             
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  What kind of work? *
-                </label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => handleInputChange('category', e.target.value)}
-                  className={inputClassName('category')}
-                >
-                  <option value="">Select work type</option>
-                  {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-                {errors.category && (
-                  <p className="text-red-600 text-sm mt-1 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.category}
-                  </p>
-                )}
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {isJob ? 'Job Type *' : 'Internship Type *'}
@@ -649,14 +595,14 @@ const OpportunityForm = ({ editData = null }) => {
                         key={type.value}
                         type="button"
                         onClick={() => handleInputChange('internshipType', type.value)}
-                        className={`p-3 rounded-lg border-2 flex flex-col items-center text-center transition-all ${
+                        className={`p-3 rounded-lg border-2 flex items-center justify-center gap-2 text-center transition-all ${
                           formData.internshipType === type.value
                             ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
                             : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-25'
                         }`}
                       >
-                        <IconComponent className="h-5 w-5 mb-2" />
-                        <span className="text-sm font-medium mb-1">{type.label}</span>
+                        <IconComponent className="h-5 w-5" />
+                        <span className="text-sm font-medium ">{type.label}</span>
                         <span className="text-xs text-gray-500">{type.description}</span>
                       </button>
                     );
@@ -668,10 +614,31 @@ const OpportunityForm = ({ editData = null }) => {
                   </p>
                 )}
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  What kind of work? *
+                </label>
+                <Select
+                  options={workCategories}
+                  value={workCategories
+                    .flatMap(group => group.options)
+                    .find(option => option.value === formData.category) || null}
+                  onChange={(selectedOption) => handleInputChange('category', selectedOption ? selectedOption.value : '')}
+                  placeholder="Select work type"
+                  isSearchable
+                  styles={customSelectStyles}
+                  classNamePrefix="react-select"
+                />
+                {errors.category && (
+                  <p className="text-red-600 text-sm mt-1 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.category}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Duration (for internships only) */}
           {!isJob && (
             <div className="bg-white p-6 rounded-lg border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -690,7 +657,12 @@ const OpportunityForm = ({ editData = null }) => {
                       min="1"
                       max={formData.durationUnit === 'days' ? 30 : isWeeklyOrWeekend ? 4 : 12}
                       value={formData.duration}
-                      onChange={(e) => handleInputChange('duration', parseInt(e.target.value) || 1)}
+                      onChange={(e) => handleInputChange('duration', e.target.value === '' ? '' : parseInt(e.target.value))}
+                      onBlur={(e) => {
+                        if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                          handleInputChange('duration', 1);
+                        }
+                      }}
                       className={`${inputClassName('duration')} w-full sm:w-24`}
                     />
                     <span className="text-sm font-medium text-gray-700">
@@ -715,7 +687,6 @@ const OpportunityForm = ({ editData = null }) => {
             </div>
           )}
 
-          {/* Timing Details */}
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Clock className="h-5 w-5 mr-2 text-blue-600" />
@@ -752,47 +723,49 @@ const OpportunityForm = ({ editData = null }) => {
                   {errors.days && (
                     <p className="text-red-600 text-sm mt-1 flex items-center">
                       <AlertCircle className="h-4 w-4 mr-1" /> {errors.days}
-                  </p>
+                    </p>
                   )}
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Specific Start Date *
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.schedule.startDate}
-                    onChange={(e) => handleNestedChange('schedule', 'startDate', e.target.value)}
-                    min={getTodayDate()}
-                    className={inputClassName('startDate')}
-                  />
-                  {errors.startDate && (
-                    <p className="text-red-600 text-sm mt-1 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" /> {errors.startDate}
-                    </p>
-                  )}
-                </div>
-
-                {!isJob && formData.schedule.startDate && (
+              {!isJob && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      End Date (Auto-calculated)
+                      Specific Start Date *
                     </label>
                     <input
                       type="date"
-                      value={formData.schedule.endDate}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
-                      readOnly
+                      value={formData.schedule.startDate || ''}
+                      onChange={(e) => handleNestedChange('schedule', 'startDate', e.target.value)}
+                      min={getTodayDate()}
+                      className={inputClassName('startDate')}
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Calculated based on start date and duration
-                    </p>
+                    {errors.startDate && (
+                      <p className="text-red-600 text-sm mt-1 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-1" /> {errors.startDate}
+                      </p>
+                    )}
                   </div>
-                )}
-              </div>
+
+                  {formData.schedule.startDate && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        End Date (Auto-calculated)
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.schedule.endDate || ''}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                        readOnly
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Calculated based on start date and duration
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -804,7 +777,12 @@ const OpportunityForm = ({ editData = null }) => {
                     min="1"
                     max="12"
                     value={formData.schedule.hoursPerDay}
-                    onChange={(e) => handleNestedChange('schedule', 'hoursPerDay', parseInt(e.target.value) || 1)}
+                    onChange={(e) => handleNestedChange('schedule', 'hoursPerDay', e.target.value === '' ? '' : parseInt(e.target.value))}
+                    onBlur={(e) => {
+                      if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                        handleNestedChange('schedule', 'hoursPerDay', 1);
+                      }
+                    }}
                     className={inputClassName('hoursPerDay')}
                   />
                   {errors.hoursPerDay && (
@@ -841,7 +819,12 @@ const OpportunityForm = ({ editData = null }) => {
                   min="1"
                   max="10"
                   value={formData.numberOfPeople}
-                  onChange={(e) => handleInputChange('numberOfPeople', parseInt(e.target.value) || 1)}
+                  onChange={(e) => handleInputChange('numberOfPeople', e.target.value === '' ? '' : parseInt(e.target.value))}
+                  onBlur={(e) => {
+                    if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                      handleInputChange('numberOfPeople', 1);
+                    }
+                  }}
                   className={inputClassName('numberOfPeople')}
                 />
                 {errors.numberOfPeople && (
@@ -853,7 +836,6 @@ const OpportunityForm = ({ editData = null }) => {
             </div>
           </div>
 
-          {/* Payment Details */}
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <DollarSign className="h-5 w-5 mr-2 text-blue-600" />
@@ -870,7 +852,12 @@ const OpportunityForm = ({ editData = null }) => {
                     type="number"
                     min="1"
                     value={formData.stipend.amount}
-                    onChange={(e) => handleNestedChange('stipend', 'amount', parseInt(e.target.value) || 0)}
+                    onChange={(e) => handleNestedChange('stipend', 'amount', e.target.value === '' ? '' : parseInt(e.target.value))}
+                    onBlur={(e) => {
+                      if (e.target.value === '' || parseInt(e.target.value) < 0) {
+                        handleNestedChange('stipend', 'amount', 0);
+                      }
+                    }}
                     className={inputClassName('stipendAmount')}
                     placeholder="Enter amount"
                   />
@@ -960,7 +947,6 @@ const OpportunityForm = ({ editData = null }) => {
             </div>
           </div>
 
-          {/* Languages Section */}
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Globe className="h-5 w-5 mr-2 text-blue-600" />
@@ -970,7 +956,7 @@ const OpportunityForm = ({ editData = null }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Required Languages *
+                  Required Languages
                 </label>
                 <div className="space-y-2">
                   {languages.map(language => {
@@ -996,16 +982,11 @@ const OpportunityForm = ({ editData = null }) => {
                     );
                   })}
                 </div>
-                {errors.requiredLanguages && (
-                  <p className="text-red-600 text-sm mt-1 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.requiredLanguages}
-                  </p>
-                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Languages (Optional)
+                  Preferred Languages
                 </label>
                 <div className="space-y-2">
                   {languages.map(language => {
@@ -1035,7 +1016,6 @@ const OpportunityForm = ({ editData = null }) => {
             </div>
           </div>
 
-          {/* Title and Description */}
           <div className="bg-green-50 p-6 rounded-lg border border-green-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
@@ -1083,7 +1063,6 @@ const OpportunityForm = ({ editData = null }) => {
           </div>
         </div>
 
-        {/* Submit Button */}
         <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
           <button
             type="submit"

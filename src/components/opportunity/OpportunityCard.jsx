@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { MapPin, Calendar, Clock, Building, Users, CheckCircle, ExternalLink, Briefcase } from "lucide-react";
 import { formatDateWithSuffix } from "@/utils/dateFormat";
-import { getDurationText, getStipendText } from "@/utils/opportunity";
+import { getDurationText, getStipendText, getOpportunityTypeText, getInternshipTypeText, getCategoryText  } from "@/utils/opportunity";
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // Earth's radius in km
@@ -17,7 +17,6 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
 
 export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthenticated, hasProfile, handleApply, userLat, userLon }) => {
   const router = useRouter();
-
   let distance = null;
   if (userLat && userLon && opportunity.branch?.location?.coordinates) {
     const [jobLon, jobLat] = opportunity.branch.location.coordinates;
@@ -41,7 +40,7 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
                 {opportunity.branch?.location?.city && (
                   <span className="flex items-center">
                     <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 text-red-500" />
-                    {opportunity.branch.location.city}
+                    {opportunity.branch.location.city.name}
                   </span>
                 )}
                 {distance !== null && (
@@ -57,18 +56,24 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
                     {getDurationText(opportunity)}
                   </span>
                 )}
+                {/* {opportunity.category !== undefined && (
+                  <span className="flex items-center">
+                    <Briefcase className="h-3 w-3 mr-1 text-gray-500" />
+                    {getCategoryText(opportunity.category)}
+                  </span>
+                )} */}
               </div>
               <div className="flex flex-wrap gap-2">
-                {opportunity.opportunityType && (
+                {opportunity.opportunityType !== undefined && (
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
                     <Briefcase className="w-3 h-3 mr-1" />
-                    {opportunity.opportunityType.charAt(0).toUpperCase() + opportunity.opportunityType.slice(1)}
+                    {getOpportunityTypeText(opportunity.opportunityType)}
                   </span>
                 )}
-                {opportunity.internshipType && (
+                {opportunity.internshipType !== undefined && (
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] sm:text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100">
                     <Clock className="w-3 h-3 mr-1" />
-                    {opportunity.internshipType.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                    {getInternshipTypeText(opportunity.internshipType)}
                   </span>
                 )}
               </div>
@@ -98,8 +103,9 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
               <button
                 onClick={() => handleApply(opportunity)}
                 className="w-full py-2 sm:py-2.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white rounded-lg text-xs sm:text-sm font-medium transition shadow-sm hover:shadow-md"
+                disabled={!isAuthenticated || !hasProfile}
               >
-                {isAuthenticated ? "Apply Now" : "Login to Apply"}
+                {isAuthenticated ? (hasProfile ? "Apply Now" : "Apply Now") : "Login to Apply"}
               </button>
             )}
             {opportunity.applications?.length > 0 && (

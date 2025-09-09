@@ -1,5 +1,3 @@
-"use client";
-
 import { Building2, Users, Zap } from "lucide-react";
 
 export default function QuickStats() {

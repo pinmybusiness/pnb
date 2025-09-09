@@ -1,7 +1,3 @@
-"use client";
-
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import CtaButton from "../CtaButton";
 
 export default function CTASection() {

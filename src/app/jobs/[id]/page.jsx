@@ -1,18 +1,30 @@
-"use client";
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import {
   MapPin, Calendar, Clock, DollarSign, Building, Briefcase, ArrowLeft,
   FileText, CheckCircle, Languages, UserCheck, Gift, Utensils, Home, Users,
   X, Eye
-} from "lucide-react";
-import Header from "@/components/Header";
-import Link from "next/link";
-import { formatDateWithSuffix } from "@/utils/dateFormat";
-import { getCategoryText, getDayName, getDurationText, getInternshipTypeText, getShiftText, getStipendText } from "@/utils/opportunity";
-import ApplicationModal from "@/components/opportunity/ApplicationModal";
-import { useSelector } from "react-redux";
-import { Toaster, toast } from "react-hot-toast"; // Import react-hot-toast
+} from 'lucide-react';
+import Link from 'next/link';
+import { formatDateWithSuffix } from '@/utils/dateFormat';
+import {
+  getCategoryText,
+  getDayName,
+  getDurationText,
+  getInternshipTypeText,
+  getShiftText,
+  getStipendText,
+  getOpportunityTypeText,
+  getPaymentTypeText,
+  getBenefitsText,
+  getLanguageText
+} from '@/utils/opportunity';
+import { benefits, languages } from '@/data/opportunityData';
+import ApplicationModal from '@/components/opportunity/ApplicationModal';
+import { useSelector } from 'react-redux';
+import { Toaster, toast } from 'react-hot-toast';
 
 export default function PublicOpportunityDetail() {
   const params = useParams();
@@ -25,10 +37,8 @@ export default function PublicOpportunityDetail() {
   const [hasProfile, setHasProfile] = useState(false);
   const [appliedOpportunities, setAppliedOpportunities] = useState(new Set());
   const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [coverLetter, setCoverLetter] = useState("");
+  const [coverLetter, setCoverLetter] = useState('');
   const { user, token } = useSelector((state) => state.auth);
-
-  console.log("oper", opportunity?._id);
 
   useEffect(() => {
     checkAuth();
@@ -53,7 +63,7 @@ export default function PublicOpportunityDetail() {
           setHasProfile(!!data.data.candidateProfile);
         }
       } catch (err) {
-        console.error("Error checking profile:", err);
+        console.error('Error checking profile:', err);
       }
     }
   };
@@ -62,13 +72,13 @@ export default function PublicOpportunityDetail() {
     try {
       setLoading(true);
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public/${id}`);
-      if (!response.ok) throw new Error("Opportunity not found");
+      if (!response.ok) throw new Error('Opportunity not found');
       const data = await response.json();
       if (data.success) {
-        console.log("Fetched opportunity:", data.data); // Log for debugging
+        console.log('Fetched opportunity:', data.data);
         setOpportunity(data.data);
       } else {
-        setError(data.message || "Failed to fetch opportunity");
+        setError(data.message || 'Failed to fetch opportunity');
       }
     } catch (err) {
       setError(err.message);
@@ -91,24 +101,23 @@ export default function PublicOpportunityDetail() {
         }
       }
     } catch (error) {
-      console.error("Error fetching applications:", error);
+      console.error('Error fetching applications:', error);
     }
   };
 
   const handleApply = () => {
     if (!isAuthenticated) {
-      toast.error("Please login to apply for this opportunity");
-      router.push("/login");
+      toast.error('Please login to apply for this opportunity');
+      router.push('/login');
       return;
     }
     if (user?.role !== 10) {
-      toast.error("Only users can apply for opportunities");
+      toast.error('Only users can apply for opportunities');
       return;
     }
-
     if (!hasProfile) {
-      toast.error("Please complete your candidate profile before applying");
-      router.push("/candidate-profile");
+      toast.error('Please complete your candidate profile before applying');
+      router.push('/candidate-profile');
       return;
     }
     setShowApplicationModal(true);
@@ -117,21 +126,21 @@ export default function PublicOpportunityDetail() {
   const submitApplication = async () => {
     try {
       if (!token) {
-        toast.error("Please login to apply");
-        router.push("/login");
+        toast.error('Please login to apply');
+        router.push('/login');
         return;
       }
       if (!opportunity?._id) {
-        console.error("Error: opportunity._id is undefined");
-        toast.error("Error: Opportunity ID is missing. Please try again.");
+        console.error('Error: opportunity._id is undefined');
+        toast.error('Error: Opportunity ID is missing. Please try again.');
         return;
       }
 
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
-        method: "POST",
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           opportunityId: opportunity._id,
@@ -140,10 +149,10 @@ export default function PublicOpportunityDetail() {
       });
 
       if (response.status === 401) {
-        localStorage.removeItem("token");
+        localStorage.removeItem('token');
         setIsAuthenticated(false);
-        toast.error("Session expired. Please login again.");
-        router.push("/login");
+        toast.error('Session expired. Please login again.');
+        router.push('/login');
         return;
       }
 
@@ -156,16 +165,15 @@ export default function PublicOpportunityDetail() {
         toast.error(`Error: ${data.message}`);
       }
     } catch (error) {
-      console.error("Application error:", error);
-      toast.error("Error submitting application. Please try again.");
+      console.error('Application error:', error);
+      toast.error('Error submitting application. Please try again.');
     }
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
-        <Toaster position="top-right" reverseOrder={false} /> {/* Add Toaster */}
+        <Toaster position="top-right" reverseOrder={false} />
         <div className="max-w-4xl mx-auto px-4 py-8 animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
           <div className="h-96 bg-gray-200 rounded"></div>
@@ -177,12 +185,11 @@ export default function PublicOpportunityDetail() {
   if (error || !opportunity) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
-        <Toaster position="top-right" reverseOrder={false} /> {/* Add Toaster */}
+        <Toaster position="top-right" reverseOrder={false} />
         <div className="max-w-4xl mx-auto px-4 py-12 text-center">
           <div className="text-6xl mb-4">😢</div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Opportunity Not Found</h2>
-          <p className="text-gray-600 mb-6">{error || "The opportunity you are looking for does not exist."}</p>
+          <p className="text-gray-600 mb-6">{error || 'The opportunity you are looking for does not exist.'}</p>
           <Link
             href="/jobs"
             className="inline-flex items-center text-blue-600 hover:text-blue-800"
@@ -195,10 +202,18 @@ export default function PublicOpportunityDetail() {
     );
   }
 
+  // Backward compatibility for old boolean fields
+  const displayBenefits = opportunity.stipend?.benefits || (
+    [
+      opportunity.stipend?.includesTips && 0,
+      opportunity.stipend?.includesFood && 1,
+      opportunity.stipend?.includesAccommodation && 2
+    ].filter(Boolean)
+  );
+
   return (
     <div className="min-h-screen bg-orange-50">
-      {/* <Header activeLink="/jobs" /> */}
-      <Toaster position="top-right" reverseOrder={false} /> {/* Add Toaster */}
+      <Toaster position="top-right" reverseOrder={false} />
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <Link
           href="/jobs"
@@ -234,13 +249,13 @@ export default function PublicOpportunityDetail() {
               <span className="leading-relaxed">{opportunity.branch?.location?.address}</span>
             </p>
             <div className="flex flex-wrap gap-2 mt-4">
-              {opportunity.opportunityType && (
+              {opportunity.opportunityType !== undefined && (
                 <span className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium flex items-center">
                   <Briefcase className="w-4 h-4 mr-1" />
-                  {opportunity.opportunityType === "internship" ? "Internship" : "Job"}
+                  {getOpportunityTypeText(opportunity.opportunityType)}
                 </span>
               )}
-              {opportunity.internshipType && (
+              {opportunity.internshipType !== undefined && (
                 <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium flex items-center">
                   <Clock className="w-4 h-4 mr-1" />
                   {getInternshipTypeText(opportunity.internshipType)}
@@ -256,7 +271,7 @@ export default function PublicOpportunityDetail() {
                   onClick={handleApply}
                   className="px-6 py-3 bg-gradient-to-r from-orange-600 to-amber-600 text-white rounded-lg font-semibold hover:from-orange-700 hover:to-amber-700 shadow-md transition"
                 >
-                  {isAuthenticated ? "Apply Now" : "Login to Apply"}
+                  {isAuthenticated ? 'Apply Now' : 'Login to Apply'}
                 </button>
               ) : (
                 <div className="inline-flex items-center px-6 py-3 rounded-lg bg-green-50 border border-green-200">
@@ -266,7 +281,11 @@ export default function PublicOpportunityDetail() {
               )}
               <div className="flex items-center text-gray-600 text-sm">
                 <Users className="h-4 w-4 mr-1 text-orange-600" />
-                <span>{opportunity.applications.length || 0} Applicants</span>
+                <span>{opportunity.applications?.length || 0} Applicants</span>
+              </div>
+              <div className="flex items-center text-gray-600 text-sm">
+                <Eye className="h-4 w-4 mr-1 text-orange-600" />
+                <span>{opportunity.views || 0} Views</span>
               </div>
             </div>
           </div>
@@ -278,17 +297,19 @@ export default function PublicOpportunityDetail() {
               Schedule
             </h3>
             <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex justify-between">
-                <span>Start Date:</span>
-                <span className="font-medium">{formatDateWithSuffix(opportunity.schedule?.startDate)}</span>
-              </li>
+              {opportunity.schedule?.startDate && (
+                <li className="flex justify-between">
+                  <span>Start Date:</span>
+                  <span className="font-medium">{formatDateWithSuffix(opportunity.schedule.startDate)}</span>
+                </li>
+              )}
               {opportunity.schedule?.endDate && (
                 <li className="flex justify-between">
                   <span>End Date:</span>
                   <span className="font-medium">{formatDateWithSuffix(opportunity.schedule.endDate)}</span>
                 </li>
               )}
-              {opportunity.schedule?.days && opportunity.schedule.days.length > 0 && (
+              {opportunity.schedule?.days?.length > 0 && (
                 <li>
                   <div className="flex justify-between mb-1">
                     <span>Working Days:</span>
@@ -306,7 +327,7 @@ export default function PublicOpportunityDetail() {
                   </div>
                 </li>
               )}
-              {opportunity.schedule?.shift && (
+              {opportunity.schedule?.shift !== undefined && (
                 <li className="flex justify-between">
                   <span>Shift:</span>
                   <span className="font-medium">{getShiftText(opportunity.schedule.shift)}</span>
@@ -321,7 +342,7 @@ export default function PublicOpportunityDetail() {
               {opportunity.duration && (
                 <li className="flex justify-between">
                   <span>Duration:</span>
-                  <span className="font-medium">{opportunity.duration} {opportunity.durationUnit}</span>
+                  <span className="font-medium">{getDurationText(opportunity)}</span>
                 </li>
               )}
             </ul>
@@ -332,29 +353,25 @@ export default function PublicOpportunityDetail() {
               Benefits
             </h3>
             <ul className="space-y-2 text-sm text-gray-700">
-              {opportunity.stipend?.paymentType && (
+              {opportunity.stipend?.paymentType !== undefined && (
                 <li className="flex justify-between">
                   <span>Payment Frequency:</span>
-                  <span className="font-medium capitalize">{opportunity.stipend.paymentType.replace(/_/g, " ")}</span>
+                  <span className="font-medium">{getPaymentTypeText(opportunity.stipend.paymentType)}</span>
                 </li>
               )}
-              {opportunity.stipend?.includesFood && (
-                <li className="flex items-center text-green-600">
-                  <Utensils className="h-4 w-4 mr-2" />
-                  <span>Food Provided</span>
-                </li>
-              )}
-              {opportunity.stipend?.includesAccommodation && (
-                <li className="flex items-center text-green-600">
-                  <Home className="h-4 w-4 mr-2" />
-                  <span>Accommodation Provided</span>
-                </li>
-              )}
-              {opportunity.stipend?.includesTips && (
-                <li className="flex items-center text-green-600">
-                  <Gift className="h-4 w-4 mr-2" />
-                  <span>Tips Included</span>
-                </li>
+              {displayBenefits.length > 0 ? (
+                displayBenefits.map((benefit, index) => {
+                  const benefitData = benefits.find(b => b.backendValue === benefit);
+                  const Icon = benefitData?.icon || Gift;
+                  return (
+                    <li key={index} className="flex items-center text-green-600">
+                      <Icon className="h-4 w-4 mr-2" />
+                      <span>{benefitData?.label || 'Unknown Benefit'}</span>
+                    </li>
+                  );
+                })
+              ) : (
+                <li className="text-gray-500">No additional benefits</li>
               )}
             </ul>
           </div>
@@ -372,7 +389,7 @@ export default function PublicOpportunityDetail() {
                   <div className="flex flex-wrap gap-2">
                     {opportunity.languages.required.map((lang, index) => (
                       <span key={index} className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full">
-                        {lang}
+                        {getLanguageText(lang, languages)}
                       </span>
                     ))}
                   </div>
@@ -384,7 +401,7 @@ export default function PublicOpportunityDetail() {
                   <div className="flex flex-wrap gap-2">
                     {opportunity.languages.preferred.map((lang, index) => (
                       <span key={index} className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full">
-                        {lang}
+                        {getLanguageText(lang, languages)}
                       </span>
                     ))}
                   </div>
@@ -398,7 +415,9 @@ export default function PublicOpportunityDetail() {
             <FileText className="h-5 w-5 mr-2 text-orange-600" />
             Job Description
           </h3>
-          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{opportunity.description}</p>
+          <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+            {opportunity.description || 'No description provided.'}
+          </p>
         </div>
         {opportunity.requirements?.length > 0 && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100">

@@ -1,13 +1,14 @@
 'use client';
+
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { 
-  ArrowLeft, 
-  Calendar, 
-  Clock, 
-  DollarSign, 
-  Users, 
-  MapPin, 
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  DollarSign,
+  Users,
+  MapPin,
   Briefcase,
   BookOpen,
   Edit,
@@ -19,15 +20,29 @@ import {
   Building,
   Mail,
   Phone,
-  Globe,
-  Languages
+  Languages,
+  Utensils,
+  Home
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import {
+  getOpportunityTypeText,
+  getInternshipTypeText,
+  getStipendText,
+  getPaymentTypeText,
+  getLanguageText,
+  getDayName,
+  getShiftText,
+  getDurationText,
+  getStatusText
+} from '@/utils/opportunity';
+import { benefits, languages } from '@/data/opportunityData';
 import StatusBadge from '@/components/ui/StatusBadge';
 import Button from '@/components/ui/Button';
 import ApplicationList from '@/components/opportunity/ApplicationList';
+import { formatDateWithSuffix } from '@/utils/dateFormat';
 
 const OpportunityView = () => {
   const params = useParams();
@@ -53,8 +68,8 @@ const OpportunityView = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/${id}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -75,8 +90,8 @@ const OpportunityView = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/api/applications?opportunityId=${id}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
@@ -92,17 +107,17 @@ const OpportunityView = () => {
     try {
       const response = await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/${id}`,
-        { status: newStatus },
+        { status: newStatus }, // Send number-based status
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
 
       if (response.data.success) {
-        setOpportunity(prev => ({ ...prev, status: newStatus }));
-        toast.success(`Opportunity ${newStatus} successfully`);
+        setOpportunity((prev) => ({ ...prev, status: newStatus }));
+        toast.success(`Opportunity ${getStatusText(newStatus)} successfully`);
       }
     } catch (error) {
       console.error('Error updating status:', error);
@@ -110,54 +125,20 @@ const OpportunityView = () => {
     }
   };
 
-  const handleApprove = () => handleStatusUpdate('approved');
-  const handleReject = () => handleStatusUpdate('rejected');
-  const handleClose = () => handleStatusUpdate('closed');
+  const handleApprove = () => handleStatusUpdate(2); // 2 = approved
+  const handleReject = () => handleStatusUpdate(3); // 3 = rejected
+  const handleClose = () => handleStatusUpdate(4); // 4 = closed
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'draft': return 'bg-gray-100 text-gray-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'closed': return 'bg-purple-100 text-purple-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 0: return 'bg-gray-100 text-gray-800'; // Draft
+      case 1: return 'bg-yellow-100 text-yellow-800'; // Pending
+      case 2: return 'bg-green-100 text-green-800'; // Approved
+      case 3: return 'bg-red-100 text-red-800'; // Rejected
+      case 4: return 'bg-purple-100 text-purple-800'; // Closed
+      case 5: return 'bg-blue-100 text-blue-800'; // Completed
+      default: return 'bg-gray-100 text-gray-800'; // Unknown
     }
-  };
-
-  const getTypeLabel = (type) => {
-    const typeMap = {
-      daily: 'Daily',
-      weekly: 'Weekly',
-      weekend: 'Weekend',
-      part_time: 'Part Time',
-      full_time: 'Full Time'
-    };
-    return typeMap[type] || type;
-  };
-
-  const getStipendText = (stipend) => {
-    if (!stipend || !stipend.totalAmount) return 'Unpaid';
-    
-    const paymentTypeMap = {
-      'daily': 'Per Day',
-      'weekly': 'Per Week',
-      'monthly': 'Per Month',
-      'after_completion': 'After Completion'
-    };
-    
-    const period = paymentTypeMap[stipend.paymentType] || 'per month';
-    return `₹${stipend.totalAmount.toLocaleString()} ${period}`;
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Not set';
-    return new Date(dateString).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
   };
 
   const getDaysUntilStart = (startDate) => {
@@ -167,15 +148,6 @@ const OpportunityView = () => {
     const diffTime = start - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays > 0 ? `${diffDays} days to start` : 'Started';
-  };
-
-  const capitalizeFirstLetter = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-
-  const formatDays = (days) => {
-    if (!days || days.length === 0) return 'Not specified';
-    return days.map(day => capitalizeFirstLetter(day)).join(', ');
   };
 
   if (loading) {
@@ -199,6 +171,13 @@ const OpportunityView = () => {
     );
   }
 
+  // Backward compatibility for old boolean fields
+  const displayBenefits = opportunity.stipend?.benefits || [
+    opportunity.stipend?.includesTips && 0,
+    opportunity.stipend?.includesFood && 1,
+    opportunity.stipend?.includesAccommodation && 2,
+  ].filter(Boolean);
+
   const canEdit = user.role <= 2 || (user.role >= 6 && user.branch === opportunity.branch?._id);
 
   return (
@@ -215,7 +194,7 @@ const OpportunityView = () => {
           </button>
           <h1 className="text-2xl font-bold text-dark">Opportunity Details</h1>
         </div>
-        
+
         <div className="flex items-center gap-3">
           {canEdit && (
             <Button
@@ -226,22 +205,32 @@ const OpportunityView = () => {
               Edit
             </Button>
           )}
-          
-          {opportunity.status === 'pending' && user.role <= 2 && (
+          {opportunity.status === 1 && user.role <= 2 && (
             <>
-              <Button variant="success" onClick={handleApprove} className="!bg-green-600 !hover:bg-green-700 text-white">
+              <Button
+                variant="success"
+                onClick={handleApprove}
+                className="!bg-green-600 !hover:bg-green-700 text-white"
+              >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Approve
               </Button>
-              <Button variant="danger" onClick={handleReject} className="!bg-red-600 !hover:bg-red-700 text-white">
+              <Button
+                variant="danger"
+                onClick={handleReject}
+                className="!bg-red-600 !hover:bg-red-700 text-white"
+              >
                 <XCircle className="h-4 w-4 mr-2" />
                 Reject
               </Button>
             </>
           )}
-          
-          {/* {opportunity.status === 'approved' && canEdit && (
-            <Button variant="secondary" onClick={handleClose}>
+          {/* {opportunity.status === 2 && canEdit && (
+            <Button
+              variant="secondary"
+              onClick={handleClose}
+              className="!bg-red-600 !hover:bg-purple-700 text-white"
+            >
               <XCircle className="h-4 w-4 mr-2" />
               Close
             </Button>
@@ -257,23 +246,24 @@ const OpportunityView = () => {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(opportunity.status)}`}>
-                    {opportunity.status}
-                  </span>
+                  <StatusBadge
+                    status={getStatusText(opportunity.status)}
+                    className={getStatusColor(opportunity.status)}
+                  />
                   <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                    {opportunity.opportunityType}
+                    {getOpportunityTypeText(opportunity.opportunityType)}
                   </span>
                 </div>
                 <h2 className="text-2xl font-bold text-dark">{opportunity.title}</h2>
-                <p className="text-gray-600 mt-1">{opportunity.category}</p>
+                <p className="text-gray-600 mt-1">{opportunity?.workType?.name ?? 'Unknown Work Type'}</p>
               </div>
-              
+
               <div className="text-right">
                 <div className="text-2xl font-bold text-primary">
                   {getStipendText(opportunity.stipend)}
                 </div>
                 <div className="text-sm text-gray-500">
-                  {getTypeLabel(opportunity.internshipType)}
+                  {getInternshipTypeText(opportunity.internshipType)}
                 </div>
               </div>
             </div>
@@ -318,7 +308,7 @@ const OpportunityView = () => {
                 <div>
                   <p className="text-sm text-gray-500">Start Date</p>
                   <p className="font-semibold text-dark">
-                    {formatDate(opportunity.schedule?.startDate)}
+                    {formatDateWithSuffix(opportunity.schedule?.startDate)}
                   </p>
                   {opportunity.schedule?.startDate && (
                     <p className="text-sm text-gray-500">
@@ -330,7 +320,7 @@ const OpportunityView = () => {
 
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gray-100 rounded-lg">
-                  {opportunity.opportunityType === 'job' ? (
+                  {opportunity.opportunityType === 0 ? (
                     <Briefcase className="h-5 w-5 text-gray-600" />
                   ) : (
                     <BookOpen className="h-5 w-5 text-gray-600" />
@@ -338,27 +328,23 @@ const OpportunityView = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Duration</p>
-                  <p className="font-semibold text-dark">
-                    {opportunity.duration} {opportunity.durationUnit}
-                  </p>
+                  <p className="font-semibold text-dark">{getDurationText(opportunity)}</p>
                 </div>
               </div>
 
-              {opportunity.schedule?.shift && (
+              {opportunity.schedule?.shift !== undefined && (
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gray-100 rounded-lg">
                     <Clock4 className="h-5 w-5 text-gray-600" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Shift</p>
-                    <p className="font-semibold text-dark capitalize">
-                      {opportunity.schedule.shift}
-                    </p>
+                    <p className="font-semibold text-dark">{getShiftText(opportunity.schedule.shift)}</p>
                   </div>
                 </div>
               )}
 
-              {opportunity.schedule?.days && opportunity.schedule.days.length > 0 && (
+              {opportunity.schedule?.days?.length > 0 && (
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gray-100 rounded-lg">
                     <Calendar className="h-5 w-5 text-gray-600" />
@@ -366,28 +352,27 @@ const OpportunityView = () => {
                   <div>
                     <p className="text-sm text-gray-500">Working Days</p>
                     <p className="font-semibold text-dark">
-                      {formatDays(opportunity.schedule.days)}
+                      {opportunity.schedule.days.map((day) => getDayName(day)).join(', ')}
                     </p>
                   </div>
                 </div>
               )}
 
-              {/* Specific Days for Weekly/Weekend Internships */}
-              {(opportunity.internshipType === 'weekly' || opportunity.internshipType === 'weekend') && opportunity.specificDays && (
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-gray-100 rounded-lg">
-                    <Calendar className="h-5 w-5 text-gray-600" />
+              {(opportunity.internshipType === 3 || opportunity.internshipType === 4) &&
+                opportunity.specificDays && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gray-100 rounded-lg">
+                      <Calendar className="h-5 w-5 text-gray-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Specific Days</p>
+                      <p className="font-semibold text-dark">
+                        {opportunity.specificDays.map((day) => getDayName(day)).join(', ')}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Specific Days</p>
-                    <p className="font-semibold text-dark">
-                      {formatDays(opportunity.specificDays)}
-                    </p>
-                  </div>
-                </div>
-              )}
+                )}
 
-              {/* Languages */}
               {opportunity.languages && (
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-gray-100 rounded-lg">
@@ -396,19 +381,19 @@ const OpportunityView = () => {
                   <div>
                     <p className="text-sm text-gray-500">Languages</p>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {opportunity.languages.required && opportunity.languages.required.length > 0 && (
+                      {opportunity.languages.required?.length > 0 && (
                         <div>
                           <span className="text-xs font-semibold text-dark">Required: </span>
                           <span className="text-sm text-dark">
-                            {opportunity.languages.required.join(', ')}
+                            {opportunity.languages.required.map((lang) => getLanguageText(lang, languages)).join(', ')}
                           </span>
                         </div>
                       )}
-                      {opportunity.languages.preferred && opportunity.languages.preferred.length > 0 && (
+                      {opportunity.languages.preferred?.length > 0 && (
                         <div>
                           <span className="text-xs font-semibold text-dark">Preferred: </span>
                           <span className="text-sm text-dark">
-                            {opportunity.languages.preferred.join(', ')}
+                            {opportunity.languages.preferred.map((lang) => getLanguageText(lang, languages)).join(', ')}
                           </span>
                         </div>
                       )}
@@ -418,35 +403,38 @@ const OpportunityView = () => {
               )}
             </div>
 
-            {/* Stipend Details */}
+            {/* Compensation & Benefits */}
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <h3 className="text-lg font-semibold text-dark mb-3">Compensation & Benefits</h3>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Stipend/Salary</span>
+                  <span className="font-semibold text-dark">{getStipendText(opportunity.stipend)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Payment Frequency</span>
                   <span className="font-semibold text-dark">
-                    {getStipendText(opportunity.stipend)}
+                    {getPaymentTypeText(opportunity.stipend?.paymentType)}
                   </span>
                 </div>
-                
-                {opportunity.stipend?.includesFood && (
+                {displayBenefits.length > 0 ? (
+                  displayBenefits.map((benefit, index) => {
+                    const benefitData = benefits.find((b) => b.backendValue === benefit);
+                    const Icon = benefitData?.icon === 'Utensils' ? Utensils : benefitData?.icon === 'Home' ? Home : DollarSign;
+                    return (
+                      <div key={index} className="flex justify-between items-center">
+                        <span className="text-gray-600">{benefitData?.label || 'Unknown Benefit'}</span>
+                        <span className="text-green-600">
+                          <Icon className="h-4 w-4 inline mr-1" />
+                          Yes
+                        </span>
+                      </div>
+                    );
+                  })
+                ) : (
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Food Provided</span>
-                    <span className="text-green-600">Yes</span>
-                  </div>
-                )}
-                
-                {opportunity.stipend?.includesAccommodation && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Accommodation</span>
-                    <span className="text-green-600">Provided</span>
-                  </div>
-                )}
-                
-                {opportunity.stipend?.includesTips && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Tips Included</span>
-                    <span className="text-green-600">Yes</span>
+                    <span className="text-gray-600">Additional Benefits</span>
+                    <span className="text-gray-500">None</span>
                   </div>
                 )}
               </div>
@@ -458,7 +446,7 @@ const OpportunityView = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-semibold text-dark">Applications</h3>
               <Button
-                variant={showApplications ? "secondary" : "primary"}
+                variant={showApplications ? 'secondary' : 'primary'}
                 onClick={() => setShowApplications(!showApplications)}
               >
                 <UserCheck className="h-4 w-4 mr-2" />
@@ -467,8 +455,8 @@ const OpportunityView = () => {
             </div>
 
             {showApplications && (
-              <ApplicationList 
-                applications={applications} 
+              <ApplicationList
+                applications={applications}
                 opportunityId={id}
                 onApplicationUpdate={fetchApplications}
               />
@@ -548,9 +536,9 @@ const OpportunityView = () => {
               <h3 className="text-lg font-semibold text-dark mb-4">Created By</h3>
               <div className="space-y-2">
                 <p className="font-medium text-dark">{opportunity.createdBy.name}</p>
-                <p className="text-sm text-gray-500">{opportunity.createdBy.email}</p>
+                <p className="text-sm text-gray-500">Phone: {opportunity.createdBy.mobile}</p>
                 <p className="text-sm text-gray-500">
-                  {new Date(opportunity.createdAt).toLocaleDateString()}
+                  {formatDateWithSuffix(opportunity.createdAt)}
                 </p>
               </div>
             </div>
@@ -562,7 +550,7 @@ const OpportunityView = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Total Views</span>
-                <span className="font-semibold text-dark">{opportunity.views}</span>
+                <span className="font-semibold text-dark">{opportunity.views || 0}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Applications</span>
@@ -571,7 +559,10 @@ const OpportunityView = () => {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Fill Rate</span>
                 <span className="font-semibold text-dark">
-                  {Math.round(((opportunity.filledPositions || 0) / opportunity.numberOfPeople) * 100)}%
+                  {Math.round(
+                    ((opportunity.filledPositions || 0) / opportunity.numberOfPeople) * 100
+                  )}
+                  %
                 </span>
               </div>
             </div>
@@ -589,7 +580,6 @@ const OpportunityView = () => {
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Opportunity
               </Button>
-              
               <Button
                 variant="outline"
                 className="w-full justify-center"
@@ -598,11 +588,10 @@ const OpportunityView = () => {
                 <UserCheck className="h-4 w-4 mr-2" />
                 View Applications
               </Button>
-
-              {opportunity.status === 'approved' && (
+              {opportunity.status === 2 && (
                 <Button
                   variant="secondary"
-                  className="w-full justify-center"
+                  className="w-full justify-center py-2 !bg-red-600 !hover:bg-purple-700 text-white"
                   onClick={handleClose}
                 >
                   <XCircle className="h-4 w-4 mr-2" />

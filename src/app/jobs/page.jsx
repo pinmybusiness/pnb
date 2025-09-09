@@ -42,7 +42,6 @@ export default function StudentOpportunitiesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [useGeolocation, setUseGeolocation] = useState(false);
   const router = useRouter();
-
   useEffect(() => {
     const initialize = async () => {
       await checkAuth();
@@ -230,7 +229,7 @@ export default function StudentOpportunitiesPage() {
   const handleApply = (opportunity) => {
     if (!isAuthenticated) {
       toast.error("Please login to apply for opportunities");
-      router.push("/login");
+      router.push("/candidate/register");
       return;
     }
     if (user?.role !== 10) {
@@ -261,7 +260,7 @@ export default function StudentOpportunitiesPage() {
     try {
       if (!token) {
         toast.error("Please login to apply");
-        router.push("/login");
+        router.push("/candidate/register");
         return;
       }
 

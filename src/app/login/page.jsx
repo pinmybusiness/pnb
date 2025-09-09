@@ -5,12 +5,15 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import PropTypes from "prop-types";
 import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
 import RestaurantLoginForm from "@/components/auth/RestaurantLoginForm";
+import { Providers } from "../providers";
 
 export default function LoginPage({ initialTab = "restaurant" }) {
   const [activeTab, setActiveTab] = useState(initialTab);
 
   return (
     <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
+      <Providers>
+
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
           {/* Header with Tabs */}
@@ -60,6 +63,7 @@ export default function LoginPage({ initialTab = "restaurant" }) {
           </div>
         </div>
       </div>
+      </Providers>
     </GoogleOAuthProvider>
   );
 }

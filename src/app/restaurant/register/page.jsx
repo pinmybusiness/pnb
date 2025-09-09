@@ -6,7 +6,6 @@ import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { MapPin, Navigation, X, Store, Phone, Lock } from 'lucide-react';
 import Select from 'react-select';
-import { states, citiesByState } from '../../../data';
 import { loginUser } from '@/store/authThunks';
 
 const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
@@ -15,6 +14,7 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
   const { user, token, role, error } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [restaurants, setRestaurants] = useState([]);
+  const [cities, setCities] = useState([]);
   const [formData, setFormData] = useState({
     name: '', // User's name
     mobile: '',
@@ -24,7 +24,7 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
     restaurantName: '',
     branchName: '',
     branchAddress: '',
-    branchCity: '',
+    branchCity: '', // Will store City _id
     branchState: '',
     branchPostalCode: '',
     branchCountry: 'India',
@@ -46,7 +46,7 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
     }
   }, [user, token, role, onSuccess, router, branchId]);
 
-  // Fetch restaurants and branch data (if editing)
+  // Fetch restaurants and cities (and branch data if editing)
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -54,13 +54,17 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
         const restaurantsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`);
         setRestaurants(restaurantsRes.data.data);
 
+        // Fetch all cities
+        const citiesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/cities`);
+        setCities(citiesRes.data.data);
+
         // Fetch branch data if branchId is provided
         if (branchId) {
           const branchRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${branchId}`);
           const branchData = branchRes.data.data;
 
           setFormData({
-            name: '', // Not used for updates
+            name: '',
             mobile: '',
             email: '',
             password: '',
@@ -68,15 +72,23 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
             restaurantName: '',
             branchName: branchData.name || '',
             branchAddress: branchData.location?.address || '',
-            branchCity: branchData.location?.city || '',
-            branchState: branchData.location?.state || '',
+            branchCity: branchData.cityDetails?._id || '', // Use City _id
+            branchState: branchData.cityDetails?.stateName || '',
             branchPostalCode: branchData.location?.postalCode || '',
-            branchCountry: branchData.location?.country || 'India',
+            branchCountry: branchData.cityDetails?.countryName || 'India',
             branchCoordinates: branchData.location?.coordinates || [0, 0]
           });
 
-          if (branchData.location?.city && branchData.location?.state && !citiesByState[branchData.location.state]?.includes(branchData.location.city)) {
-            toast.error(`Warning: City "${branchData.location.city}" is not valid for state "${branchData.location.state}". Please select a valid city.`);
+          // Validate city against fetched cities
+          if (branchData.cityDetails?._id) {
+            const cityExists = citiesRes.data.data.some(
+              (city) => city._id === branchData.cityDetails._id
+            );
+            if (!cityExists) {
+              toast.error(
+                `Warning: City "${branchData.cityDetails.name}" is not valid. Please select a valid city.`
+              );
+            }
           }
         }
       } catch (error) {
@@ -97,28 +109,36 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
     }
   };
 
-  // Handle location-specific changes
-  const handleLocationChange = (name, value) => {
-    if (name === 'branchCity' && formData.branchState && !citiesByState[formData.branchState]?.includes(value)) {
-      toast.error(`Invalid city "${value}" for state "${formData.branchState}". Please select a valid city.`);
-      return;
-    }
-
-    if (name === 'latitude' || name === 'longitude') {
+  // Handle city selection
+  const handleCityChange = (selected) => {
+    if (selected) {
       setFormData((prev) => ({
         ...prev,
-        branchCoordinates:
-          name === 'longitude'
-            ? [parseFloat(value) || 0, prev.branchCoordinates[1]]
-            : [prev.branchCoordinates[0], parseFloat(value) || 0]
+        branchCity: selected._id, // Store City _id
+        branchState: selected.stateName,
+        branchCountry: selected.countryName,
+        branchCoordinates: selected.coordinates || [0, 0]
       }));
     } else {
       setFormData((prev) => ({
         ...prev,
-        [name]: value,
-        branchCity: name === 'branchState' ? '' : name === 'branchCity' ? value : prev.branchCity
+        branchCity: '',
+        branchState: '',
+        branchCountry: 'India',
+        branchCoordinates: [0, 0]
       }));
     }
+  };
+
+  // Handle coordinate changes
+  const handleCoordinateChange = (name, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      branchCoordinates:
+        name === 'longitude'
+          ? [parseFloat(value) || 0, prev.branchCoordinates[1]]
+          : [prev.branchCoordinates[0], parseFloat(value) || 0]
+    }));
   };
 
   // Get current location
@@ -161,11 +181,6 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
         setLoading(false);
         return;
       }
-      // if (!formData.restaurantId && !formData.restaurantName) {
-      //   toast.error('Either select a restaurant or provide a new restaurant name');
-      //   setLoading(false);
-      //   return;
-      // }
     } else {
       // Update mode
       if (!formData.branchName || !formData.branchAddress || !formData.branchCity) {
@@ -175,20 +190,24 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
       }
     }
 
-    if (formData.branchState && formData.branchCity && !citiesByState[formData.branchState]?.includes(formData.branchCity)) {
-      toast.error(`Invalid city "${formData.branchCity}" for state "${formData.branchState}"`);
-      setLoading(false);
-      return;
+    // Validate city
+    if (formData.branchCity) {
+      const selectedCity = cities.find((city) => city._id === formData.branchCity);
+      if (!selectedCity || selectedCity.stateName !== formData.branchState || selectedCity.countryName !== formData.branchCountry) {
+        toast.error(`Invalid city selected`);
+        setLoading(false);
+        return;
+      }
     }
 
-    // Prepare payload with random email if not provided
+    // Prepare payload
     const payload = branchId
       ? {
           name: formData.branchName,
           parentRestaurant: formData.restaurantId,
           location: {
             address: formData.branchAddress,
-            city: formData.branchCity,
+            city: formData.branchCity, // City _id
             state: formData.branchState,
             postalCode: formData.branchPostalCode || undefined,
             country: formData.branchCountry,
@@ -198,13 +217,13 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
       : {
           name: formData.name,
           mobile: formData.mobile,
-          email: formData.email || generateRandomEmail(), // Use random email if not provided
+          email: formData.email || generateRandomEmail(),
           password: formData.password,
           restaurantId: formData.restaurantId || undefined,
           restaurantName: formData.restaurantName || undefined,
           branchName: formData.branchName,
           branchAddress: formData.branchAddress,
-          branchCity: formData.branchCity,
+          branchCity: formData.branchCity, // City _id
           branchState: formData.branchState,
           branchPostalCode: formData.branchPostalCode || undefined,
           branchCountry: formData.branchCountry,
@@ -219,7 +238,6 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
       } else {
         response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register-branch`, payload);
         const { token, data } = response.data;
-        // Dispatch login action after successful registration
         await dispatch(loginUser({ mobile: formData.mobile, password: formData.password, rememberMe: false })).unwrap();
         toast.success('Registration and login successful!');
         if (data.action === 'renderBranchProfile') {
@@ -240,11 +258,15 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
     }
   };
 
-  // Prepare state and city options
-  const stateOptions = states.map((state) => ({ value: state, label: state }));
-  const cityOptions = formData.branchState
-    ? citiesByState[formData.branchState]?.map((city) => ({ value: city, label: city })) || []
-    : [];
+  // Prepare city options for dropdown
+  const cityOptions = cities.map((city) => ({
+    value: city.name,
+    label: `${city.name}, ${city.stateName}`, // Show city and state in dropdown
+    _id: city._id,
+    stateName: city.stateName,
+    countryName: city.countryName,
+    coordinates: city.coordinates
+  }));
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 min-h-screen">
@@ -346,6 +368,27 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
             Branch Information
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+                        {!branchId && (
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Restaurant</label>
+                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
+                  <select
+                    name="restaurantId"
+                    value={formData.restaurantId}
+                    onChange={handleChange}
+                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
+                  >
+                    <option value="">Select Existing Restaurant</option>
+                    {restaurants.map((restaurant) => (
+                      <option key={restaurant._id} value={restaurant._id}>
+                        {restaurant.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-dark mb-1">Branch Name *</label>
               <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
@@ -360,41 +403,6 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
                 />
               </div>
             </div>
-            {!branchId && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-dark mb-1">Restaurant</label>
-                  <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                    <select
-                      name="restaurantId"
-                      value={formData.restaurantId}
-                      onChange={handleChange}
-                      className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    >
-                      <option value="">Select Existing Restaurant</option>
-                      {restaurants.map((restaurant) => (
-                        <option key={restaurant._id} value={restaurant._id}>
-                          {restaurant.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                {/* <div>
-                  <label className="block text-sm font-medium text-dark mb-1">New Restaurant Name</label>
-                  <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                    <input
-                      type="text"
-                      name="restaurantName"
-                      value={formData.restaurantName}
-                      onChange={handleChange}
-                      className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                      placeholder="Enter new restaurant name if not selecting existing"
-                    />
-                  </div>
-                </div> */}
-              </>
-            )}
           </div>
         </div>
 
@@ -412,7 +420,7 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
                   type="text"
                   name="branchAddress"
                   value={formData.branchAddress}
-                  onChange={(e) => handleLocationChange('branchAddress', e.target.value)}
+                  onChange={handleChange}
                   className="flex-1 px-2 py-2 focus:outline-none text-sm"
                   required
                 />
@@ -420,29 +428,14 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
             </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
               <div>
-                <label className="block text-sm font-medium text-dark mb-1">State *</label>
-                <Select
-                  options={stateOptions}
-                  value={stateOptions.find((option) => option.value === formData.branchState) || null}
-                  onChange={(selected) => handleLocationChange('branchState', selected ? selected.value : '')}
-                  placeholder="Select State"
-                  isClearable
-                  isSearchable
-                  required
-                  className="w-full text-sm"
-                  classNamePrefix="select"
-                />
-              </div>
-              <div>
                 <label className="block text-sm font-medium text-dark mb-1">City *</label>
                 <Select
                   options={cityOptions}
-                  value={cityOptions.find((option) => option.value === formData.branchCity) || null}
-                  onChange={(selected) => handleLocationChange('branchCity', selected ? selected.value : '')}
-                  placeholder="Select City"
+                  value={cityOptions.find((option) => option._id === formData.branchCity) || null}
+                  onChange={handleCityChange}
+                  placeholder="Search and select a city"
                   isClearable
                   isSearchable
-                  isDisabled={!formData.branchState}
                   required
                   className="w-full text-sm"
                   classNamePrefix="select"
@@ -455,22 +448,9 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
                     type="text"
                     name="branchPostalCode"
                     value={formData.branchPostalCode}
-                    onChange={(e) => handleLocationChange('branchPostalCode', e.target.value)}
+                    onChange={handleChange}
                     className="flex-1 px-2 py-2 focus:outline-none text-sm"
                     placeholder="Postal code"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Country</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <input
-                    type="text"
-                    name="branchCountry"
-                    value={formData.branchCountry}
-                    onChange={(e) => handleLocationChange('branchCountry', e.target.value)}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    disabled
                   />
                 </div>
               </div>
@@ -481,7 +461,7 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
                     type="number"
                     name="latitude"
                     value={formData.branchCoordinates[1]}
-                    onChange={(e) => handleLocationChange('latitude', e.target.value)}
+                    onChange={(e) => handleCoordinateChange('latitude', e.target.value)}
                     className="flex-1 px-2 py-2 focus:outline-none text-sm"
                     placeholder="Latitude"
                   />
@@ -494,7 +474,7 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
                     type="number"
                     name="longitude"
                     value={formData.branchCoordinates[0]}
-                    onChange={(e) => handleLocationChange('longitude', e.target.value)}
+                    onChange={(e) => handleCoordinateChange('longitude', e.target.value)}
                     className="flex-1 px-2 py-2 focus:outline-none text-sm"
                     placeholder="Longitude"
                   />

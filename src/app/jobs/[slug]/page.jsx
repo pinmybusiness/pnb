@@ -29,7 +29,7 @@ import { Toaster, toast } from 'react-hot-toast';
 export default function PublicOpportunityDetail() {
   const params = useParams();
   const router = useRouter();
-  const { id } = params;
+  const { slug } = params;
   const [opportunity, setOpportunity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,8 +42,8 @@ export default function PublicOpportunityDetail() {
 
   useEffect(() => {
     checkAuth();
-    if (id) fetchOpportunity();
-  }, [id]);
+    if (slug) fetchOpportunity();
+  }, [slug]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -71,7 +71,7 @@ export default function PublicOpportunityDetail() {
   const fetchOpportunity = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public/${id}`);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public/${slug}`);
       if (!response.ok) throw new Error('Opportunity not found');
       const data = await response.json();
       if (data.success) {

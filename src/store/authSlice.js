@@ -2,11 +2,17 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { loginUser, googleLoginUser } from './authThunks';
 
-// authSlice.js
-const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+// Get token safely for SSR
+const getInitialToken = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('token');
+  }
+  return null;
+};
+
 const initialState = {
   user: null,
-  token,
+  token: getInitialToken(),
   isLoading: false,
   error: null,
 };

@@ -41,6 +41,7 @@ export const allMenus = [
       { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [6,7] },
     ]
   },
+  // { name: "Work Type", href: "/dashboard/work-types", icon: FileBarChart, roles: [0] },
   { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0] },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [0,3] },
 ];

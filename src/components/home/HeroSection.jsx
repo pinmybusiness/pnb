@@ -1,5 +1,3 @@
-"use client";
-
 import { Sparkles, ArrowRight, Users, Building2, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -38,7 +36,7 @@ export default function HomePage() {
             <div className="lg:w-1/2 relative animate-fade-in-left">
               <div className="relative rounded-2xl  group  duration-500">
                 <Image
-                  src="/images/restaurant-roles.webp" // Replace with your local image path
+                  src="/images/restaurant-roles.webp" 
                   alt="Restaurant Staff Jobs"
                   width={600}
                   height={400}
@@ -54,7 +52,7 @@ export default function HomePage() {
       </section>
 
       {/* Animation Styles */}
-      <style jsx>{`
+      {/* <style jsx>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
@@ -69,7 +67,7 @@ export default function HomePage() {
           to { opacity: 1; transform: translateX(0); }
         }
         .animate-fade-in-left { animation: fadeInLeft 0.5s ease-out forwards; }
-      `}</style>
+      `}</style> */}
     </div>
   );
 }

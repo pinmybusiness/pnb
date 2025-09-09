@@ -1,9 +1,9 @@
-'use client';
-
+import { Providers } from '@/app/providers';
 import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
 
 export default function CandidateRegister() {
   return (
+    <Providers>
     <div className="min-h-screen flex justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 text-center">
         {/* Title and Description */}
@@ -22,5 +22,6 @@ export default function CandidateRegister() {
         </div>
       </div>
     </div>
+    </Providers>
   );
 }

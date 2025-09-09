@@ -1,11 +1,12 @@
 'use client';
+
 import { useState, useEffect } from 'react';
-import { 
-  ArrowLeft, 
-  Save, 
-  Clock, 
-  DollarSign, 
-  Users, 
+import {
+  ArrowLeft,
+  Save,
+  Clock,
+  DollarSign,
+  Users,
   BookOpen,
   CheckCircle,
   Plus,
@@ -16,61 +17,87 @@ import {
   Utensils,
   Home,
   Calculator,
-  Globe
+  Globe,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import Select from 'react-select';
-import { workCategories, languages, internshipTypes, jobTypes, daysOfWeek, shifts } from '@/data/opportunityData';
+import {
+  languages,
+  internshipTypes,
+  jobTypes,
+  daysOfWeek,
+  shifts,
+  durationUnits,
+  paymentTypes,
+  fetchWorkTypes,
+} from '@/data/opportunityData';
+import { getStipendText, getInternshipTypeText, getDayName, getDurationText, getLanguageText } from '@/utils/opportunity';
 
 const OpportunityForm = ({ editData = null }) => {
   const router = useRouter();
   const { user, token, isLoading: authLoading } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
-  const [opportunityType, setOpportunityType] = useState('job');
+  const [opportunityType, setOpportunityType] = useState(0); // 0: job, 1: internship
+  const [workTypes, setWorkTypes] = useState([]);
+  const [hasManuallyEditedTitle, setHasManuallyEditedTitle] = useState(false);
   const [formData, setFormData] = useState({
     branch: user?.branch,
-    category: '',
-    opportunityType: 'job',
-    internshipType: 'full_time',
+    workType: '',
+    opportunityType: 0,
+    internshipType: 0,
     numberOfPeople: 1,
     duration: 1,
-    durationUnit: 'days',
-    schedule: { 
-      days: [], 
-      shift: 'flexible', 
+    durationUnit: 0,
+    schedule: {
+      days: [],
+      shift: 3,
       hoursPerDay: 8,
       startDate: '',
-      endDate: ''
+      endDate: '',
     },
-    stipend: { 
-      amount: 0, 
-      currency: 'INR', 
-      paymentType: 'monthly',
+    stipend: {
+      amount: 0,
+      currency: 'INR',
+      paymentType: 2,
       includesTips: false,
       includesFood: false,
-      includesAccommodation: false
+      includesAccommodation: false,
+      benefits: [],
     },
     title: '',
     description: '',
     languages: {
       required: [],
-      preferred: ['Telugu', 'Hindi']
+      preferred: [2, 1],
     },
-    tags: []
+    tags: [],
   });
-  const [originalCategory, setOriginalCategory] = useState('');
+  const [originalWorkType, setOriginalWorkType] = useState('');
   const [originalInternshipType, setOriginalInternshipType] = useState('');
 
   const isEdit = Boolean(editData);
 
   useEffect(() => {
+    const loadWorkTypes = async () => {
+      try {
+        const fetchedWorkTypes = await fetchWorkTypes(token);
+        setWorkTypes(fetchedWorkTypes);
+      } catch (error) {
+        console.error('Error fetching work types:', error);
+        toast.error('Failed to load work types');
+      }
+    };
+    loadWorkTypes();
+  }, [token]);
+
+  useEffect(() => {
     if (editData) {
       const {
-        category,
+        workType,
         opportunityType,
         internshipType,
         numberOfPeople,
@@ -81,41 +108,53 @@ const OpportunityForm = ({ editData = null }) => {
         title,
         description,
         languages,
-        tags
+        tags,
       } = editData;
+
+      const includesTips = stipend?.benefits?.includes(0) || false;
+      const includesFood = stipend?.benefits?.includes(1) || false;
+      const includesAccommodation = stipend?.benefits?.includes(2) || false;
+
+      // Extract workType ID if workType is an object, else use workType directly
+      const workTypeId = workType?._id || workType || '';
 
       setFormData({
         branch: editData.branch || user?.branch,
-        category,
-        opportunityType,
-        internshipType,
-        numberOfPeople,
-        duration,
-        durationUnit,
+        workType: workTypeId, // Use _id if workType is an object
+        opportunityType: opportunityType || 0,
+        internshipType: internshipType || 0,
+        numberOfPeople: numberOfPeople || 1,
+        duration: duration || 1,
+        durationUnit: durationUnit || 0,
         schedule: {
           days: schedule?.days || [],
-          shift: schedule?.shift || 'flexible',
+          shift: schedule?.shift || 3,
           hoursPerDay: schedule?.hoursPerDay || 8,
-          startDate: schedule?.startDate || '',
-          endDate: schedule?.endDate || ''
+          startDate: schedule?.startDate ? new Date(schedule.startDate).toISOString().split('T')[0] : '',
+          endDate: schedule?.endDate ? new Date(schedule.endDate).toISOString().split('T')[0] : '',
         },
         stipend: {
           amount: stipend?.amount || 0,
           currency: stipend?.currency || 'INR',
-          paymentType: stipend?.paymentType || 'monthly',
-          includesTips: stipend?.includesTips || false,
-          includesFood: stipend?.includesFood || false,
-          includesAccommodation: stipend?.includesAccommodation || false
+          paymentType: stipend?.paymentType || 2,
+          includesTips,
+          includesFood,
+          includesAccommodation,
+          benefits: stipend?.benefits || [],
         },
-        title,
-        description,
-        languages: languages || { required: [], preferred: ['Telugu', 'Hindi'] },
-        tags: tags || []
+        title: title || '',
+        description: description || '',
+        languages: {
+          required: languages?.required || [],
+          preferred: languages?.preferred || [2, 1],
+        },
+        tags: tags || [],
       });
 
-      setOpportunityType(opportunityType || 'job');
-      setOriginalCategory(category || '');
+      setOpportunityType(opportunityType || 0);
+      setOriginalWorkType(workTypeId); // Use _id for originalWorkType
       setOriginalInternshipType(internshipType || '');
+      setHasManuallyEditedTitle(!!title);
     }
   }, [editData, user?.branch]);
 
@@ -125,80 +164,71 @@ const OpportunityForm = ({ editData = null }) => {
 
   const calculateEndDate = (startDate, duration, durationUnit) => {
     if (!startDate) return '';
-    
+
     const endDate = new Date(startDate);
-    
-    if (durationUnit === 'days') {
+    if (durationUnit === 0) { // days
       endDate.setDate(endDate.getDate() + duration);
-    } else if (durationUnit === 'weeks') {
+    } else if (durationUnit === 1) { // weeks
       endDate.setDate(endDate.getDate() + (duration * 7));
     }
-    
     return endDate.toISOString().split('T')[0];
   };
 
   const calculateTotalAmount = () => {
-    if (opportunityType === 'internship') {
+    if (opportunityType === 1) { // internship
       if (formData.stipend.amount <= 0 || formData.duration <= 0) return 0;
-      
-      if (formData.durationUnit === 'days') {
+      if (formData.durationUnit === 0) { // days
         return formData.stipend.amount * formData.duration;
-      } else if (formData.durationUnit === 'weeks') {
+      } else if (formData.durationUnit === 1) { // weeks
         let daysPerWeek = formData.schedule.days.length;
-        if (formData.internshipType === 'weekend') {
+        if (formData.internshipType === 4) { // weekend
           daysPerWeek = 2;
         }
         return formData.stipend.amount * daysPerWeek * formData.duration;
       }
     }
-    
     return formData.stipend.amount;
   };
 
   const getCurrentTypeDetails = () => {
-    if (opportunityType === 'internship') {
-      return internshipTypes.find(t => t.value === formData.internshipType);
+    if (opportunityType === 1) { // internship
+      return internshipTypes.find((t) => t.backendValue === formData.internshipType);
     } else {
-      return jobTypes.find(t => t.value === formData.internshipType);
+      return jobTypes.find((t) => t.backendValue === formData.internshipType);
     }
   };
 
-  const handleLanguageToggle = (type, language, isChecked) => {
-    setFormData(prev => {
+  const handleLanguageToggle = (type, languageBackendValue, isChecked) => {
+    setFormData((prev) => {
       const otherType = type === 'required' ? 'preferred' : 'required';
-      
       const updatedLanguages = {
         ...prev.languages,
         [type]: isChecked
-          ? [...prev.languages[type], language]
-          : prev.languages[type].filter(lang => lang !== language)
+          ? [...prev.languages[type], languageBackendValue]
+          : prev.languages[type].filter((lang) => lang !== languageBackendValue),
       };
-      
       if (isChecked) {
         updatedLanguages[otherType] = updatedLanguages[otherType].filter(
-          lang => lang !== language
+          (lang) => lang !== languageBackendValue
         );
       }
-      
       return {
         ...prev,
-        languages: updatedLanguages
+        languages: updatedLanguages,
       };
     });
   };
 
   useEffect(() => {
-    if (opportunityType === 'internship') {
+    if (opportunityType === 1) {
       const typeDetails = getCurrentTypeDetails();
-      if (typeDetails?.durationUnit && typeDetails.durationUnit !== formData.durationUnit) {
-        handleInputChange('durationUnit', typeDetails.durationUnit);
-        
-        if (formData.durationUnit !== typeDetails.durationUnit) {
+      if (typeDetails?.durationUnit && durationUnits.find((du) => du.value === typeDetails.durationUnit).backendValue !== formData.durationUnit) {
+        handleInputChange('durationUnit', durationUnits.find((du) => du.value === typeDetails.durationUnit).backendValue);
+        if (formData.durationUnit !== durationUnits.find((du) => du.value === typeDetails.durationUnit).backendValue) {
           handleInputChange('duration', 1);
         }
       }
-      
-      handleNestedChange('stipend', 'paymentType', 'after_completion');
+      handleNestedChange('stipend', 'paymentType', 3);
     } else {
       handleNestedChange('schedule', 'startDate', null);
       handleNestedChange('schedule', 'endDate', null);
@@ -206,25 +236,23 @@ const OpportunityForm = ({ editData = null }) => {
   }, [formData.internshipType, opportunityType]);
 
   useEffect(() => {
-    if (opportunityType === 'job') {
-      handleNestedChange('stipend', 'paymentType', 'monthly');
-      
-      if (formData.internshipType === 'part_time') {
+    if (opportunityType === 0) {
+      handleNestedChange('stipend', 'paymentType', 2);
+      if (formData.internshipType === 1) {
         handleNestedChange('schedule', 'hoursPerDay', 4);
-      } else if (formData.internshipType === 'full_time') {
+      } else if (formData.internshipType === 0) {
         handleNestedChange('schedule', 'hoursPerDay', 8);
       }
     }
   }, [opportunityType, formData.internshipType]);
 
   useEffect(() => {
-    if (formData.schedule.startDate && formData.duration > 0 && opportunityType === 'internship') {
+    if (formData.schedule.startDate && formData.duration > 0 && opportunityType === 1) {
       const endDate = calculateEndDate(
-        formData.schedule.startDate, 
-        formData.duration, 
+        formData.schedule.startDate,
+        formData.duration,
         formData.durationUnit
       );
-      
       if (endDate !== formData.schedule.endDate) {
         handleNestedChange('schedule', 'endDate', endDate);
       }
@@ -232,54 +260,48 @@ const OpportunityForm = ({ editData = null }) => {
   }, [formData.schedule.startDate, formData.duration, formData.durationUnit, opportunityType]);
 
   useEffect(() => {
-    if (formData.internshipType === 'weekend') {
-      setFormData(prev => ({
+    if (formData.internshipType === 4) {
+      setFormData((prev) => ({
         ...prev,
         schedule: {
           ...prev.schedule,
-          days: ['saturday', 'sunday']
-        }
+          days: [5, 6],
+        },
       }));
-    } else if (formData.internshipType === 'weekly') {
+    } else if (formData.internshipType === 3) {
       if (formData.schedule.days.length === 0) {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           schedule: {
             ...prev.schedule,
-            days: ['saturday']
-          }
+            days: [5],
+          },
         }));
       }
     }
   }, [formData.internshipType]);
 
   useEffect(() => {
-    if (opportunityType === 'internship' && 
-        formData.internshipType === 'weekly' && 
-        formData.schedule.days.length > 0) {
-      
+    if (opportunityType === 1 && formData.internshipType === 3 && formData.schedule.days.length > 0) {
       const today = new Date();
       const todayDay = today.getDay();
-      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-      
+      const dayNumbers = daysOfWeek.map((day) => day.backendValue);
+
       let daysToAdd = 0;
       let found = false;
-      
+
       for (let i = 0; i < 14; i++) {
         const checkDay = (todayDay + i) % 7;
-        const dayName = dayNames[checkDay];
-        
-        if (formData.schedule.days.includes(dayName)) {
+        if (formData.schedule.days.includes(dayNumbers[checkDay])) {
           daysToAdd = i;
           found = true;
           break;
         }
       }
-      
+
       if (found) {
         const startDate = new Date(today);
         startDate.setDate(today.getDate() + daysToAdd);
-        
         if (startDate.toISOString().split('T')[0] !== formData.schedule.startDate) {
           handleNestedChange('schedule', 'startDate', startDate.toISOString().split('T')[0]);
         }
@@ -288,105 +310,118 @@ const OpportunityForm = ({ editData = null }) => {
   }, [formData.schedule.days, formData.internshipType, opportunityType]);
 
   useEffect(() => {
-    if (opportunityType === 'job' && formData.internshipType === 'part_time') {
+    if (opportunityType === 0 && formData.internshipType === 1) {
       handleNestedChange('schedule', 'hoursPerDay', 4);
     }
   }, [formData.internshipType, opportunityType]);
 
   useEffect(() => {
-    if (formData.category && (formData.internshipType || opportunityType === 'job')) {
+    if (
+      formData.workType &&
+      (formData.internshipType !== undefined || opportunityType === 0) &&
+      (!isEdit || formData.workType !== originalWorkType || formData.internshipType !== originalInternshipType) &&
+      !hasManuallyEditedTitle
+    ) {
       const typeDetails = getCurrentTypeDetails();
-      if (!isEdit || formData.category !== originalCategory || formData.internshipType !== originalInternshipType) {
-        const newTitle = `${formData.category} - ${typeDetails?.label || ''}`;
-        setFormData(prev => ({ ...prev, title: newTitle }));
-      }
+      const selectedWorkType = workTypes.find((wt) => wt.value === formData.workType);
+      const newTitle = `${selectedWorkType?.label || 'Unknown Work Type'} - ${typeDetails?.label || ''}`;
+      setFormData((prev) => ({ ...prev, title: newTitle }));
     }
-  }, [formData.category, formData.internshipType, opportunityType, isEdit, originalCategory, originalInternshipType]);
+  }, [formData.workType, formData.internshipType, opportunityType, isEdit, originalWorkType, originalInternshipType, workTypes, hasManuallyEditedTitle]);
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
+    if (field === 'title') {
+      setHasManuallyEditedTitle(true);
+    }
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
   const handleNestedChange = (parent, field, value) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [parent]: {
         ...prev[parent],
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
     if (errors[`${parent}.${field}`]) {
-      setErrors(prev => ({ ...prev, [`${parent}.${field}`]: '' }));
+      setErrors((prev) => ({ ...prev, [`${parent}.${field}`]: '' }));
     }
   };
 
   const toggleDay = (day) => {
-    setFormData(prev => ({
+    const backendDay = daysOfWeek.find((d) => d.value === day).backendValue;
+    setFormData((prev) => ({
       ...prev,
       schedule: {
         ...prev.schedule,
-        days: prev.schedule.days.includes(day)
-          ? prev.schedule.days.filter(d => d !== day)
-          : [...prev.schedule.days, day]
-      }
+        days: prev.schedule.days.includes(backendDay)
+          ? prev.schedule.days.filter((d) => d !== backendDay)
+          : [...prev.schedule.days, backendDay],
+      },
     }));
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.category) newErrors.category = 'Category is required';
-    if (!formData.internshipType) newErrors.internshipType = 'Type is required';
-    
+    if (!formData.workType || !workTypes.find((wt) => wt.value === formData.workType)) {
+      newErrors.workType = 'Please select a valid work type';
+    }
+    if (formData.internshipType === undefined) {
+      newErrors.internshipType = 'Type is required';
+    }
+
     const typeDetails = getCurrentTypeDetails();
-    
-    if (opportunityType === 'internship') {
+
+    if (opportunityType === 1) {
       if (typeDetails?.frequency === 'one_time') {
         if (!formData.schedule.startDate) {
           newErrors.startDate = 'Please specify a start date';
         }
       } else {
-        if (formData.internshipType === 'weekly' && formData.schedule.days.length === 0) {
+        if (formData.internshipType === 3 && formData.schedule.days.length === 0) {
           newErrors.days = 'Please select at least one day';
         }
         if (!formData.schedule.startDate) {
           newErrors.startDate = 'Please specify a start date';
         }
-        
         if (formData.schedule.startDate && new Date(formData.schedule.startDate) < new Date()) {
           newErrors.startDate = 'Start date cannot be in the past';
         }
       }
-      
+
       if (!formData.duration || formData.duration <= 0) {
         newErrors.duration = 'Duration must be at least 1';
         handleInputChange('duration', 1);
-      } else if (formData.durationUnit === 'days' && formData.duration > 30) {
+      } else if (formData.durationUnit === 0 && formData.duration > 30) {
         newErrors.duration = 'Duration must be between 1-30 days';
-      } else if (formData.durationUnit === 'weeks') {
-        const maxWeeks = (formData.internshipType === 'weekly' || formData.internshipType === 'weekend') ? 4 : 12;
+      } else if (formData.durationUnit === 1) {
+        const maxWeeks = (formData.internshipType === 3 || formData.internshipType === 4) ? 4 : 12;
         if (formData.duration > maxWeeks) {
           newErrors.duration = `Duration must be between 1-${maxWeeks} weeks`;
         }
       }
     }
-    
+
     if (!formData.stipend.amount || formData.stipend.amount <= 0) {
       newErrors.stipendAmount = 'Stipend/Salary amount is required';
       handleNestedChange('stipend', 'amount', 0);
     }
-    
+
     if (!formData.numberOfPeople || formData.numberOfPeople <= 0) {
       newErrors.numberOfPeople = 'At least 1 person is required';
       handleInputChange('numberOfPeople', 1);
     }
-    if (formData.numberOfPeople > 10) newErrors.numberOfPeople = 'Maximum 10 people allowed';
-    
+    if (formData.numberOfPeople > 10) {
+      newErrors.numberOfPeople = 'Maximum 10 people allowed';
+    }
+
     if (!formData.schedule.hoursPerDay || formData.schedule.hoursPerDay <= 0) {
       newErrors.hoursPerDay = 'Hours per day must be at least 1';
       handleNestedChange('schedule', 'hoursPerDay', 1);
@@ -394,8 +429,10 @@ const OpportunityForm = ({ editData = null }) => {
     if (formData.schedule.hoursPerDay > 12) {
       newErrors.hoursPerDay = 'Hours per day must be between 1-12';
     }
-    
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
+
+    if (!formData.title.trim()) {
+      newErrors.title = 'Title is required';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -415,22 +452,42 @@ const OpportunityForm = ({ editData = null }) => {
       return;
     }
 
+    // Find the selected work type to get the slug
+    const selectedWorkType = workTypes.find((wt) => wt.value === formData.workType);
+    if (!selectedWorkType) {
+      toast.error('Please select a valid work type');
+      return;
+    }
+
+    // Convert boolean benefits to array for backend
+    const benefits = [];
+    if (formData.stipend.includesTips) benefits.push(0);
+    if (formData.stipend.includesFood) benefits.push(1);
+    if (formData.stipend.includesAccommodation) benefits.push(2);
+
     const finalAmount = calculateTotalAmount();
     const submitData = {
       ...formData,
-      stipend: {
-        ...formData.stipend,
-        totalAmount: finalAmount
-      },
+      workTypeSlug: selectedWorkType.slug, // Send slug instead of ID
       opportunityType,
-      isJob: opportunityType === 'job',
+      stipend: {
+        amount: formData.stipend.amount,
+        currency: formData.stipend.currency,
+        paymentType: formData.stipend.paymentType,
+        totalAmount: finalAmount,
+        benefits,
+      },
+      isJob: opportunityType === 0,
       schedule: {
         ...formData.schedule,
-        ...(opportunityType === 'job' 
+        ...(opportunityType === 0
           ? { startDate: null, endDate: null }
-          : { startDate: formData.schedule.startDate, endDate: formData.schedule.endDate })
-      }
+          : { startDate: formData.schedule.startDate, endDate: formData.schedule.endDate }),
+      },
     };
+
+    // Remove workType field since we're sending workTypeSlug
+    delete submitData.workType;
 
     setLoading(true);
     try {
@@ -441,8 +498,8 @@ const OpportunityForm = ({ editData = null }) => {
           submitData,
           {
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
       } else {
@@ -451,15 +508,15 @@ const OpportunityForm = ({ editData = null }) => {
           submitData,
           {
             headers: {
-              Authorization: `Bearer ${token}`
-            }
+              Authorization: `Bearer ${token}`,
+            },
           }
         );
       }
 
       if (response.data.success) {
         toast.success(
-          `${opportunityType === 'job' ? 'Job' : 'Internship'} ${
+          `${opportunityType === 0 ? 'Job' : 'Internship'} ${
             isEdit ? 'updated' : 'created'
           } successfully!`
         );
@@ -469,57 +526,49 @@ const OpportunityForm = ({ editData = null }) => {
       console.error(`${isEdit ? 'Update' : 'Create'} opportunity error:`, error);
       toast.error(
         error.response?.data?.message ||
-        `Failed to ${isEdit ? 'update' : 'create'} ${opportunityType}`
+          `Failed to ${isEdit ? 'update' : 'create'} ${opportunityType === 0 ? 'job' : 'internship'}`
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const inputClassName = (field) => 
+  const inputClassName = (field) =>
     `w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-      errors[field] 
-        ? 'border-red-300 focus:ring-red-500 bg-red-50' 
+      errors[field]
+        ? 'border-red-300 focus:ring-red-500 bg-red-50'
         : 'border-gray-300 focus:ring-primary'
     }`;
 
   const customSelectStyles = {
     control: (provided, state) => ({
       ...provided,
-      border: errors.category ? '1px solid #f87171' : '1px solid #d1d5db',
-      backgroundColor: errors.category ? '#fef2f2' : '#fff',
+      border: errors.workType ? '1px solid #f87171' : '1px solid #d1d5db',
+      backgroundColor: errors.workType ? '#fef2f2' : '#fff',
       borderRadius: '0.375rem',
       padding: '0.25rem',
       boxShadow: state.isFocused ? '0 0 0 2px #3b82f6' : 'none',
       '&:hover': {
-        borderColor: errors.category ? '#f87171' : '#93c5fd'
-      }
+        borderColor: errors.workType ? '#f87171' : '#93c5fd',
+      },
     }),
     menu: (provided) => ({
       ...provided,
-      zIndex: 9999
+      zIndex: 9999,
     }),
     option: (provided, state) => ({
       ...provided,
       backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#f3f4f6' : '#fff',
       color: state.isSelected ? '#fff' : '#1f2937',
       '&:hover': {
-        backgroundColor: '#f3f4f6'
-      }
+        backgroundColor: '#f3f4f6',
+      },
     }),
-    groupHeading: (provided) => ({
-      ...provided,
-      fontSize: '0.875rem',
-      fontWeight: '600',
-      color: '#1f2937',
-      padding: '0.5rem 1rem',
-      backgroundColor: '#f9fafb'
-    })
   };
 
   const currentTypeDetails = getCurrentTypeDetails();
-  const isJob = opportunityType === 'job';
-  const isWeeklyOrWeekend = formData.internshipType === 'weekly' || formData.internshipType === 'weekend';
+  const isJob = opportunityType === 0;
+  const isWeeklyOrWeekend = formData.internshipType === 3 || formData.internshipType === 4;
   const totalAmount = calculateTotalAmount();
 
   return (
@@ -544,13 +593,13 @@ const OpportunityForm = ({ editData = null }) => {
               <Briefcase className="h-5 w-5 mr-2 text-blue-600" />
               What type of opportunity are you offering?
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 type="button"
-                onClick={() => setOpportunityType('job')}
+                onClick={() => setOpportunityType(0)}
                 className={`p-4 rounded-lg border-2 flex flex-col items-center text-center transition-all ${
-                  opportunityType === 'job'
+                  opportunityType === 0
                     ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
                     : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-25'
                 }`}
@@ -562,9 +611,9 @@ const OpportunityForm = ({ editData = null }) => {
 
               <button
                 type="button"
-                onClick={() => setOpportunityType('internship')}
+                onClick={() => setOpportunityType(1)}
                 className={`p-4 rounded-lg border-2 flex flex-col items-center text-center transition-all ${
-                  opportunityType === 'internship'
+                  opportunityType === 1
                     ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
                     : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-25'
                 }`}
@@ -575,35 +624,34 @@ const OpportunityForm = ({ editData = null }) => {
               </button>
             </div>
           </div>
-          
+
           <div className="bg-white p-6 rounded-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
               What type of help do you need?
             </h3>
-            
+
             <div className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   {isJob ? 'Job Type *' : 'Internship Type *'}
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {(isJob ? jobTypes : internshipTypes).map(type => {
+                  {(isJob ? jobTypes : internshipTypes).map((type) => {
                     const IconComponent = type.icon;
                     return (
                       <button
-                        key={type.value}
+                        key={type.backendValue}
                         type="button"
-                        onClick={() => handleInputChange('internshipType', type.value)}
+                        onClick={() => handleInputChange('internshipType', type.backendValue)}
                         className={`p-3 rounded-lg border-2 flex items-center justify-center gap-2 text-center transition-all ${
-                          formData.internshipType === type.value
+                          formData.internshipType === type.backendValue
                             ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
                             : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-25'
                         }`}
                       >
                         <IconComponent className="h-5 w-5" />
-                        <span className="text-sm font-medium ">{type.label}</span>
-                        <span className="text-xs text-gray-500">{type.description}</span>
+                        <span className="text-sm font-medium">{type.label}</span>
                       </button>
                     );
                   })}
@@ -620,19 +668,17 @@ const OpportunityForm = ({ editData = null }) => {
                   What kind of work? *
                 </label>
                 <Select
-                  options={workCategories}
-                  value={workCategories
-                    .flatMap(group => group.options)
-                    .find(option => option.value === formData.category) || null}
-                  onChange={(selectedOption) => handleInputChange('category', selectedOption ? selectedOption.value : '')}
+                  options={workTypes}
+                  value={workTypes.find((option) => option.value === formData.workType) || null}
+                  onChange={(selectedOption) => handleInputChange('workType', selectedOption ? selectedOption.value : '')}
                   placeholder="Select work type"
                   isSearchable
                   styles={customSelectStyles}
                   classNamePrefix="react-select"
                 />
-                {errors.category && (
+                {errors.workType && (
                   <p className="text-red-600 text-sm mt-1 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.category}
+                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.workType}
                   </p>
                 )}
               </div>
@@ -645,7 +691,7 @@ const OpportunityForm = ({ editData = null }) => {
                 <Calendar className="h-5 w-5 mr-2 text-blue-600" />
                 Duration
               </h3>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -655,7 +701,7 @@ const OpportunityForm = ({ editData = null }) => {
                     <input
                       type="number"
                       min="1"
-                      max={formData.durationUnit === 'days' ? 30 : isWeeklyOrWeekend ? 4 : 12}
+                      max={formData.durationUnit === 0 ? 30 : isWeeklyOrWeekend ? 4 : 12}
                       value={formData.duration}
                       onChange={(e) => handleInputChange('duration', e.target.value === '' ? '' : parseInt(e.target.value))}
                       onBlur={(e) => {
@@ -666,15 +712,14 @@ const OpportunityForm = ({ editData = null }) => {
                       className={`${inputClassName('duration')} w-full sm:w-24`}
                     />
                     <span className="text-sm font-medium text-gray-700">
-                      {formData.durationUnit === 'days' ? 'Days' : 'Weeks'}
+                      {durationUnits.find((du) => du.backendValue === formData.durationUnit)?.label || 'Days'}
                     </span>
                     <span className="text-sm text-gray-500">
-                      {formData.durationUnit === 'days' 
-                        ? 'Max 30 days' 
-                        : isWeeklyOrWeekend 
-                          ? 'Max 4 weeks' 
-                          : 'Max 12 weeks'
-                      }
+                      {formData.durationUnit === 0
+                        ? 'Max 30 days'
+                        : isWeeklyOrWeekend
+                          ? 'Max 4 weeks'
+                          : 'Max 12 weeks'}
                     </span>
                   </div>
                   {errors.duration && (
@@ -692,26 +737,26 @@ const OpportunityForm = ({ editData = null }) => {
               <Clock className="h-5 w-5 mr-2 text-blue-600" />
               Schedule Details
             </h3>
-            
+
             <div className="space-y-6">
-              {(formData.internshipType === 'weekly' || formData.internshipType === 'weekend') && (
+              {(formData.internshipType === 3 || formData.internshipType === 4) && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Which days? *
                   </label>
                   <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-                    {daysOfWeek.map(day => (
+                    {daysOfWeek.map((day) => (
                       <button
-                        key={day.value}
+                        key={day.backendValue}
                         type="button"
                         onClick={() => toggleDay(day.value)}
-                        disabled={formData.internshipType === 'weekend' && !['saturday', 'sunday'].includes(day.value)}
+                        disabled={formData.internshipType === 4 && ![5, 6].includes(day.backendValue)}
                         className={`p-2 rounded-md text-sm font-medium transition-colors ${
-                          formData.schedule.days.includes(day.value)
+                          formData.schedule.days.includes(day.backendValue)
                             ? 'bg-blue-500 text-white border border-blue-500'
                             : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                         } ${
-                          formData.internshipType === 'weekend' && !['saturday', 'sunday'].includes(day.value)
+                          formData.internshipType === 4 && ![5, 6].includes(day.backendValue)
                             ? 'opacity-50 cursor-not-allowed'
                             : ''
                         }`}
@@ -797,12 +842,12 @@ const OpportunityForm = ({ editData = null }) => {
                     Shift Timing *
                   </label>
                   <select
-                    value={formData.schedule.shift}
-                    onChange={(e) => handleNestedChange('schedule', 'shift', e.target.value)}
+                    value={shifts.find((s) => s.backendValue === formData.schedule.shift)?.value || 'flexible'}
+                    onChange={(e) => handleNestedChange('schedule', 'shift', shifts.find((s) => s.value === e.target.value).backendValue)}
                     className={inputClassName('shift')}
                   >
-                    {shifts.map(shift => (
-                      <option key={shift.value} value={shift.value}>
+                    {shifts.map((shift) => (
+                      <option key={shift.backendValue} value={shift.value}>
                         {shift.label}
                       </option>
                     ))}
@@ -841,7 +886,7 @@ const OpportunityForm = ({ editData = null }) => {
               <DollarSign className="h-5 w-5 mr-2 text-blue-600" />
               Payment Details
             </h3>
-            
+
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -871,14 +916,13 @@ const OpportunityForm = ({ editData = null }) => {
                       <div className="flex items-center text-blue-700">
                         <Calculator className="h-4 w-4 mr-1" />
                         <span className="text-sm font-medium">
-                          Total Stipend: ₹{totalAmount} (paid after completion)
+                          Total Stipend: {getStipendText({ ...formData.stipend, totalAmount })}
                         </span>
                       </div>
                       <p className="text-xs text-blue-600 mt-1">
-                        {formData.duration} {formData.durationUnit} × ₹{formData.stipend.amount} per day
-                        {formData.durationUnit === 'weeks' && formData.schedule.days.length > 0 && 
-                          ` × ${formData.schedule.days.length} days/week`
-                        }
+                        {formData.duration} {durationUnits.find((du) => du.backendValue === formData.durationUnit)?.label || 'Days'} × ₹{formData.stipend.amount} per day
+                        {formData.durationUnit === 1 && formData.schedule.days.length > 0 &&
+                          ` × ${formData.schedule.days.length} days/week`}
                       </p>
                     </div>
                   )}
@@ -888,15 +932,9 @@ const OpportunityForm = ({ editData = null }) => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Payment Frequency
                   </label>
-                  {isJob ? (
-                    <div className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                      <span className="text-gray-700">Monthly</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                      <span className="text-gray-700">After Completion</span>
-                    </div>
-                  )}
+                  <div className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
+                    <span className="text-gray-700">{isJob ? 'Monthly' : 'After Completion'}</span>
+                  </div>
                   {isJob && (
                     <p className="text-xs text-gray-500 mt-1">
                       Jobs are paid monthly
@@ -952,30 +990,28 @@ const OpportunityForm = ({ editData = null }) => {
               <Globe className="h-5 w-5 mr-2 text-blue-600" />
               Language Requirements
             </h3>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Required Languages
                 </label>
                 <div className="space-y-2">
-                  {languages.map(language => {
-                    const isPreferred = formData.languages.preferred.includes(language);
+                  {languages.map((language) => {
+                    const isPreferred = formData.languages.preferred.includes(language.backendValue);
                     return (
-                      <div key={language} className="flex items-center">
+                      <div key={language.backendValue} className="flex items-center">
                         <input
                           type="checkbox"
-                          checked={formData.languages.required.includes(language)}
-                          onChange={(e) => handleLanguageToggle('required', language, e.target.checked)}
+                          checked={formData.languages.required.includes(language.backendValue)}
+                          onChange={(e) => handleLanguageToggle('required', language.backendValue, e.target.checked)}
                           disabled={isPreferred}
                           className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
                             isPreferred ? 'opacity-50 cursor-not-allowed' : ''
                           }`}
                         />
-                        <span className={`ml-2 text-sm ${
-                          isPreferred ? 'text-gray-400' : 'text-gray-700'
-                        }`}>
-                          {language}
+                        <span className={`ml-2 text-sm ${isPreferred ? 'text-gray-400' : 'text-gray-700'}`}>
+                          {language.label}
                           {isPreferred && ' (Selected in Preferred)'}
                         </span>
                       </div>
@@ -989,23 +1025,21 @@ const OpportunityForm = ({ editData = null }) => {
                   Preferred Languages
                 </label>
                 <div className="space-y-2">
-                  {languages.map(language => {
-                    const isRequired = formData.languages.required.includes(language);
+                  {languages.map((language) => {
+                    const isRequired = formData.languages.required.includes(language.backendValue);
                     return (
-                      <div key={language} className="flex items-center">
+                      <div key={language.backendValue} className="flex items-center">
                         <input
                           type="checkbox"
-                          checked={formData.languages.preferred.includes(language)}
-                          onChange={(e) => handleLanguageToggle('preferred', language, e.target.checked)}
+                          checked={formData.languages.preferred.includes(language.backendValue)}
+                          onChange={(e) => handleLanguageToggle('preferred', language.backendValue, e.target.checked)}
                           disabled={isRequired}
                           className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
                             isRequired ? 'opacity-50 cursor-not-allowed' : ''
                           }`}
                         />
-                        <span className={`ml-2 text-sm ${
-                          isRequired ? 'text-gray-400' : 'text-gray-700'
-                        }`}>
-                          {language}
+                        <span className={`ml-2 text-sm ${isRequired ? 'text-gray-400' : 'text-gray-700'}`}>
+                          {language.label}
                           {isRequired && ' (Selected in Required)'}
                         </span>
                       </div>
@@ -1021,7 +1055,7 @@ const OpportunityForm = ({ editData = null }) => {
               <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
               {isJob ? 'Job Details' : 'Internship Details'}
             </h3>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

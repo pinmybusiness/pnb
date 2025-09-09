@@ -1,6 +1,3 @@
-"use client";
-
-import Header from "@/components/Header";
 import { Users, Clock, BarChart2, Shield, Heart, Globe } from "lucide-react";
 
 export default function AboutPage() {

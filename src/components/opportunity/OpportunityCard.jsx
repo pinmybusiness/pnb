@@ -23,6 +23,8 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
     distance = calculateDistance(parseFloat(userLat), parseFloat(userLon), jobLat, jobLon);
   }
 
+  console.log("oppertunity12", opportunity.slug)
+
   return (
     <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
       <div className="flex flex-col lg:flex-row gap-6">
@@ -88,7 +90,7 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
               Starts {formatDateWithSuffix(opportunity.schedule?.startDate)}
             </div>
             <button
-              onClick={() => router.push(`/jobs/${opportunity._id}`)}
+              onClick={() => router.push(`/jobs/${opportunity?.slug}`)}
               className="w-full flex items-center justify-center text-xs sm:text-sm text-orange-700 hover:text-orange-900 font-medium py-2 px-3 rounded-lg border border-orange-200 hover:border-orange-300 bg-orange-50 hover:bg-orange-100 transition"
             >
               View Details

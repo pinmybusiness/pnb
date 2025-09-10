@@ -34,14 +34,11 @@ const CtaButton = ({
 
   const variantClasses =
     variant === 'outline'
-      ? `bg-transparent text-primary border border-primary hover:bg-primary/10`
+      ? `bg-transparent text-primary  border-primary hover:bg-primary`
       : `bg-primary text-white hover:bg-primary/90`;
 
   const baseClasses = `
-    inline-flex items-center justify-center
-    font-semibold shadow-lg
-    transition-all duration-300 transform hover:scale-105
-    focus:outline-none focus:ring-4 focus:ring-primary/30
+    inline-flex items-center justify-center font-semibold border border-2
     ${sizeClasses} ${variantClasses} ${className}
   `;
 

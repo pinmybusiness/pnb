@@ -13,10 +13,11 @@ import CtaButton from "./CtaButton";
 
 export default function Header({ activeLink = "" }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false); // State for profile dropdown
-  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false); // New state for login dropdown
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [loginDropdownOpen, setLoginDropdownOpen] = useState(false);
+  const [registerDropdownOpen, setRegisterDropdownOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("candidate"); // "candidate" or "restaurant"
+  const [activeTab, setActiveTab] = useState("candidate");
   const dispatch = useDispatch();
   const router = useRouter();
   const { user } = useSelector((state) => state.auth);
@@ -31,7 +32,18 @@ export default function Header({ activeLink = "" }) {
     setActiveTab(tab);
     setModalOpen(true);
     setMobileOpen(false);
-    setLoginDropdownOpen(false); // Close login dropdown when modal opens
+    setLoginDropdownOpen(false);
+    setRegisterDropdownOpen(false);
+  };
+
+  const handleLoginClick = () => {
+    setLoginDropdownOpen(!loginDropdownOpen);
+    setRegisterDropdownOpen(false);
+  };
+
+  const handleRegisterClick = () => {
+    setRegisterDropdownOpen(!registerDropdownOpen);
+    setLoginDropdownOpen(false);
   };
 
   const handleLogout = async () => {
@@ -41,6 +53,7 @@ export default function Header({ activeLink = "" }) {
       setMobileOpen(false);
       setProfileOpen(false);
       setLoginDropdownOpen(false);
+      setRegisterDropdownOpen(false);
       router.push("/");
     } catch (error) {
       console.error("Logout error:", error);
@@ -88,7 +101,7 @@ export default function Header({ activeLink = "" }) {
                   <CtaButton
                     text={user.name || "Profile"}
                     icon={User}
-                    size="md"
+                    size="sm"
                     variant="filled"
                     className="bg-orange-50/50 hover:bg-orange-100 text-gray-700 hover:text-orange-600"
                     onClick={() => setProfileOpen(!profileOpen)}
@@ -103,6 +116,7 @@ export default function Header({ activeLink = "" }) {
                       <a
                         href={user.role === 10 ? "/candidate/profile" : "/dashboard"}
                         className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                        onClick={() => setProfileOpen(false)}
                       >
                         <User className="w-4 h-4 mr-2" />
                         {user.role === 10 ? "Candidate Profile" : "Restaurant Dashboard"}
@@ -125,9 +139,9 @@ export default function Header({ activeLink = "" }) {
                     <CtaButton
                       text="Login"
                       icon={User}
-                      size="md"
+                      size="sm"
                       variant="outline"
-                      onClick={() => setLoginDropdownOpen(!loginDropdownOpen)}
+                      onClick={handleLoginClick}
                       asButton={true}
                     />
                     <div
@@ -141,7 +155,10 @@ export default function Header({ activeLink = "" }) {
                           icon={User}
                           size="sm"
                           variant="outline"
-                          onClick={() => openModal("candidate")}
+                          onClick={() => {
+                            openModal("candidate");
+                            setLoginDropdownOpen(false);
+                          }}
                           asButton={true}
                         />
                         <CtaButton
@@ -149,45 +166,49 @@ export default function Header({ activeLink = "" }) {
                           icon={Building}
                           size="sm"
                           variant="outline"
-                          onClick={() => openModal("restaurant")}
+                          onClick={() => {
+                            openModal("restaurant");
+                            setLoginDropdownOpen(false);
+                          }}
                           asButton={true}
                         />
                       </div>
                     </div>
                   </div>
-                  <CtaButton
-                    text="Register"
-                    icon={Building}
-                    size="md"
-                    variant="filled"
-                    className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
-                    onClick={() => setProfileOpen(!profileOpen)}
-                    asButton={true}
-                  />
-                  <div
-                    className={`absolute top-full right-0 mt-2 w-56 z-50 bg-white rounded-xl shadow-xl border border-orange-100 ${
-                      profileOpen ? "block" : "hidden"
-                    }`}
-                  >
-                    <div className="p-2 flex flex-col gap-2">
-                      <CtaButton
-                        text="Candidate Register"
-                        icon={User}
-                        size="sm"
-                        variant="outline"
-                        href="/candidate/register"
-                        onClick={() => setProfileOpen(false)}
-                        asButton={false}
-                      />
-                      <CtaButton
-                        text="Restaurant Register"
-                        icon={Building}
-                        size="sm"
-                        variant="outline"
-                        href="/restaurant/register"
-                        onClick={() => setProfileOpen(false)}
-                        asButton={false}
-                      />
+                  
+                  <div className="relative">
+                    <CtaButton
+                      text="Register"
+                      icon={Building}
+                      size="sm"
+                      variant="filled"
+                      className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
+                      onClick={handleRegisterClick}
+                      asButton={true}
+                    />
+                    <div
+                      className={`absolute top-full right-0 mt-2 w-56 z-50 bg-white rounded-xl shadow-xl border border-orange-100 ${
+                        registerDropdownOpen ? "block" : "hidden"
+                      }`}
+                    >
+                      <div className="p-2 flex flex-col gap-2">
+                        <a
+                          href="/candidate/register"
+                          className="flex items-center justify-center w-full px-4 py-2 text-sm text-gray-700 border border-orange-200 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                          onClick={() => setRegisterDropdownOpen(false)}
+                        >
+                          <User className="w-4 h-4 mr-2" />
+                          Candidate Register
+                        </a>
+                        <a
+                          href="/restaurant/register"
+                          className="flex items-center justify-center w-full px-4 py-2 text-sm text-gray-700 border border-orange-200 rounded-lg hover:bg-orange-50 hover:text-orange-600 transition-colors"
+                          onClick={() => setRegisterDropdownOpen(false)}
+                        >
+                          <Building className="w-4 h-4 mr-2" />
+                          Restaurant Register
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -265,26 +286,22 @@ export default function Header({ activeLink = "" }) {
                       onClick={() => openModal("restaurant")}
                       asButton={true}
                     />
-                    <CtaButton
-                      text="Candidate Register"
-                      icon={User}
-                      size="md"
-                      variant="outline"
+                    <a
                       href="/candidate/register"
-                      className="w-full text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                      className="flex items-center justify-center w-full py-2 px-3 text-sm text-gray-700 border border-orange-200 rounded-lg hover:text-orange-600 hover:bg-orange-50 transition-colors"
                       onClick={() => setMobileOpen(false)}
-                      asButton={false}
-                    />
-                    <CtaButton
-                      text="Restaurant Register"
-                      icon={Building}
-                      size="md"
-                      variant="filled"
+                    >
+                      <User className="w-5 h-5 mr-2" />
+                      Candidate Register
+                    </a>
+                    <a
                       href="/restaurant/register"
-                      className="w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white"
+                      className="flex items-center justify-center w-full py-2 px-3 text-sm text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 rounded-lg transition-colors"
                       onClick={() => setMobileOpen(false)}
-                      asButton={false}
-                    />
+                    >
+                      <Building className="w-5 h-5 mr-2" />
+                      Restaurant Register
+                    </a>
                   </>
                 )}
               </div>

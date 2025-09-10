@@ -11,7 +11,7 @@ export default function FeaturedJobs() {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  console.log("opera", opportunities)
   useEffect(() => {
     const fetchOpportunities = async () => {
       try {
@@ -44,7 +44,7 @@ export default function FeaturedJobs() {
   }, []);
 
   const calculatePostedTime = (publishedAt) => {
-    if (!publishedAt) return 'Recently posted';
+    if (!publishedAt) return 'Recently';
     const now = new Date();
     const postedDate = new Date(publishedAt);
     const diffInMs = now - postedDate;
@@ -171,8 +171,8 @@ export default function FeaturedJobs() {
                       <MapPin className="h-4 w-4 text-orange-600" />
                     </span>
                     <span>
-                      {opportunity.branch?.location?.cityDetails
-                        ? `${opportunity.branch.location.cityDetails.name || 'Unknown City'}, ${opportunity.branch.location.cityDetails.stateName || 'Unknown State'}`
+                      {opportunity.branch?.location?.city
+                        ? `${opportunity.branch.location.city.name || 'Unknown City'}`
                         : 'Unknown Location'}
                     </span>
                   </div>
@@ -205,10 +205,10 @@ export default function FeaturedJobs() {
 
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-400">
-                    Posted {calculatePostedTime(opportunity.publishedAt)}
+                    Posted {calculatePostedTime(opportunity.createdAt)}
                   </span>
                   <CtaButton
-                    href={`/jobs/${opportunity._id}`}
+                    href={`/jobs/${opportunity.slug}`}
                     text="View Details"
                     size="sm"
                     showIcon={true}

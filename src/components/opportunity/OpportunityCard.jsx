@@ -15,7 +15,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
-export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthenticated, hasProfile, handleApply, userLat, userLon }) => {
+export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthenticated,  handleApply, userLat, userLon }) => {
   const router = useRouter();
   let distance = null;
   if (userLat && userLon && opportunity.branch?.location?.coordinates) {
@@ -23,7 +23,7 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
     distance = calculateDistance(parseFloat(userLat), parseFloat(userLon), jobLat, jobLon);
   }
 
-  console.log("oppertunity12", opportunity.slug)
+  // console.log("oppertunity12", opportunity)
 
   return (
     <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300">
@@ -34,9 +34,9 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
               <Building className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
             </div>
             <div className="flex-1 space-y-2">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900">{opportunity.title}</h3>
-              {opportunity.branch?.name && (
-                <div className="text-sm sm:text-base font-medium text-gray-700">{opportunity.branch.name}</div>
+              <p className="text-lg font-semibold text-gray-900">{opportunity.title}</p>
+              {opportunity.branch?.parentRestaurant && (
+                <div className="!text-sm font-medium text-gray-500">{opportunity.branch.parentRestaurant.name}</div>
               )}
               <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-gray-600 font-medium">
                 {opportunity.branch?.location?.city && (
@@ -58,12 +58,6 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
                     {getDurationText(opportunity)}
                   </span>
                 )}
-                {/* {opportunity.category !== undefined && (
-                  <span className="flex items-center">
-                    <Briefcase className="h-3 w-3 mr-1 text-gray-500" />
-                    {getCategoryText(opportunity.category)}
-                  </span>
-                )} */}
               </div>
               <div className="flex flex-wrap gap-2">
                 {opportunity.opportunityType !== undefined && (
@@ -84,13 +78,9 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
           </div>
         </div>
         <div className="lg:w-44 flex-shrink-0 flex flex-col justify-between">
-          <div className="flex flex-col gap-2 sm:gap-3">
-            <div className="flex items-center text-gray-500 text-[11px] sm:text-xs justify-end">
-              <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-              Starts {formatDateWithSuffix(opportunity.schedule?.startDate)}
-            </div>
+          <div className="flex flex-col items-center justify-center gap-2 sm:gap-3 h-full">
             <button
-              onClick={() => router.push(`/jobs/${opportunity?.slug}`)}
+              onClick={() => router.push(`/job/${opportunity?.slug}`)}
               className="w-full flex items-center justify-center text-xs sm:text-sm text-orange-700 hover:text-orange-900 font-medium py-2 px-3 rounded-lg border border-orange-200 hover:border-orange-300 bg-orange-50 hover:bg-orange-100 transition"
             >
               View Details
@@ -105,9 +95,9 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
               <button
                 onClick={() => handleApply(opportunity)}
                 className="w-full py-2 sm:py-2.5 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white rounded-lg text-xs sm:text-sm font-medium transition shadow-sm hover:shadow-md"
-                disabled={!isAuthenticated || !hasProfile}
+                // disabled={!isAuthenticated}
               >
-                {isAuthenticated ? (hasProfile ? "Apply Now" : "Apply Now") : "Login to Apply"}
+                {isAuthenticated ?  "Apply Now" : "Login to Apply"}
               </button>
             )}
             {opportunity.applications?.length > 0 && (

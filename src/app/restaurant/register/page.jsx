@@ -7,6 +7,7 @@ import axios from 'axios';
 import { MapPin, Navigation, X, Store, Phone, Lock } from 'lucide-react';
 import Select from 'react-select';
 import { loginUser } from '@/store/authThunks';
+import "../../dashboard.css";
 
 const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
   const router = useRouter();
@@ -58,8 +59,13 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
         const citiesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/cities`);
         setCities(citiesRes.data.data);
 
-        // Fetch branch data if branchId is provided
+        // Find Hyderabad, Telangana
+        const hyderabad = citiesRes.data.data.find(
+          (city) => city.name === 'Hyderabad' && city.stateName === 'Telangana'
+        );
+
         if (branchId) {
+          // Fetch branch data if branchId is provided (edit mode)
           const branchRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${branchId}`);
           const branchData = branchRes.data.data;
 
@@ -72,7 +78,7 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
             restaurantName: '',
             branchName: branchData.name || '',
             branchAddress: branchData.location?.address || '',
-            branchCity: branchData.cityDetails?._id || '', // Use City _id
+            branchCity: branchData.cityDetails?._id || '',
             branchState: branchData.cityDetails?.stateName || '',
             branchPostalCode: branchData.location?.postalCode || '',
             branchCountry: branchData.cityDetails?.countryName || 'India',
@@ -90,6 +96,15 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
               );
             }
           }
+        } else if (hyderabad) {
+          // Set Hyderabad as default for new branch
+          setFormData((prev) => ({
+            ...prev,
+            branchCity: hyderabad._id,
+            branchState: hyderabad.stateName,
+            branchCountry: hyderabad.countryName,
+            branchCoordinates: hyderabad.coordinates || [0, 0]
+          }));
         }
       } catch (error) {
         console.error('Fetch error:', error);
@@ -106,6 +121,23 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
       setFormData((prev) => ({ ...prev, [name]: value.replace(/\D/g, '') }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+  };
+
+  // Handle restaurant selection
+  const handleRestaurantChange = (selected) => {
+    if (selected) {
+      setFormData((prev) => ({
+        ...prev,
+        restaurantId: selected._id,
+        restaurantName: selected.name
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        restaurantId: '',
+        restaurantName: ''
+      }));
     }
   };
 
@@ -258,6 +290,14 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
     }
   };
 
+  // Prepare restaurant options for dropdown
+  const restaurantOptions = restaurants.map((restaurant) => ({
+    value: restaurant.name,
+    label: restaurant.name,
+    _id: restaurant._id,
+    name: restaurant.name
+  }));
+
   // Prepare city options for dropdown
   const cityOptions = cities.map((city) => ({
     value: city.name,
@@ -279,13 +319,6 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
             {branchId ? 'Update your branch details' : 'Create an account and register your branch'}
           </p>
         </div>
-        <button
-          onClick={onClose}
-          className="flex items-center justify-center text-gray-600 hover:text-dark mt-2 sm:mt-0 w-full sm:w-auto px-4 py-2 border border-soft rounded-lg text-sm font-medium bg-white hover:bg-gray-50"
-        >
-          <X className="h-5 w-5 mr-1" />
-          Cancel
-        </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
@@ -368,27 +401,21 @@ const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
             Branch Information
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-                        {!branchId && (
+            {!branchId && (
               <div>
                 <label className="block text-sm font-medium text-dark mb-1">Restaurant</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <select
-                    name="restaurantId"
-                    value={formData.restaurantId}
-                    onChange={handleChange}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                  >
-                    <option value="">Select Existing Restaurant</option>
-                    {restaurants.map((restaurant) => (
-                      <option key={restaurant._id} value={restaurant._id}>
-                        {restaurant.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <Select
+                  options={restaurantOptions}
+                  value={restaurantOptions.find((option) => option._id === formData.restaurantId) || null}
+                  onChange={handleRestaurantChange}
+                  placeholder="Search and select a restaurant"
+                  isClearable
+                  isSearchable
+                  className="w-full text-sm"
+                  classNamePrefix="select"
+                />
               </div>
             )}
-
             <div>
               <label className="block text-sm font-medium text-dark mb-1">Branch Name *</label>
               <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">

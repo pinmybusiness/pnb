@@ -42,6 +42,8 @@ export default function StudentOpportunitiesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [useGeolocation, setUseGeolocation] = useState(false);
   const router = useRouter();
+
+  console.log("toke", token)
   useEffect(() => {
     const initialize = async () => {
       await checkAuth();

@@ -11,7 +11,7 @@ export default function FeaturedJobs() {
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  console.log("opera", opportunities)
+  // console.log("opera", opportunities)
   useEffect(() => {
     const fetchOpportunities = async () => {
       try {
@@ -155,7 +155,7 @@ export default function FeaturedJobs() {
                     <h3 className="text-2xl font-bold text-gray-900 line-clamp-1">
                       {opportunity.title || 'Untitled Opportunity'}
                     </h3>
-                    <p className="text-sm text-gray-600">{opportunity.branch?.name || 'Unknown Company'}</p>
+                    <p className="text-sm text-gray-600">{opportunity?.branch?.restaurantName || 'Unknown Restaurant'}</p>
                   </div>
                   <button
                     className="text-gray-300 hover:text-orange-600 transition-colors"
@@ -208,7 +208,7 @@ export default function FeaturedJobs() {
                     Posted {calculatePostedTime(opportunity.createdAt)}
                   </span>
                   <CtaButton
-                    href={`/jobs/${opportunity.slug}`}
+                    href={`/job/${opportunity.slug}`}
                     text="View Details"
                     size="sm"
                     showIcon={true}

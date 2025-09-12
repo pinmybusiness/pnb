@@ -1,6 +1,5 @@
-// store/authSlice.js (partial)
 import { createSlice } from '@reduxjs/toolkit';
-import { loginUser, googleLoginUser } from './authThunks';
+import { registerCandidate, loginUser, loadUser, logoutUser, googleLoginUser } from './authThunks';
 
 // Get token safely for SSR
 const getInitialToken = () => {
@@ -41,27 +40,91 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(registerCandidate.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registerCandidate.fulfilled, (state, action) => {
+        state.user = {
+          _id: action.payload._id,
+          name: action.payload.name,
+          mobile: action.payload.mobile,
+          email: action.payload.email,
+          role: action.payload.role,
+          roleName: action.payload.roleName,
+          candidateProfile: action.payload.candidateProfile,
+        };
+        state.token = action.payload.token;
+        localStorage.setItem('token', action.payload.token);
+        state.isLoading = false;
+      })
+      .addCase(registerCandidate.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        state.user = action.payload.user;
+        state.user = {
+          _id: action.payload._id,
+          name: action.payload.name,
+          mobile: action.payload.mobile,
+          email: action.payload.email,
+          role: action.payload.role,
+          roleName: action.payload.roleName,
+          candidateProfile: action.payload.candidateProfile,
+        };
         state.token = action.payload.token;
-         localStorage.setItem('token', action.payload.token); 
+        localStorage.setItem('token', action.payload.token);
         state.isLoading = false;
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
       })
+      .addCase(loadUser.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loadUser.fulfilled, (state, action) => {
+        state.user = {
+          _id: action.payload._id,
+          name: action.payload.name,
+          mobile: action.payload.mobile,
+          email: action.payload.email,
+          role: action.payload.role,
+          roleName: action.payload.roleName,
+          candidateProfile: action.payload.candidateProfile,
+        };
+        state.isLoading = false;
+      })
+      .addCase(loadUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+        state.token = null;
+        state.isLoading = false;
+      })
       .addCase(googleLoginUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(googleLoginUser.fulfilled, (state, action) => {
-        state.user = action.payload.user;
+        state.user = {
+          _id: action.payload.user._id,
+          name: action.payload.user.name,
+          mobile: action.payload.user.mobile,
+          email: action.payload.user.email,
+          role: action.payload.user.role,
+          roleName: action.payload.user.roleName,
+          candidateProfile: action.payload.user.candidateProfile,
+        };
         state.token = action.payload.token;
+        localStorage.setItem('token', action.payload.token);
         state.isLoading = false;
       })
       .addCase(googleLoginUser.rejected, (state, action) => {

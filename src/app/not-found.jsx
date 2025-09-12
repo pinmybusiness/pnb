@@ -1,6 +1,6 @@
 // app/not-found.jsx
 export default function NotFound() {
-  console.error("404 Error: User attempted to access a non-existent route");
+  console.warn("404: User attempted to access a non-existent route");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

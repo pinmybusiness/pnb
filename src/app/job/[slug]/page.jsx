@@ -39,7 +39,7 @@ export default function PublicOpportunityDetail() {
   const [showApplicationModal, setShowApplicationModal] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
   const { user, token } = useSelector((state) => state.auth);
-
+  console.log("oper", opportunity)
   useEffect(() => {
     checkAuth();
     if (slug) fetchOpportunity();
@@ -226,10 +226,10 @@ export default function PublicOpportunityDetail() {
           <div className="flex flex-col gap-4">
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-lg font-bold text-gray-900 mb-2">{opportunity.title}</h1>
+                <h1 className="!text-xl font-bold text-gray-900 mb-2">{opportunity.title}</h1>
                 <p className="text-gray-700 flex items-center">
                   <Building className="h-4 w-4 mr-2 text-orange-500" />
-                  {opportunity.branch?.name}
+                  {opportunity?.branch?.parentRestaurant?.name}
                 </p>
               </div>
               <div className="flex-shrink-0 ml-4">

@@ -1,7 +1,8 @@
 // config/menus.js
 import { 
   Store, Users, BarChart3, MapPin, Settings, 
-  FileBarChart, LayoutDashboard, GraduationCap 
+  FileBarChart, LayoutDashboard, GraduationCap, 
+  ClipboardList
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
@@ -24,7 +25,7 @@ export const allMenus = [
 
   { 
     name: "WaitPro", 
-    icon: GraduationCap, 
+    icon: ClipboardList, 
     roles: [6,7,8], 
     children: [
       { name: "Entry", href: "/dashboard/entry", roles: [6,7,8] },

@@ -115,12 +115,11 @@ const OpportunityForm = ({ editData = null }) => {
       const includesFood = stipend?.benefits?.includes(1) || false;
       const includesAccommodation = stipend?.benefits?.includes(2) || false;
 
-      // Extract workType ID if workType is an object, else use workType directly
       const workTypeId = workType?._id || workType || '';
 
       setFormData({
         branch: editData.branch || user?.branch,
-        workType: workTypeId, // Use _id if workType is an object
+        workType: workTypeId,
         opportunityType: opportunityType || 0,
         internshipType: internshipType || 0,
         numberOfPeople: numberOfPeople || 1,
@@ -152,7 +151,7 @@ const OpportunityForm = ({ editData = null }) => {
       });
 
       setOpportunityType(opportunityType || 0);
-      setOriginalWorkType(workTypeId); // Use _id for originalWorkType
+      setOriginalWorkType(workTypeId);
       setOriginalInternshipType(internshipType || '');
       setHasManuallyEditedTitle(!!title);
     }
@@ -166,22 +165,22 @@ const OpportunityForm = ({ editData = null }) => {
     if (!startDate) return '';
 
     const endDate = new Date(startDate);
-    if (durationUnit === 0) { // days
+    if (durationUnit === 0) {
       endDate.setDate(endDate.getDate() + duration);
-    } else if (durationUnit === 1) { // weeks
+    } else if (durationUnit === 1) {
       endDate.setDate(endDate.getDate() + (duration * 7));
     }
     return endDate.toISOString().split('T')[0];
   };
 
   const calculateTotalAmount = () => {
-    if (opportunityType === 1) { // internship
+    if (opportunityType === 1) {
       if (formData.stipend.amount <= 0 || formData.duration <= 0) return 0;
-      if (formData.durationUnit === 0) { // days
+      if (formData.durationUnit === 0) {
         return formData.stipend.amount * formData.duration;
-      } else if (formData.durationUnit === 1) { // weeks
+      } else if (formData.durationUnit === 1) {
         let daysPerWeek = formData.schedule.days.length;
-        if (formData.internshipType === 4) { // weekend
+        if (formData.internshipType === 4) {
           daysPerWeek = 2;
         }
         return formData.stipend.amount * daysPerWeek * formData.duration;
@@ -191,7 +190,7 @@ const OpportunityForm = ({ editData = null }) => {
   };
 
   const getCurrentTypeDetails = () => {
-    if (opportunityType === 1) { // internship
+    if (opportunityType === 1) {
       return internshipTypes.find((t) => t.backendValue === formData.internshipType);
     } else {
       return jobTypes.find((t) => t.backendValue === formData.internshipType);
@@ -452,14 +451,12 @@ const OpportunityForm = ({ editData = null }) => {
       return;
     }
 
-    // Find the selected work type to get the slug
     const selectedWorkType = workTypes.find((wt) => wt.value === formData.workType);
     if (!selectedWorkType) {
       toast.error('Please select a valid work type');
       return;
     }
 
-    // Convert boolean benefits to array for backend
     const benefits = [];
     if (formData.stipend.includesTips) benefits.push(0);
     if (formData.stipend.includesFood) benefits.push(1);
@@ -468,7 +465,7 @@ const OpportunityForm = ({ editData = null }) => {
     const finalAmount = calculateTotalAmount();
     const submitData = {
       ...formData,
-      workTypeSlug: selectedWorkType.slug, // Send slug instead of ID
+      workTypeSlug: selectedWorkType.slug,
       opportunityType,
       stipend: {
         amount: formData.stipend.amount,
@@ -486,7 +483,6 @@ const OpportunityForm = ({ editData = null }) => {
       },
     };
 
-    // Remove workType field since we're sending workTypeSlug
     delete submitData.workType;
 
     setLoading(true);
@@ -537,7 +533,7 @@ const OpportunityForm = ({ editData = null }) => {
     `w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
       errors[field]
         ? 'border-red-300 focus:ring-red-500 bg-red-50'
-        : 'border-gray-300 focus:ring-primary'
+        : 'border-gray-300 focus:ring-blue-500'
     }`;
 
   const customSelectStyles = {
@@ -572,536 +568,508 @@ const OpportunityForm = ({ editData = null }) => {
   const totalAmount = calculateTotalAmount();
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-6 font-sans">
-      <div className="flex items-center mb-6">
+    <div className="max-w-3xl mx-auto p-4 font-sans">
+      <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => router.back()}
-          className="flex items-center text-gray-700 hover:text-primary mr-4 transition-colors"
+          className="flex items-center text-gray-700 hover:text-blue-600 transition-colors"
         >
           <ArrowLeft className="h-5 w-5 mr-1" />
           Back
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">
-          {isEdit ? 'Edit' : 'Create New'} Opportunity
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+          {isEdit ? 'Edit' : 'Create'} Opportunity
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
-        <div className="space-y-8">
-          <div className="bg-blue-50 p-6 rounded-lg border border-blue-100">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Briefcase className="h-5 w-5 mr-2 text-blue-600" />
-              What type of opportunity are you offering?
-            </h3>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 flex items-center">
+            <Briefcase className="h-5 w-5 mr-2 text-blue-600" />
+            Opportunity Type
+          </h3>
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setOpportunityType(0)}
+              className={`p-3 rounded-lg border-2 flex flex-col items-center text-center transition-all ${
+                opportunityType === 0
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+              }`}
+            >
+              <Briefcase className="h-5 w-5 mb-1" />
+              <span className="text-sm font-medium">Job</span>
+              <span className="text-xs text-gray-500 hidden sm:block">Employment opportunity</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpportunityType(1)}
+              className={`p-3 rounded-lg border-2 flex flex-col items-center text-center transition-all ${
+                opportunityType === 1
+                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                  : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+              }`}
+            >
+              <BookOpen className="h-5 w-5 mb-1" />
+              <span className="text-sm font-medium">Internship</span>
+              <span className="text-xs text-gray-500 hidden sm:block">Learning opportunity</span>
+            </button>
+          </div>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                type="button"
-                onClick={() => setOpportunityType(0)}
-                className={`p-4 rounded-lg border-2 flex flex-col items-center text-center transition-all ${
-                  opportunityType === 0
-                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                    : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-25'
-                }`}
-              >
-                <Briefcase className="h-6 w-6 mb-2" />
-                <span className="text-sm font-medium mb-1">Job</span>
-                <span className="text-xs text-gray-500">Employment opportunity</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setOpportunityType(1)}
-                className={`p-4 rounded-lg border-2 flex flex-col items-center text-center transition-all ${
-                  opportunityType === 1
-                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                    : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-25'
-                }`}
-              >
-                <BookOpen className="h-6 w-6 mb-2" />
-                <span className="text-sm font-medium mb-1">Internship / ODC</span>
-                <span className="text-xs text-gray-500">Learning opportunity for students</span>
-              </button>
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 flex items-center">
+            <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
+            Help Needed
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {isJob ? 'Job Type *' : 'Internship Type *'}
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {(isJob ? jobTypes : internshipTypes).map((type) => {
+                  const IconComponent = type.icon;
+                  return (
+                    <button
+                      key={type.backendValue}
+                      type="button"
+                      onClick={() => handleInputChange('internshipType', type.backendValue)}
+                      className={`p-2 rounded-lg border-2 flex items-center justify-center gap-1 text-center transition-all text-sm ${
+                        formData.internshipType === type.backendValue
+                          ? 'border-blue-500 bg-blue-50 text-blue-700'
+                          : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                      }`}
+                    >
+                      <IconComponent className="h-4 w-4" />
+                      <span>{type.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {errors.internshipType && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" /> {errors.internshipType}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Work Type *
+              </label>
+              <Select
+                options={workTypes}
+                value={workTypes.find((option) => option.value === formData.workType) || null}
+                onChange={(selectedOption) => handleInputChange('workType', selectedOption ? selectedOption.value : '')}
+                placeholder="Select work type"
+                isSearchable
+                styles={customSelectStyles}
+                classNamePrefix="react-select"
+              />
+              {errors.workType && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" /> {errors.workType}
+                </p>
+              )}
             </div>
           </div>
+        </div>
 
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
-              What type of help do you need?
+        {!isJob && (
+          <div className="bg-white p-4 rounded-lg border border-gray-200">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 flex items-center">
+              <Calendar className="h-5 w-5 mr-2 text-blue-600" />
+              Duration
             </h3>
-
-            <div className="space-y-6">
+            <div className="space-y-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {isJob ? 'Job Type *' : 'Internship Type *'}
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Duration *
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {(isJob ? jobTypes : internshipTypes).map((type) => {
-                    const IconComponent = type.icon;
-                    return (
-                      <button
-                        key={type.backendValue}
-                        type="button"
-                        onClick={() => handleInputChange('internshipType', type.backendValue)}
-                        className={`p-3 rounded-lg border-2 flex items-center justify-center gap-2 text-center transition-all ${
-                          formData.internshipType === type.backendValue
-                            ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                            : 'border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-25'
-                        }`}
-                      >
-                        <IconComponent className="h-5 w-5" />
-                        <span className="text-sm font-medium">{type.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {errors.internshipType && (
-                  <p className="text-red-600 text-sm mt-1 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.internshipType}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  What kind of work? *
-                </label>
-                <Select
-                  options={workTypes}
-                  value={workTypes.find((option) => option.value === formData.workType) || null}
-                  onChange={(selectedOption) => handleInputChange('workType', selectedOption ? selectedOption.value : '')}
-                  placeholder="Select work type"
-                  isSearchable
-                  styles={customSelectStyles}
-                  classNamePrefix="react-select"
-                />
-                {errors.workType && (
-                  <p className="text-red-600 text-sm mt-1 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.workType}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {!isJob && (
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Calendar className="h-5 w-5 mr-2 text-blue-600" />
-                Duration
-              </h3>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    How long do you need help? *
-                  </label>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <input
-                      type="number"
-                      min="1"
-                      max={formData.durationUnit === 0 ? 30 : isWeeklyOrWeekend ? 4 : 12}
-                      value={formData.duration}
-                      onChange={(e) => handleInputChange('duration', e.target.value === '' ? '' : parseInt(e.target.value))}
-                      onBlur={(e) => {
-                        if (e.target.value === '' || parseInt(e.target.value) < 1) {
-                          handleInputChange('duration', 1);
-                        }
-                      }}
-                      className={`${inputClassName('duration')} w-full sm:w-24`}
-                    />
-                    <span className="text-sm font-medium text-gray-700">
-                      {durationUnits.find((du) => du.backendValue === formData.durationUnit)?.label || 'Days'}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {formData.durationUnit === 0
-                        ? 'Max 30 days'
-                        : isWeeklyOrWeekend
-                          ? 'Max 4 weeks'
-                          : 'Max 12 weeks'}
-                    </span>
-                  </div>
-                  {errors.duration && (
-                    <p className="text-red-600 text-sm mt-1 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" /> {errors.duration}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Clock className="h-5 w-5 mr-2 text-blue-600" />
-              Schedule Details
-            </h3>
-
-            <div className="space-y-6">
-              {(formData.internshipType === 3 || formData.internshipType === 4) && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Which days? *
-                  </label>
-                  <div className="grid grid-cols-4 md:grid-cols-7 gap-2">
-                    {daysOfWeek.map((day) => (
-                      <button
-                        key={day.backendValue}
-                        type="button"
-                        onClick={() => toggleDay(day.value)}
-                        disabled={formData.internshipType === 4 && ![5, 6].includes(day.backendValue)}
-                        className={`p-2 rounded-md text-sm font-medium transition-colors ${
-                          formData.schedule.days.includes(day.backendValue)
-                            ? 'bg-blue-500 text-white border border-blue-500'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                        } ${
-                          formData.internshipType === 4 && ![5, 6].includes(day.backendValue)
-                            ? 'opacity-50 cursor-not-allowed'
-                            : ''
-                        }`}
-                      >
-                        {day.label}
-                      </button>
-                    ))}
-                  </div>
-                  {errors.days && (
-                    <p className="text-red-600 text-sm mt-1 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" /> {errors.days}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {!isJob && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Specific Start Date *
-                    </label>
-                    <input
-                      type="date"
-                      value={formData.schedule.startDate || ''}
-                      onChange={(e) => handleNestedChange('schedule', 'startDate', e.target.value)}
-                      min={getTodayDate()}
-                      className={inputClassName('startDate')}
-                    />
-                    {errors.startDate && (
-                      <p className="text-red-600 text-sm mt-1 flex items-center">
-                        <AlertCircle className="h-4 w-4 mr-1" /> {errors.startDate}
-                      </p>
-                    )}
-                  </div>
-
-                  {formData.schedule.startDate && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        End Date (Auto-calculated)
-                      </label>
-                      <input
-                        type="date"
-                        value={formData.schedule.endDate || ''}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
-                        readOnly
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Calculated based on start date and duration
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Hours Per Day *
-                  </label>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                   <input
                     type="number"
                     min="1"
-                    max="12"
-                    value={formData.schedule.hoursPerDay}
-                    onChange={(e) => handleNestedChange('schedule', 'hoursPerDay', e.target.value === '' ? '' : parseInt(e.target.value))}
+                    max={formData.durationUnit === 0 ? 30 : isWeeklyOrWeekend ? 4 : 12}
+                    value={formData.duration}
+                    onChange={(e) => handleInputChange('duration', e.target.value === '' ? '' : parseInt(e.target.value))}
                     onBlur={(e) => {
                       if (e.target.value === '' || parseInt(e.target.value) < 1) {
-                        handleNestedChange('schedule', 'hoursPerDay', 1);
+                        handleInputChange('duration', 1);
                       }
                     }}
-                    className={inputClassName('hoursPerDay')}
+                    className={`${inputClassName('duration')} w-full sm:w-24`}
                   />
-                  {errors.hoursPerDay && (
+                  <span className="text-sm font-medium text-gray-700">
+                    {durationUnits.find((du) => du.backendValue === formData.durationUnit)?.label || 'Days'}
+                  </span>
+                  <span className="text-xs text-gray-500 hidden sm:block">
+                    {formData.durationUnit === 0
+                      ? 'Max 30 days'
+                      : isWeeklyOrWeekend
+                        ? 'Max 4 weeks'
+                        : 'Max 12 weeks'}
+                  </span>
+                </div>
+                {errors.duration && (
+                  <p className="text-red-600 text-sm mt-1 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.duration}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 flex items-center">
+            <Clock className="h-5 w-5 mr-2 text-blue-600" />
+            Schedule
+          </h3>
+          <div className="space-y-4">
+            {(formData.internshipType === 3 || formData.internshipType === 4) && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Days *
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {daysOfWeek.map((day) => (
+                    <button
+                      key={day.backendValue}
+                      type="button"
+                      onClick={() => toggleDay(day.value)}
+                      disabled={formData.internshipType === 4 && ![5, 6].includes(day.backendValue)}
+                      className={`p-2 rounded-md text-sm font-medium transition-colors ${
+                        formData.schedule.days.includes(day.backendValue)
+                          ? 'bg-blue-500 text-white border border-blue-500'
+                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                      } ${
+                        formData.internshipType === 4 && ![5, 6].includes(day.backendValue)
+                          ? 'opacity-50 cursor-not-allowed'
+                          : ''
+                      }`}
+                    >
+                      {day.label.slice(0, 3)}
+                    </button>
+                  ))}
+                </div>
+                {errors.days && (
+                  <p className="text-red-600 text-sm mt-1 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.days}
+                  </p>
+                )}
+              </div>
+            )}
+            {!isJob && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Start Date *
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.schedule.startDate || ''}
+                    onChange={(e) => handleNestedChange('schedule', 'startDate', e.target.value)}
+                    min={getTodayDate()}
+                    className={inputClassName('startDate')}
+                  />
+                  {errors.startDate && (
                     <p className="text-red-600 text-sm mt-1 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" /> {errors.hoursPerDay}
+                      <AlertCircle className="h-4 w-4 mr-1" /> {errors.startDate}
                     </p>
                   )}
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Shift Timing *
-                  </label>
-                  <select
-                    value={shifts.find((s) => s.backendValue === formData.schedule.shift)?.value || 'flexible'}
-                    onChange={(e) => handleNestedChange('schedule', 'shift', shifts.find((s) => s.value === e.target.value).backendValue)}
-                    className={inputClassName('shift')}
-                  >
-                    {shifts.map((shift) => (
-                      <option key={shift.backendValue} value={shift.value}>
-                        {shift.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {formData.schedule.startDate && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.schedule.endDate || ''}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
+                      readOnly
+                    />
+                    <p className="text-xs text-gray-500 mt-1 hidden sm:block">
+                      Calculated based on start date and duration
+                    </p>
+                  </div>
+                )}
               </div>
-
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  How many people needed? *
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Hours/Day *
                 </label>
                 <input
                   type="number"
                   min="1"
-                  max="10"
-                  value={formData.numberOfPeople}
-                  onChange={(e) => handleInputChange('numberOfPeople', e.target.value === '' ? '' : parseInt(e.target.value))}
+                  max="12"
+                  value={formData.schedule.hoursPerDay}
+                  onChange={(e) => handleNestedChange('schedule', 'hoursPerDay', e.target.value === '' ? '' : parseInt(e.target.value))}
                   onBlur={(e) => {
                     if (e.target.value === '' || parseInt(e.target.value) < 1) {
-                      handleInputChange('numberOfPeople', 1);
+                      handleNestedChange('schedule', 'hoursPerDay', 1);
                     }
                   }}
-                  className={inputClassName('numberOfPeople')}
+                  className={inputClassName('hoursPerDay')}
                 />
-                {errors.numberOfPeople && (
+                {errors.hoursPerDay && (
                   <p className="text-red-600 text-sm mt-1 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.numberOfPeople}
+                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.hoursPerDay}
                   </p>
                 )}
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <DollarSign className="h-5 w-5 mr-2 text-blue-600" />
-              Payment Details
-            </h3>
-
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {isJob ? 'Salary Amount (₹) *' : 'Stipend Amount (₹ per day) *'}
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={formData.stipend.amount}
-                    onChange={(e) => handleNestedChange('stipend', 'amount', e.target.value === '' ? '' : parseInt(e.target.value))}
-                    onBlur={(e) => {
-                      if (e.target.value === '' || parseInt(e.target.value) < 0) {
-                        handleNestedChange('stipend', 'amount', 0);
-                      }
-                    }}
-                    className={inputClassName('stipendAmount')}
-                    placeholder="Enter amount"
-                  />
-                  {errors.stipendAmount && (
-                    <p className="text-red-600 text-sm mt-1 flex items-center">
-                      <AlertCircle className="h-4 w-4 mr-1" /> {errors.stipendAmount}
-                    </p>
-                  )}
-                  {!isJob && formData.stipend.amount > 0 && (
-                    <div className="mt-2 p-3 bg-blue-50 rounded-md border border-blue-200">
-                      <div className="flex items-center text-blue-700">
-                        <Calculator className="h-4 w-4 mr-1" />
-                        <span className="text-sm font-medium">
-                          Total Stipend: {getStipendText({ ...formData.stipend, totalAmount })}
-                        </span>
-                      </div>
-                      <p className="text-xs text-blue-600 mt-1">
-                        {formData.duration} {durationUnits.find((du) => du.backendValue === formData.durationUnit)?.label || 'Days'} × ₹{formData.stipend.amount} per day
-                        {formData.durationUnit === 1 && formData.schedule.days.length > 0 &&
-                          ` × ${formData.schedule.days.length} days/week`}
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Payment Frequency
-                  </label>
-                  <div className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                    <span className="text-gray-700">{isJob ? 'Monthly' : 'After Completion'}</span>
-                  </div>
-                  {isJob && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Jobs are paid monthly
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.stipend.includesTips}
-                    onChange={(e) => handleNestedChange('stipend', 'includesTips', e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">
-                    Includes tips
-                  </span>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.stipend.includesFood}
-                    onChange={(e) => handleNestedChange('stipend', 'includesFood', e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 flex items-center">
-                    <Utensils className="h-4 w-4 mr-1" />
-                    Food provided
-                  </span>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.stipend.includesAccommodation}
-                    onChange={(e) => handleNestedChange('stipend', 'includesAccommodation', e.target.checked)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 flex items-center">
-                    <Home className="h-4 w-4 mr-1" />
-                    Accommodation provided
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Globe className="h-5 w-5 mr-2 text-blue-600" />
-              Language Requirements
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Required Languages
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Shift *
                 </label>
-                <div className="space-y-2">
-                  {languages.map((language) => {
-                    const isPreferred = formData.languages.preferred.includes(language.backendValue);
-                    return (
-                      <div key={language.backendValue} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.languages.required.includes(language.backendValue)}
-                          onChange={(e) => handleLanguageToggle('required', language.backendValue, e.target.checked)}
-                          disabled={isPreferred}
-                          className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
-                            isPreferred ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
-                        />
-                        <span className={`ml-2 text-sm ${isPreferred ? 'text-gray-400' : 'text-gray-700'}`}>
-                          {language.label}
-                          {isPreferred && ' (Selected in Preferred)'}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Preferred Languages
-                </label>
-                <div className="space-y-2">
-                  {languages.map((language) => {
-                    const isRequired = formData.languages.required.includes(language.backendValue);
-                    return (
-                      <div key={language.backendValue} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.languages.preferred.includes(language.backendValue)}
-                          onChange={(e) => handleLanguageToggle('preferred', language.backendValue, e.target.checked)}
-                          disabled={isRequired}
-                          className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
-                            isRequired ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
-                        />
-                        <span className={`ml-2 text-sm ${isRequired ? 'text-gray-400' : 'text-gray-700'}`}>
-                          {language.label}
-                          {isRequired && ' (Selected in Required)'}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                <select
+                  value={shifts.find((s) => s.backendValue === formData.schedule.shift)?.value || 'flexible'}
+                  onChange={(e) => handleNestedChange('schedule', 'shift', shifts.find((s) => s.value === e.target.value).backendValue)}
+                  className={inputClassName('shift')}
+                >
+                  {shifts.map((shift) => (
+                    <option key={shift.backendValue} value={shift.value}>
+                      {shift.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                People Needed *
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={formData.numberOfPeople}
+                onChange={(e) => handleInputChange('numberOfPeople', e.target.value === '' ? '' : parseInt(e.target.value))}
+                onBlur={(e) => {
+                  if (e.target.value === '' || parseInt(e.target.value) < 1) {
+                    handleInputChange('numberOfPeople', 1);
+                  }
+                }}
+                className={inputClassName('numberOfPeople')}
+              />
+              {errors.numberOfPeople && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" /> {errors.numberOfPeople}
+                </p>
+              )}
+            </div>
           </div>
+        </div>
 
-          <div className="bg-green-50 p-6 rounded-lg border border-green-200">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
-              {isJob ? 'Job Details' : 'Internship Details'}
-            </h3>
-
-            <div className="space-y-4">
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 flex items-center">
+            <DollarSign className="h-5 w-5 mr-2 text-blue-600" />
+            Payment
+          </h3>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {isJob ? 'Job Title *' : 'Internship Title *'}
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {isJob ? 'Salary (₹) *' : 'Stipend (₹/day) *'}
                 </label>
                 <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => handleInputChange('title', e.target.value)}
-                  className={inputClassName('title')}
-                  placeholder={`Enter ${isJob ? 'job' : 'internship'} title`}
+                  type="number"
+                  min="1"
+                  value={formData.stipend.amount}
+                  onChange={(e) => handleNestedChange('stipend', 'amount', e.target.value === '' ? '' : parseInt(e.target.value))}
+                  onBlur={(e) => {
+                    if (e.target.value === '' || parseInt(e.target.value) < 0) {
+                      handleNestedChange('stipend', 'amount', 0);
+                    }
+                  }}
+                  className={inputClassName('stipendAmount')}
+                  placeholder="Enter amount"
                 />
-                {errors.title && (
+                {errors.stipendAmount && (
                   <p className="text-red-600 text-sm mt-1 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.title}
+                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.stipendAmount}
                   </p>
                 )}
-                <p className="text-xs text-gray-500 mt-1">
-                  Title is auto-generated but can be modified
+                {!isJob && formData.stipend.amount > 0 && (
+                  <div className="mt-2 p-3 bg-blue-50 rounded-md border border-blue-200">
+                    <div className="flex items-center text-blue-700">
+                      <Calculator className="h-4 w-4 mr-1" />
+                      <span className="text-sm font-medium">
+                        Total: {getStipendText({ ...formData.stipend, totalAmount })}
+                      </span>
+                    </div>
+                    <p className="text-xs text-blue-600 mt-1 hidden sm:block">
+                      {formData.duration} {durationUnits.find((du) => du.backendValue === formData.durationUnit)?.label || 'Days'} × ₹{formData.stipend.amount}/day
+                      {formData.durationUnit === 1 && formData.schedule.days.length > 0 &&
+                        ` × ${formData.schedule.days.length} days/week`}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Frequency
+                </label>
+                <div className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
+                  <span className="text-gray-700">{isJob ? 'Monthly' : 'After Completion'}</span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1 hidden sm:block">
+                  {isJob ? 'Jobs are paid monthly' : 'Paid after completion'}
                 </p>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description (Optional)
-                </label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Describe the opportunity in detail (optional)..."
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.stipend.includesTips}
+                  onChange={(e) => handleNestedChange('stipend', 'includesTips', e.target.checked)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
-                <p className="text-sm text-gray-500 mt-1">
-                  {formData.description.length} characters
-                </p>
+                <span className="ml-2 text-sm text-gray-700">Tips</span>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.stipend.includesFood}
+                  onChange={(e) => handleNestedChange('stipend', 'includesFood', e.target.checked)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-700 flex items-center">
+                  <Utensils className="h-4 w-4 mr-1" /> Food
+                </span>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={formData.stipend.includesAccommodation}
+                  onChange={(e) => handleNestedChange('stipend', 'includesAccommodation', e.target.checked)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm text-gray-700 flex items-center">
+                  <Home className="h-4 w-4 mr-1" /> Accommodation
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 flex items-center">
+            <Globe className="h-5 w-5 mr-2 text-blue-600" />
+            Languages
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Required
+              </label>
+              <div className="space-y-2">
+                {languages.map((language) => {
+                  const isPreferred = formData.languages.preferred.includes(language.backendValue);
+                  return (
+                    <div key={language.backendValue} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.languages.required.includes(language.backendValue)}
+                        onChange={(e) => handleLanguageToggle('required', language.backendValue, e.target.checked)}
+                        disabled={isPreferred}
+                        className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
+                          isPreferred ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      />
+                      <span className={`ml-2 text-sm ${isPreferred ? 'text-gray-400' : 'text-gray-700'}`}>
+                        {language.label}
+                        {isPreferred && <span className="hidden sm:inline"> (Preferred)</span>}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Preferred
+              </label>
+              <div className="space-y-2">
+                {languages.map((language) => {
+                  const isRequired = formData.languages.required.includes(language.backendValue);
+                  return (
+                    <div key={language.backendValue} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.languages.preferred.includes(language.backendValue)}
+                        onChange={(e) => handleLanguageToggle('preferred', language.backendValue, e.target.checked)}
+                        disabled={isRequired}
+                        className={`h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded ${
+                          isRequired ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      />
+                      <span className={`ml-2 text-sm ${isRequired ? 'text-gray-400' : 'text-gray-700'}`}>
+                        {language.label}
+                        {isRequired && <span className="hidden sm:inline"> (Required)</span>}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 flex items-center">
+            <CheckCircle className="h-5 w-5 mr-2 text-green-600" />
+            Details
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {isJob ? 'Job Title *' : 'Internship Title *'}
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => handleInputChange('title', e.target.value)}
+                className={inputClassName('title')}
+                placeholder={`Enter ${isJob ? 'job' : 'internship'} title`}
+              />
+              {errors.title && (
+                <p className="text-red-600 text-sm mt-1 flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-1" /> {errors.title}
+                </p>
+              )}
+              <p className="text-xs text-gray-500 mt-1 hidden sm:block">
+                Title is auto-generated but can be modified
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Describe the opportunity..."
+              />
+              <p className="text-xs text-gray-500 mt-1 hidden sm:block">
+                {formData.description.length} characters
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end mt-6">
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+            className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
             {loading ? (
               <>

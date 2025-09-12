@@ -6,6 +6,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import GoogleLoginButton from "./GoogleLoginButton";
 import RestaurantLoginForm from "./RestaurantLoginForm";
 import PropTypes from "prop-types";
+import CandidateLoginForm from "./CandidateLoginForm";
 
 export default function LoginModal({ isOpen, onClose, initialTab = "candidate" }) {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -92,10 +93,10 @@ export default function LoginModal({ isOpen, onClose, initialTab = "candidate" }
           <div className="relative p-6" role="tabpanel" aria-labelledby={activeTab === "candidate" ? "candidate-tab" : "restaurant-tab"}>
             {activeTab === "candidate" ? (
               <div>
-                <h2 id="login-modal-title" className="text-2xl font-bold text-gray-900 mb-4 text-center">
+                {/* <h2 id="login-modal-title" className="text-2xl font-bold text-gray-900 mb-4 text-center">
                   Candidate Login
-                </h2>
-                <GoogleLoginButton />
+                </h2> */}
+                <CandidateLoginForm />
                 <button
                   onClick={onClose}
                   className="w-full mt-4 text-sm font-medium text-gray-600 hover:text-orange-600 hover:underline transition focus:outline-none focus:ring-2 focus:ring-orange-500"

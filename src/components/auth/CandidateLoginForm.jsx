@@ -21,7 +21,7 @@ export default function CandidateLoginForm({ onSuccess }) {
   useEffect(() => {
     if (token && user && role) {
       if (onSuccess) onSuccess();
-      router.push("/candidate/dashboard");
+      router.push("/jobs");
     }
   }, [user, token, role, onSuccess, router]);
 
@@ -32,7 +32,7 @@ export default function CandidateLoginForm({ onSuccess }) {
     try {
       await dispatch(loginUser({ mobile, password, rememberMe })).unwrap();
       toast.success("Login successful!");
-      router.push("/candidate/dashboard");
+      router.push("/jobs");
     } catch (error) {
       console.error("Login error:", error);
       toast.error(error.message || "Login failed. Please try again.");

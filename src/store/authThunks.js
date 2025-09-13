@@ -27,6 +27,39 @@ export const registerUser = createAsyncThunk(
   }
 );
 
+// Register candidate
+export const registerCandidate = createAsyncThunk(
+  'auth/registerCandidate',
+  async (userData, { rejectWithValue, dispatch }) => {
+    try {
+      dispatch(setLoading(true));
+      const response = await authService.registerCandidate(userData);
+      if (!response.success) {
+        throw new Error(response.message || 'Candidate registration failed');
+      }
+      const { data } = response;
+      dispatch(setCredentials({
+        user: {
+          _id: data._id,
+          name: data.name,
+          mobile: data.mobile,
+          email: data.email,
+          role: data.role,
+          roleName: data.roleName,
+          candidateProfile: data.candidateProfile,
+        },
+        token: data.token,
+      }));
+      localStorage.setItem('token', data.token); // Store token
+      return data; // Return full data for flexibility
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    } finally {
+      dispatch(setLoading(false));
+    }
+  }
+);
+
 // Login user
 export const loginUser = createAsyncThunk(
   'auth/login',

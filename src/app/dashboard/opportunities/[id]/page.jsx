@@ -107,7 +107,7 @@ const OpportunityView = () => {
     try {
       const response = await axios.put(
         `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/${id}`,
-        { status: newStatus }, // Send number-based status
+        { status: newStatus },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -131,13 +131,13 @@ const OpportunityView = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 0: return 'bg-gray-100 text-gray-800'; // Draft
-      case 1: return 'bg-yellow-100 text-yellow-800'; // Pending
-      case 2: return 'bg-green-100 text-green-800'; // Approved
-      case 3: return 'bg-red-100 text-red-800'; // Rejected
-      case 4: return 'bg-purple-100 text-purple-800'; // Closed
-      case 5: return 'bg-blue-100 text-blue-800'; // Completed
-      default: return 'bg-gray-100 text-gray-800'; // Unknown
+      case 0: return 'bg-gray-100 text-gray-800';
+      case 1: return 'bg-yellow-100 text-yellow-800';
+      case 2: return 'bg-green-100 text-green-800';
+      case 3: return 'bg-red-100 text-red-800';
+      case 4: return 'bg-purple-100 text-purple-800';
+      case 5: return 'bg-blue-100 text-blue-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -160,18 +160,21 @@ const OpportunityView = () => {
 
   if (!opportunity) {
     return (
-      <div className="text-center py-12">
-        <h2 className="text-2xl font-bold text-dark mb-4">Opportunity not found</h2>
-        <p className="text-gray-500 mb-6">The opportunity you're looking for doesn't exist.</p>
-        <Button onClick={() => router.push('/dashboard/opportunities')}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
+      <div className="text-center py-12 px-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-dark mb-4">Opportunity not found</h2>
+        <p className="text-sm text-gray-500 mb-6">The opportunity you're looking for doesn't exist.</p>
+        <Button
+          onClick={() => router.push('/dashboard/opportunities')}
+          className="px-4 py-2 text-sm"
+          aria-label="Back to opportunities"
+        >
+          <ArrowLeft className="h-5 w-5 mr-2" />
           Back to Opportunities
         </Button>
       </div>
     );
   }
 
-  // Backward compatibility for old boolean fields
   const displayBenefits = opportunity.stipend?.benefits || [
     opportunity.stipend?.includesTips && 0,
     opportunity.stipend?.includesFood && 1,
@@ -181,27 +184,31 @@ const OpportunityView = () => {
   const canEdit = user.role <= 2 || (user.role >= 6 && user.branch === opportunity.branch?._id);
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/dashboard/opportunities')}
-            className="flex items-center text-gray-600 hover:text-primary mr-4"
+            className="p-2 text-gray-600 hover:text-primary rounded-md"
+            aria-label="Back to opportunities"
           >
-            <ArrowLeft className="h-5 w-5 mr-1" />
-            Back
+            <ArrowLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-2xl font-bold text-dark">Opportunity Details</h1>
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-dark">Opportunity Details</h1>
+            <p className="text-sm text-gray-500">View and manage opportunity</p>
+          </div>
         </div>
-
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap gap-2">
           {canEdit && (
             <Button
               variant="outline"
               onClick={() => router.push(`/dashboard/opportunities/${id}/edit`)}
+              className="px-4 py-2 text-sm"
+              aria-label="Edit opportunity"
             >
-              <Edit className="h-4 w-4 mr-2" />
+              <Edit className="h-5 w-5 mr-2" />
               Edit
             </Button>
           )}
@@ -210,115 +217,114 @@ const OpportunityView = () => {
               <Button
                 variant="success"
                 onClick={handleApprove}
-                className="!bg-green-600 !hover:bg-green-700 text-white"
+                className="px-4 py-2 text-sm bg-green-600 hover:bg-green-700 text-white"
+                aria-label="Approve opportunity"
               >
-                <CheckCircle className="h-4 w-4 mr-2" />
+                <CheckCircle className="h-5 w-5 mr-2" />
                 Approve
               </Button>
               <Button
                 variant="danger"
                 onClick={handleReject}
-                className="!bg-red-600 !hover:bg-red-700 text-white"
+                className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white"
+                aria-label="Reject opportunity"
               >
-                <XCircle className="h-4 w-4 mr-2" />
+                <XCircle className="h-5 w-5 mr-2" />
                 Reject
               </Button>
             </>
           )}
-          {/* {opportunity.status === 2 && canEdit && (
+          {opportunity.status === 2 && canEdit && (
             <Button
               variant="secondary"
               onClick={handleClose}
-              className="!bg-red-600 !hover:bg-purple-700 text-white"
+              className="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white"
+              aria-label="Close opportunity"
             >
-              <XCircle className="h-4 w-4 mr-2" />
+              <XCircle className="h-5 w-5 mr-2" />
               Close
             </Button>
-          )} */}
+          )}
         </div>
       </div>
 
+      {/* Main Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
           {/* Opportunity Card */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-start justify-between mb-4">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-4">
               <div>
-                <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <StatusBadge
                     status={getStatusText(opportunity.status)}
-                    className={getStatusColor(opportunity.status)}
+                    className={`${getStatusColor(opportunity.status)} text-xs sm:text-sm px-2.5 py-0.5`}
                   />
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
                     {getOpportunityTypeText(opportunity.opportunityType)}
                   </span>
                 </div>
-                <h2 className="text-2xl font-bold text-dark">{opportunity.title}</h2>
-                <p className="text-gray-600 mt-1">{opportunity?.workType?.name ?? 'Unknown Work Type'}</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-dark">{opportunity.title}</h2>
+                <p className="text-sm text-gray-600 mt-1">{opportunity?.workType?.name ?? 'Unknown Work Type'}</p>
               </div>
-
-              <div className="text-right">
-                <div className="text-2xl font-bold text-primary">
-                  {getStipendText(opportunity.stipend)}
-                </div>
-                <div className="text-sm text-gray-500">
-                  {getInternshipTypeText(opportunity.internshipType)}
-                </div>
+              <div className="text-left sm:text-right">
+                <div className="text-lg sm:text-xl font-bold text-primary">{getStipendText(opportunity.stipend)}</div>
+                <div className="text-xs sm:text-sm text-gray-500">{getInternshipTypeText(opportunity.internshipType)}</div>
               </div>
             </div>
 
             {opportunity.description && (
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-dark mb-2">Description</h3>
-                <p className="text-gray-700 whitespace-pre-wrap">{opportunity.description}</p>
+              <div className="mb-4">
+                <h3 className="text-base sm:text-lg font-semibold text-dark mb-2">Description</h3>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap line-clamp-4 sm:line-clamp-none">
+                  {opportunity.description}
+                </p>
               </div>
             )}
 
             {/* Details Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div className="flex items-center gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="flex items-start gap-3">
                 <div className="p-2 bg-gray-100 rounded-lg">
                   <Users className="h-5 w-5 text-gray-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Positions</p>
-                  <p className="font-semibold text-dark">
+                  <p className="text-xs text-gray-500">Positions</p>
+                  <p className="text-sm font-semibold text-dark">
                     {opportunity.filledPositions || 0} / {opportunity.numberOfPeople}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 <div className="p-2 bg-gray-100 rounded-lg">
                   <Clock className="h-5 w-5 text-gray-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Hours Per Day</p>
-                  <p className="font-semibold text-dark">
+                  <p className="text-xs text-gray-500">Hours Per Day</p>
+                  <p className="text-sm font-semibold text-dark">
                     {opportunity.schedule?.hoursPerDay || 8} hours
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 <div className="p-2 bg-gray-100 rounded-lg">
                   <Calendar className="h-5 w-5 text-gray-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Start Date</p>
-                  <p className="font-semibold text-dark">
-                    {formatDateWithSuffix(opportunity.schedule?.startDate)}
+                  <p className="text-xs text-gray-500">Start Date</p>
+                  <p className="text-sm font-semibold text-dark">
+                    {formatDateWithSuffix(opportunity.schedule?.startDate) || 'Not set'}
                   </p>
                   {opportunity.schedule?.startDate && (
-                    <p className="text-sm text-gray-500">
-                      {getDaysUntilStart(opportunity.schedule.startDate)}
-                    </p>
+                    <p className="text-xs text-gray-500">{getDaysUntilStart(opportunity.schedule.startDate)}</p>
                   )}
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 <div className="p-2 bg-gray-100 rounded-lg">
                   {opportunity.opportunityType === 0 ? (
                     <Briefcase className="h-5 w-5 text-gray-600" />
@@ -327,31 +333,31 @@ const OpportunityView = () => {
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Duration</p>
-                  <p className="font-semibold text-dark">{getDurationText(opportunity)}</p>
+                  <p className="text-xs text-gray-500">Duration</p>
+                  <p className="text-sm font-semibold text-dark">{getDurationText(opportunity)}</p>
                 </div>
               </div>
 
               {opportunity.schedule?.shift !== undefined && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   <div className="p-2 bg-gray-100 rounded-lg">
                     <Clock4 className="h-5 w-5 text-gray-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Shift</p>
-                    <p className="font-semibold text-dark">{getShiftText(opportunity.schedule.shift)}</p>
+                    <p className="text-xs text-gray-500">Shift</p>
+                    <p className="text-sm font-semibold text-dark">{getShiftText(opportunity.schedule.shift)}</p>
                   </div>
                 </div>
               )}
 
               {opportunity.schedule?.days?.length > 0 && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   <div className="p-2 bg-gray-100 rounded-lg">
                     <Calendar className="h-5 w-5 text-gray-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Working Days</p>
-                    <p className="font-semibold text-dark">
+                    <p className="text-xs text-gray-500">Working Days</p>
+                    <p className="text-sm font-semibold text-dark">
                       {opportunity.schedule.days.map((day) => getDayName(day)).join(', ')}
                     </p>
                   </div>
@@ -360,13 +366,13 @@ const OpportunityView = () => {
 
               {(opportunity.internshipType === 3 || opportunity.internshipType === 4) &&
                 opportunity.specificDays && (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-start gap-3">
                     <div className="p-2 bg-gray-100 rounded-lg">
                       <Calendar className="h-5 w-5 text-gray-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Specific Days</p>
-                      <p className="font-semibold text-dark">
+                      <p className="text-xs text-gray-500">Specific Days</p>
+                      <p className="text-sm font-semibold text-dark">
                         {opportunity.specificDays.map((day) => getDayName(day)).join(', ')}
                       </p>
                     </div>
@@ -374,28 +380,24 @@ const OpportunityView = () => {
                 )}
 
               {opportunity.languages && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   <div className="p-2 bg-gray-100 rounded-lg">
                     <Languages className="h-5 w-5 text-gray-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Languages</p>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <p className="text-xs text-gray-500">Languages</p>
+                    <div className="space-y-1">
                       {opportunity.languages.required?.length > 0 && (
-                        <div>
-                          <span className="text-xs font-semibold text-dark">Required: </span>
-                          <span className="text-sm text-dark">
-                            {opportunity.languages.required.map((lang) => getLanguageText(lang, languages)).join(', ')}
-                          </span>
-                        </div>
+                        <p className="text-sm text-dark">
+                          <span className="font-semibold">Required: </span>
+                          {opportunity.languages.required.map((lang) => getLanguageText(lang, languages)).join(', ')}
+                        </p>
                       )}
                       {opportunity.languages.preferred?.length > 0 && (
-                        <div>
-                          <span className="text-xs font-semibold text-dark">Preferred: </span>
-                          <span className="text-sm text-dark">
-                            {opportunity.languages.preferred.map((lang) => getLanguageText(lang, languages)).join(', ')}
-                          </span>
-                        </div>
+                        <p className="text-sm text-dark">
+                          <span className="font-semibold">Preferred: </span>
+                          {opportunity.languages.preferred.map((lang) => getLanguageText(lang, languages)).join(', ')}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -404,15 +406,15 @@ const OpportunityView = () => {
             </div>
 
             {/* Compensation & Benefits */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <h3 className="text-lg font-semibold text-dark mb-3">Compensation & Benefits</h3>
-              <div className="space-y-2">
+            <div className="bg-gray-50 rounded-lg p-4 mt-4">
+              <h3 className="text-base sm:text-lg font-semibold text-dark mb-3">Compensation & Benefits</h3>
+              <div className="space-y-2 text-sm">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Stipend/Salary</span>
                   <span className="font-semibold text-dark">{getStipendText(opportunity.stipend)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Payment Frequency</span>
+                  <span className="text-gray-600">PaymentыгFrequency</span>
                   <span className="font-semibold text-dark">
                     {getPaymentTypeText(opportunity.stipend?.paymentType)}
                   </span>
@@ -442,14 +444,16 @@ const OpportunityView = () => {
           </div>
 
           {/* Applications Section */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-dark">Applications</h3>
+          <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 shadow-sm">
+            <div className="flex flex-wrap gap-2 items-center justify-between mb-4">
+              <h3 className="text-base sm:text-lg font-semibold text-dark">Applications</h3>
               <Button
                 variant={showApplications ? 'secondary' : 'primary'}
                 onClick={() => setShowApplications(!showApplications)}
+                className="px-4 py-2 text-sm"
+                aria-label={showApplications ? 'Hide applications' : 'View applications'}
               >
-                <UserCheck className="h-4 w-4 mr-2" />
+                <UserCheck className="h-5 w-5 mr-2" />
                 {showApplications ? 'Hide Applications' : `View Applications (${applications.length})`}
               </Button>
             </div>
@@ -463,18 +467,18 @@ const OpportunityView = () => {
             )}
 
             {!showApplications && applications.length > 0 && (
-              <div className="text-center py-8">
-                <UserCheck className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">
+              <div className="text-center py-6">
+                <UserCheck className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+                <p className="text-sm text-gray-500">
                   {applications.length} application{applications.length !== 1 ? 's' : ''} received
                 </p>
               </div>
             )}
 
             {applications.length === 0 && (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">No applications received yet</p>
+              <div className="text-center py-6">
+                <FileText className="h-10 w-10 text-gray-400 mx-auto mb-3" />
+                <p className="text-sm text-gray-500">No applications received yet</p>
               </div>
             )}
           </div>
@@ -484,45 +488,42 @@ const OpportunityView = () => {
         <div className="space-y-6">
           {/* Branch Information */}
           {opportunity.branch && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-dark mb-4">Branch Information</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Building className="h-5 w-5 text-gray-400" />
+            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 shadow-sm">
+              <h3 className="text-base sm:text-lg font-semibold text-dark mb-3">Branch Information</h3>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start gap-3">
+                  <Building className="h-5 w-5 text-gray-400 mt-1" />
                   <div>
                     <p className="font-medium text-dark">{opportunity.branch.name}</p>
-                    <p className="text-sm text-gray-500">Branch</p>
+                    <p className="text-xs text-gray-500">Branch</p>
                   </div>
                 </div>
-
                 {opportunity.branch.address && (
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-5 w-5 text-gray-400" />
+                  <div className="flex items-start gap-3">
+                    <MapPin className="h-5 w-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-dark">{opportunity.branch.address}</p>
                       {opportunity.branch.location && (
-                        <p className="text-sm text-gray-500">{opportunity.branch.location}</p>
+                        <p className="text-xs text-gray-500">{opportunity.branch.location}</p>
                       )}
                     </div>
                   </div>
                 )}
-
                 {opportunity.branch.contactEmail && (
-                  <div className="flex items-center gap-3">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                  <div className="flex items-start gap-3">
+                    <Mail className="h-5 w-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-dark">{opportunity.branch.contactEmail}</p>
-                      <p className="text-sm text-gray-500">Email</p>
+                      <p className="text-xs text-gray-500">Email</p>
                     </div>
                   </div>
                 )}
-
                 {opportunity.branch.contactPhone && (
-                  <div className="flex items-center gap-3">
-                    <Phone className="h-5 w-5 text-gray-400" />
+                  <div className="flex items-start gap-3">
+                    <Phone className="h-5 w-5 text-gray-400 mt-1" />
                     <div>
                       <p className="text-sm text-dark">{opportunity.branch.contactPhone}</p>
-                      <p className="text-sm text-gray-500">Phone</p>
+                      <p className="text-xs text-gray-500">Phone</p>
                     </div>
                   </div>
                 )}
@@ -532,22 +533,20 @@ const OpportunityView = () => {
 
           {/* Created By */}
           {opportunity.createdBy && (
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-dark mb-4">Created By</h3>
-              <div className="space-y-2">
+            <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 shadow-sm">
+              <h3 className="text-base sm:text-lg font-semibold text-dark mb-3">Created By</h3>
+              <div className="space-y-2 text-sm">
                 <p className="font-medium text-dark">{opportunity.createdBy.name}</p>
-                <p className="text-sm text-gray-500">Phone: {opportunity.createdBy.mobile}</p>
-                <p className="text-sm text-gray-500">
-                  {formatDateWithSuffix(opportunity.createdAt)}
-                </p>
+                <p className="text-xs text-gray-500">Phone: {opportunity.createdBy.mobile}</p>
+                <p className="text-xs text-gray-500">{formatDateWithSuffix(opportunity.createdAt)}</p>
               </div>
             </div>
           )}
 
           {/* Statistics */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-dark mb-4">Statistics</h3>
-            <div className="space-y-3">
+          <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 shadow-sm">
+            <h3 className="text-base sm:text-lg font-semibold text-dark mb-3">Statistics</h3>
+            <div className="space-y-2 text-sm">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Total Views</span>
                 <span className="font-semibold text-dark">{opportunity.views || 0}</span>
@@ -560,7 +559,7 @@ const OpportunityView = () => {
                 <span className="text-gray-600">Fill Rate</span>
                 <span className="font-semibold text-dark">
                   {Math.round(
-                    ((opportunity.filledPositions || 0) / opportunity.numberOfPeople) * 100
+                    ((opportunity.filledPositions || 0) / (opportunity.numberOfPeople || 1)) * 100
                   )}
                   %
                 </span>
@@ -569,32 +568,35 @@ const OpportunityView = () => {
           </div>
 
           {/* Quick Actions */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-dark mb-4">Quick Actions</h3>
+          <div className="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 shadow-sm">
+            <h3 className="text-base sm:text-lg font-semibold text-dark mb-3">Quick Actions</h3>
             <div className="space-y-2">
               <Button
                 variant="outline"
-                className="w-full justify-center"
+                className="w-full py-2 text-sm"
                 onClick={() => router.push(`/dashboard/opportunities/${id}/edit`)}
+                aria-label="Edit opportunity"
               >
-                <Edit className="h-4 w-4 mr-2" />
+                <Edit className="h-5 w-5 mr-2" />
                 Edit Opportunity
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-center"
+                className="w-full py-2 text-sm"
                 onClick={() => setShowApplications(true)}
+                aria-label="View applications"
               >
-                <UserCheck className="h-4 w-4 mr-2" />
+                <UserCheck className="h-5 w-5 mr-2" />
                 View Applications
               </Button>
               {opportunity.status === 2 && (
                 <Button
                   variant="secondary"
-                  className="w-full justify-center py-2 !bg-red-600 !hover:bg-purple-700 text-white"
+                  className="w-full py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white"
                   onClick={handleClose}
+                  aria-label="Close opportunity"
                 >
-                  <XCircle className="h-4 w-4 mr-2" />
+                  <XCircle className="h-5 w-5 mr-2" />
                   Close Opportunity
                 </Button>
               )}

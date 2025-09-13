@@ -7,6 +7,12 @@ const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api/auth`;
 axios.defaults.withCredentials = true;
 
 // Register user
+const registerCandidate = async (userData) => {
+  const response = await axios.post(`${API_URL}/register-candidate`, userData);
+  return response.data; // Return API response data
+};
+
+// Register user
 const register = async (userData) => {
   const response = await axios.post(`${API_URL}/register`, userData);
   return response.data; // Return API response data
@@ -50,6 +56,7 @@ const googleLogin = async (authCode) => {
 };
 
 export const authService = {
+  registerCandidate,
   register,
   login,
   getMe,

@@ -30,6 +30,7 @@ import {
   getStatusText,
 } from '@/utils/opportunity';
 import { opportunityTypes, internshipTypes, jobTypes, statusOptions } from '@/data/opportunityData';
+import CtaButton from '@/components/CtaButton';
 
 const Opportunities = () => {
   const router = useRouter();
@@ -38,7 +39,7 @@ const Opportunities = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState(-1);
-  const [workTypeFilter, setWorkTypeFilter] = useState(''); // Use empty string for "All Work Types"
+  const [workTypeFilter, setWorkTypeFilter] = useState('');
   const [opportunityTypeFilter, setOpportunityTypeFilter] = useState(-1);
   const [typeFilter, setTypeFilter] = useState(-1);
   const [sortBy, setSortBy] = useState('createdAt');
@@ -51,8 +52,6 @@ const Opportunities = () => {
 
       try {
         setLoading(true);
-
-        // Fetch opportunities
         let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities`;
         if (user.branch) {
           url += `?branch=${user.branch}`;
@@ -77,7 +76,6 @@ const Opportunities = () => {
     fetchData();
   }, [token, user]);
 
-  // Derive unique work type names from opportunities for the filter dropdown
   const workTypeOptions = [
     { value: '', label: 'All Work Types' },
     ...[...new Set(opportunities.map(op => op.workType?.name).filter(name => name))].map(name => ({
@@ -215,82 +213,94 @@ const Opportunities = () => {
     );
   }
 
+  // Fallbacks for filter options
+  const safeStatusOptions = statusOptions || [];
+  const safeOpportunityTypes = opportunityTypes || [];
+  const safeInternshipTypes = internshipTypes || [];
+  const safeJobTypes = jobTypes || [];
+
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 p-4 sm:p-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-dark">Opportunity Management</h1>
-          <p className="text-gray-500">Manage opportunities for your branch</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-dark">Opportunity Management</h1>
+          <p className="text-sm text-gray-500">Manage opportunities for your branch</p>
         </div>
         {[6, 7].includes(user?.role) && (
           <Link href="/dashboard/opportunities/add">
-            <Button className="rounded-lg bg-primary hover:bg-primary/90">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button className="rounded-lg bg-primary hover:bg-primary/90 text-sm px-4 py-3">
+              <Plus className="h-5 w-5 mr-2" />
               Create Opportunity
             </Button>
           </Link>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
           title="Total Opportunities"
           value={kpiData.total}
           icon={TrendingUp}
-          className="bg-primary-light border-primary"
+          className="bg-primary-light border-primary shadow-sm"
         />
         <KPICard
           title="Active"
           value={kpiData.active}
           icon={Users}
-          className="bg-green-light border-green-custom"
+          className="bg-green-light border-green-custom shadow-sm"
         />
-        <KPICard title="Total Positions" value={kpiData.totalPositions} icon={Users} />
         <KPICard
-          title="Filled Positions"
-          value={kpiData.filledPositions}
+          title="Total Positions"
+          value={kpiData.totalPositions}
           icon={Users}
-          className="bg-blue-50 border-blue-200"
+          className="bg-blue-50 border-blue-200 shadow-sm"
         />
         <KPICard
           title="Avg Stipend"
           value={`₹${kpiData.avgStipend}`}
           icon={DollarSign}
-          className="bg-amber-50 border-amber-200"
+          className="bg-amber-50 border-amber-200 shadow-sm"
         />
       </div>
 
-      <div className="bg-white rounded-lg border border-soft p-4">
+      {/* Search and Filters */}
+      <div className="bg-white rounded-lg border border-soft p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             <input
               placeholder="Search opportunities..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full pl-10 pr-4 py-3 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+              aria-label="Search opportunities"
             />
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 px-4 py-2 border border-soft rounded-md hover:bg-gray-light"
+            className="flex items-center justify-center gap-2 px-4 py-3 border border-soft rounded-md hover:bg-gray-light text-sm w-full sm:w-auto"
+            aria-label={showFilters ? "Hide filters" : "Show filters"}
+            aria-expanded={showFilters}
           >
-            <Filter className="h-4 w-4" />
+            <Filter className="h-5 w-5" />
             Filters
-            {showFilters ? <X className="h-4 w-4" /> : null}
+            {showFilters ? <X className="h-5 w-5" /> : null}
           </button>
         </div>
 
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 p-4 bg-gray-light rounded-md">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 p-4 bg-gray-50 rounded-md">
             <div>
-              <label className="block text-sm font-medium text-dark mb-2">Status</label>
+              <label className="block text-sm font-medium text-dark mb-1">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                aria-label="Filter by status"
               >
-                {statusOptions.map((option) => (
+                {safeStatusOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
@@ -298,11 +308,12 @@ const Opportunities = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-dark mb-2">Work Type</label>
+              <label className="block text-sm font-medium text-dark mb-1">Work Type</label>
               <select
                 value={workTypeFilter}
                 onChange={(e) => setWorkTypeFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-2 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                aria-label="Filter by work type"
               >
                 {workTypeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -311,48 +322,20 @@ const Opportunities = () => {
                 ))}
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-dark mb-2">Opportunity Type</label>
-              <select
-                value={opportunityTypeFilter}
-                onChange={(e) => setOpportunityTypeFilter(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value={-1}>All Types</option>
-                {opportunityTypes.map((type) => (
-                  <option key={type.value} value={type.value}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-dark mb-2">Work Type</label>
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-soft rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value={-1}>All Work Types</option>
-                {[...jobTypes, ...internshipTypes].map((type) => (
-                  <option key={type.value} value={type.backendValue}>
-                    {type.label}
-                  </option>
-                ))}
-              </select>
-            </div>
           </div>
         )}
       </div>
 
-      <div className="bg-white rounded-lg border border-soft overflow-hidden">
-        <div className="overflow-x-auto">
+      {/* Opportunities List */}
+      <div className="bg-white rounded-lg border border-soft shadow-sm">
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-light">
+            <thead className="bg-gray-50">
               <tr>
                 <th
                   onClick={() => handleSort('title')}
-                  className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     Title
@@ -361,7 +344,7 @@ const Opportunities = () => {
                 </th>
                 <th
                   onClick={() => handleSort('workType')}
-                  className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     Work Type
@@ -370,7 +353,7 @@ const Opportunities = () => {
                 </th>
                 <th
                   onClick={() => handleSort('opportunityType')}
-                  className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     Type
@@ -379,7 +362,7 @@ const Opportunities = () => {
                 </th>
                 <th
                   onClick={() => handleSort('numberOfPeople')}
-                  className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     Positions
@@ -388,7 +371,7 @@ const Opportunities = () => {
                 </th>
                 <th
                   onClick={() => handleSort('stipend')}
-                  className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     Stipend/Salary
@@ -397,7 +380,7 @@ const Opportunities = () => {
                 </th>
                 <th
                   onClick={() => handleSort('status')}
-                  className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     Status
@@ -406,24 +389,24 @@ const Opportunities = () => {
                 </th>
                 <th
                   onClick={() => handleSort('startDate')}
-                  className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider cursor-pointer"
                 >
                   <div className="flex items-center gap-2">
                     Start Date
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-soft">
+            <tbody className="bg-white divide-y divide-gray-200">
               {filteredAndSortedOpportunities.map((opportunity) => {
                 const OpportunityTypeIcon = getOpportunityTypeIcon(opportunity.opportunityType);
                 return (
-                  <tr key={opportunity._id} className="hover:bg-gray-light">
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <tr key={opportunity._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div>
                         <div className="font-medium text-dark">{opportunity.title}</div>
                         <div className="text-sm text-gray-500 line-clamp-2">
@@ -431,12 +414,12 @@ const Opportunities = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-secondary">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                         {opportunity?.workType?.name ?? 'Unknown Work Type'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <OpportunityTypeIcon className="h-4 w-4" />
                         <span>{getOpportunityTypeText(opportunity.opportunityType)}</span>
@@ -448,11 +431,11 @@ const Opportunities = () => {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
                         {opportunity.filledPositions || 0}/{opportunity.numberOfPeople || 0}
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                      <div className="w-24 bg-gray-200 rounded-full h-1.5 mt-1">
                         <div
                           className="bg-primary h-1.5 rounded-full"
                           style={{
@@ -463,18 +446,16 @@ const Opportunities = () => {
                         />
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium text-dark">{getStipendText(opportunity.stipend)}</span>
-                      </div>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span className="font-medium text-dark">{getStipendText(opportunity.stipend)}</span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <StatusBadge
                         status={getStatusText(opportunity.status)}
                         className={getStatusColor(opportunity.status)}
                       />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
                         {opportunity.schedule?.startDate
                           ? formatDateWithSuffix(opportunity.schedule.startDate)
@@ -489,21 +470,23 @@ const Opportunities = () => {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex gap-2">
                         <button
                           onClick={() => router.push(`/dashboard/opportunities/${opportunity._id}`)}
-                          className="p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-md"
+                          className="p-3 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-md"
                           title="View"
+                          aria-label={`View ${opportunity.title}`}
                         >
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-5 w-5" />
                         </button>
                         <button
                           onClick={() => router.push(`/dashboard/opportunities/${opportunity._id}/edit`)}
-                          className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md"
+                          className="p-3 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md"
                           title="Edit"
+                          aria-label={`Edit ${opportunity.title}`}
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-5 w-5" />
                         </button>
                       </div>
                     </td>
@@ -514,13 +497,97 @@ const Opportunities = () => {
           </table>
         </div>
 
+        {/* Mobile Cards */}
+        <div className="md:hidden space-y-4 p-4">
+          {filteredAndSortedOpportunities.map((opportunity) => {
+            const OpportunityTypeIcon = getOpportunityTypeIcon(opportunity.opportunityType);
+            return (
+              <div
+                key={opportunity._id}
+                className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow bg-white"
+              >
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex-1">
+                    <div className="font-semibold text-dark text-base">{opportunity.title}</div>
+                  </div>
+                  <StatusBadge
+                    status={getStatusText(opportunity.status)}
+                    className={`${getStatusColor(opportunity.status)} text-xs px-2.5 py-0.5`}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-x-4 gap-y-2 mt-3 text-sm text-gray-600">
+                  <div>
+                    <span className="font-medium">Work Type:</span>{' '}
+                    {opportunity?.workType?.name ?? 'Unknown'}
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <span className="font-medium">Type:</span>{' '}
+                    <span className="inline-flex items-center gap-1">
+                      <OpportunityTypeIcon className="h-4 w-4" />
+                      {getOpportunityTypeText(opportunity.opportunityType)}
+                      {opportunity.opportunityType === 1 && (
+                        <span> • {getInternshipTypeText(opportunity.internshipType)}</span>
+                      )}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="font-medium">Positions:</span>{' '}
+                    {opportunity.filledPositions || 0}/{opportunity.numberOfPeople || 0}
+                    <div className="w-20 bg-gray-200 rounded-full h-1.5 mt-1">
+                      <div
+                        className="bg-primary h-1.5 rounded-full"
+                        style={{
+                          width: `${
+                            ((opportunity.filledPositions || 0) / (opportunity.numberOfPeople || 1)) * 100
+                          }%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="font-medium">Stipend:</span>{' '}
+                    {getStipendText(opportunity.stipend)}
+                  </div>
+                 
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={() => router.push(`/dashboard/opportunities/${opportunity._id}`)}
+                    className="flex-1 p-2 bg-primary text-white rounded-md hover:bg-primary/90 transition text-sm "
+                    aria-label={`View ${opportunity.title}`}
+                  >
+                    View
+                  </button>
+                  <button
+                    onClick={() => router.push(`/dashboard/opportunities/${opportunity._id}/edit`)}
+                    className="flex-1 items-center justify-center font-semibold  bg-transparent text-primary  border-2  border-primary hover:bg-primary rounded-md p-2 transition text-sm"
+                    aria-label={`Edit ${opportunity.title}`}
+                  >
+                    Edit
+                  </button>
+
+                  {/* <CtaButton
+                    text="Edit"
+                    href=''
+                    onClick={() => router.push(`/dashboard/opportunities/${opportunity._id}/edit`)}
+                    showIcon={false}
+                    size="sm"
+                    variant="outline"
+                    asButton={true}
+                  /> */}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {filteredAndSortedOpportunities.length === 0 && (
-          <div className="p-12 text-center">
+          <div className="p-6 text-center">
             <div className="h-12 w-12 text-gray-400 mx-auto mb-4">
               <TrendingUp className="h-12 w-12" />
             </div>
-            <h3 className="text-lg font-medium text-dark mb-2">No opportunities found</h3>
-            <p className="text-gray-500">
+            <h3 className="text-base font-medium text-dark mb-2">No opportunities found</h3>
+            <p className="text-sm text-gray-500">
               {searchTerm || statusFilter !== -1 || workTypeFilter !== '' || opportunityTypeFilter !== -1 || typeFilter !== -1
                 ? 'Try adjusting your search or filter criteria'
                 : 'Get started by creating your first opportunity'}

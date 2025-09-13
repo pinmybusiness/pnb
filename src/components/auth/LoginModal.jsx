@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { X } from "lucide-react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import GoogleLoginButton from "./GoogleLoginButton";
 import RestaurantLoginForm from "./RestaurantLoginForm";
 import PropTypes from "prop-types";
 import CandidateLoginForm from "./CandidateLoginForm";
@@ -96,7 +95,7 @@ export default function LoginModal({ isOpen, onClose, initialTab = "candidate" }
                 {/* <h2 id="login-modal-title" className="text-2xl font-bold text-gray-900 mb-4 text-center">
                   Candidate Login
                 </h2> */}
-                <CandidateLoginForm />
+                <CandidateLoginForm onSuccess={onClose} />
                 <button
                   onClick={onClose}
                   className="w-full mt-4 text-sm font-medium text-gray-600 hover:text-orange-600 hover:underline transition focus:outline-none focus:ring-2 focus:ring-orange-500"

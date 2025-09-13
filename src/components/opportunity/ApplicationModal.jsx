@@ -10,20 +10,9 @@ export default function ApplicationModal({
   opportunity,
   coverLetter,
   setCoverLetter,
-  resume,
-  setResume,
   onSubmit,
 }) {
   if (!isOpen || !opportunity) return null;
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type === "application/pdf") {
-      setResume(file);
-    } else {
-      alert("Please upload a PDF file.");
-    }
-  };
 
   return (
     <div
@@ -61,7 +50,6 @@ export default function ApplicationModal({
                 <span className="font-medium mr-1">Type:</span>
                 {getOpportunityTypeText(opportunity.opportunityType)}
               </div>
-
             </div>
           </div>
           <div className="mb-6">
@@ -76,23 +64,6 @@ export default function ApplicationModal({
               placeholder="Why are you interested in this opportunity?"
             ></textarea>
           </div>
-          {/* <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Resume (PDF)
-            </label>
-            <input
-              type="file"
-              accept="application/pdf"
-              onChange={handleFileChange}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-            {resume && (
-              <p className="mt-2 text-sm text-gray-600">Selected: {resume.name}</p>
-            )}
-            <p className="mt-1 text-xs text-gray-500">
-              Upload a new resume or use the one from your profile.
-            </p>
-          </div> */}
           <button
             onClick={onSubmit}
             className="w-full bg-orange-600 text-white py-2.5 rounded-lg font-medium hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors"
@@ -111,7 +82,5 @@ ApplicationModal.propTypes = {
   opportunity: PropTypes.object,
   coverLetter: PropTypes.string.isRequired,
   setCoverLetter: PropTypes.func.isRequired,
-//   resume: PropTypes.object,
-//   setResume: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
 };

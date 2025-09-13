@@ -1,8 +1,8 @@
 "use client"
 const { useState } = require("react");
 import PropTypes from "prop-types";
-import GoogleLoginButton from "./GoogleLoginButton";
 import RestaurantLoginForm from "./RestaurantLoginForm";
+import CandidateLoginForm from "./CandidateLoginForm";
 
 // Client-side component
 export default function LoginPageClient({ initialTab }) {
@@ -53,7 +53,7 @@ export default function LoginPageClient({ initialTab }) {
             >
               Candidate Login
             </h2>
-            <GoogleLoginButton />
+            <CandidateLoginForm />
           </div>
         ) : (
           <div>

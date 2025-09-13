@@ -33,6 +33,9 @@ export default function CandidateLoginForm({ onSuccess }) {
       await dispatch(loginUser({ mobile, password, rememberMe })).unwrap();
       toast.success("Login successful!");
       router.push("/jobs");
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error("Login error:", error);
       toast.error(error.message || "Login failed. Please try again.");

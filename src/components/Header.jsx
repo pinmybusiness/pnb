@@ -114,12 +114,12 @@ export default function Header({ activeLink = "" }) {
                   >
                     <div className="p-2">
                       <a
-                        href={user.role === 10 ? "/candidate/profile" : "/dashboard"}
+                        href={user.role === 10 ? "/jobs" : "/dashboard"}
                         className="flex items-center w-full px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                         onClick={() => setProfileOpen(false)}
                       >
                         <User className="w-4 h-4 mr-2" />
-                        {user.role === 10 ? "Candidate Profile" : "Restaurant Dashboard"}
+                        {user.role === 10 ? "Find Jobs" : "Restaurant Dashboard"}
                       </a>
                       <CtaButton
                         text="Log Out"
@@ -249,12 +249,12 @@ export default function Header({ activeLink = "" }) {
                 {user ? (
                   <>
                     <a
-                      href={user.role === 10 ? "/candidate/profile" : "/dashboard"}
+                      href={user.role === 10 ? "/jobs" : "/dashboard"}
                       onClick={() => setMobileOpen(false)}
                       className="flex items-center w-full py-2 px-3 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
                     >
                       <User className="w-5 h-5 mr-2" />
-                      {user.role === 10 ? "Candidate Profile" : "Restaurant Dashboard"}
+                      {user.role === 10 ? "Find Jobs" : "Restaurant Dashboard"}
                     </a>
                     <CtaButton
                       text="Log Out"

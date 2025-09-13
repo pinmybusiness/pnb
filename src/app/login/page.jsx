@@ -6,6 +6,7 @@ import PropTypes from "prop-types";
 import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
 import RestaurantLoginForm from "@/components/auth/RestaurantLoginForm";
 import { Providers } from "../providers";
+import CandidateLoginForm from "@/components/auth/CandidateLoginForm";
 
 export default function LoginPage({ initialTab = "restaurant" }) {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -53,7 +54,7 @@ export default function LoginPage({ initialTab = "restaurant" }) {
                 <h2 id="login-page-title" className="text-2xl font-bold text-gray-900 mb-4 text-center">
                   Candidate Login
                 </h2>
-                <GoogleLoginButton />
+                <CandidateLoginForm />
               </div>
             ) : (
               <div>

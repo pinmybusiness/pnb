@@ -3,7 +3,6 @@ import "./globals.css";
 import { inter, yesteryear } from "@/lib/fonts";
 import { Toaster } from "react-hot-toast";
 import ClientHeaderFooter from "./ClientHeaderFooter";
-import { Providers } from "./providers";
 
 export const metadata = {
   title: "Restaurant Jobs in India for Students & Freshers | FasterQ",
@@ -22,11 +21,9 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         {/* Move Providers to individual pages or components that need them */}
-<Providers >
-          <ClientHeaderFooter position="header" />
+        <ClientHeaderFooter position="header" />
         {children}
         <ClientHeaderFooter position="footer" />
-</Providers>
         <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
       </body>
     </html>

@@ -31,9 +31,11 @@ const login = async ({ mobile, password, rememberMe }) => {
 };
 
 // Get logged-in user profile
-const getMe = async () => {
+const getMe = async (token) => {
   const response = await axios.get(`${API_URL}/me`, {
-    withCredentials: true,
+     headers: {
+      Authorization: `Bearer ${token}` // Send token from Redux
+    }
   });
   return response.data;
 };

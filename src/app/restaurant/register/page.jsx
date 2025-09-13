@@ -1,548 +1,125 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useDispatch, useSelector } from 'react-redux';
-import { toast } from 'react-hot-toast';
-import axios from 'axios';
-import { MapPin, Navigation, X, Store, Phone, Lock } from 'lucide-react';
-import Select from 'react-select';
-import { loginUser } from '@/store/authThunks';
-import "../../dashboard.css";
+import { authService } from "@/services/authService";
+import { makeStore } from "@/store";
+import { Providers } from "../../providers";
+import axios from "axios";
+import OwnerBranchFormContent from "@/components/csr/OwnerBranchFormContent";
 
-const OwnerBranchForm = ({ branchId, onSuccess, onClose }) => {
-  const router = useRouter();
-  const dispatch = useDispatch();
-  const { user, token, role, error } = useSelector((state) => state.auth);
-  const [loading, setLoading] = useState(false);
-  const [restaurants, setRestaurants] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [formData, setFormData] = useState({
-    name: '', // User's name
-    mobile: '',
-    email: '',
-    password: '',
-    restaurantId: '',
-    restaurantName: '',
-    branchName: '',
-    branchAddress: '',
-    branchCity: '', // Will store City _id
-    branchState: '',
-    branchPostalCode: '',
-    branchCountry: 'India',
-    branchCoordinates: [0, 0] // [longitude, latitude]
-  });
+// Server Component (Root)
+export default async function OwnerBranchFormPage({ params }) {
+  const { branchId } = params || {};
+  const store = makeStore();
+  let initialReduxState = {};
+  let restaurants = [];
+  let cities = [];
+  let branchData = null;
+  let isAuthenticated = false;
 
-  // Function to generate a random, unique email
-  const generateRandomEmail = () => {
-    const randomString = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
-    return `user_${randomString}@example.com`;
-  };
-
-  // Redirect on successful login
-  useEffect(() => {
-    if (token && user && role && !branchId) {
-      console.log('Login successful, redirecting to /dashboard');
-      if (onSuccess) onSuccess();
-      router.push('/dashboard');
-    }
-  }, [user, token, role, onSuccess, router, branchId]);
-
-  // Fetch restaurants and cities (and branch data if editing)
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch restaurants
-        const restaurantsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`);
-        setRestaurants(restaurantsRes.data.data);
-
-        // Fetch all cities
-        const citiesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/cities`);
-        setCities(citiesRes.data.data);
-
-        // Find Hyderabad, Telangana
-        const hyderabad = citiesRes.data.data.find(
-          (city) => city.name === 'Hyderabad' && city.stateName === 'Telangana'
-        );
-
-        if (branchId) {
-          // Fetch branch data if branchId is provided (edit mode)
-          const branchRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${branchId}`);
-          const branchData = branchRes.data.data;
-
-          setFormData({
-            name: '',
-            mobile: '',
-            email: '',
-            password: '',
-            restaurantId: branchData.parentRestaurant?._id || '',
-            restaurantName: '',
-            branchName: branchData.name || '',
-            branchAddress: branchData.location?.address || '',
-            branchCity: branchData.cityDetails?._id || '',
-            branchState: branchData.cityDetails?.stateName || '',
-            branchPostalCode: branchData.location?.postalCode || '',
-            branchCountry: branchData.cityDetails?.countryName || 'India',
-            branchCoordinates: branchData.location?.coordinates || [0, 0]
-          });
-
-          // Validate city against fetched cities
-          if (branchData.cityDetails?._id) {
-            const cityExists = citiesRes.data.data.some(
-              (city) => city._id === branchData.cityDetails._id
-            );
-            if (!cityExists) {
-              toast.error(
-                `Warning: City "${branchData.cityDetails.name}" is not valid. Please select a valid city.`
-              );
-            }
-          }
-        } else if (hyderabad) {
-          // Set Hyderabad as default for new branch
-          setFormData((prev) => ({
-            ...prev,
-            branchCity: hyderabad._id,
-            branchState: hyderabad.stateName,
-            branchCountry: hyderabad.countryName,
-            branchCoordinates: hyderabad.coordinates || [0, 0]
-          }));
-        }
-      } catch (error) {
-        console.error('Fetch error:', error);
-        toast.error('Failed to fetch data');
-      }
-    };
-    fetchData();
-  }, [branchId]);
-
-  // Handle input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'mobile') {
-      setFormData((prev) => ({ ...prev, [name]: value.replace(/\D/g, '') }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  // Handle restaurant selection
-  const handleRestaurantChange = (selected) => {
-    if (selected) {
-      setFormData((prev) => ({
-        ...prev,
-        restaurantId: selected._id,
-        restaurantName: selected.name
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        restaurantId: '',
-        restaurantName: ''
-      }));
-    }
-  };
-
-  // Handle city selection
-  const handleCityChange = (selected) => {
-    if (selected) {
-      setFormData((prev) => ({
-        ...prev,
-        branchCity: selected._id, // Store City _id
-        branchState: selected.stateName,
-        branchCountry: selected.countryName,
-        branchCoordinates: selected.coordinates || [0, 0]
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        branchCity: '',
-        branchState: '',
-        branchCountry: 'India',
-        branchCoordinates: [0, 0]
-      }));
-    }
-  };
-
-  // Handle coordinate changes
-  const handleCoordinateChange = (name, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      branchCoordinates:
-        name === 'longitude'
-          ? [parseFloat(value) || 0, prev.branchCoordinates[1]]
-          : [prev.branchCoordinates[0], parseFloat(value) || 0]
-    }));
-  };
-
-  // Get current location
-  const handleGetCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setFormData((prev) => ({
-            ...prev,
-            branchCoordinates: [longitude, latitude]
-          }));
-          toast.success('Location fetched successfully');
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-          toast.error('Failed to get location. Please allow location access or enter manually.');
-        }
-      );
-    } else {
-      toast.error('Geolocation is not supported by your browser');
-    }
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    // Client-side validation
-    if (!branchId) {
-      // Registration mode
-      if (!formData.name || !formData.mobile || !formData.password || !formData.branchName || !formData.branchAddress || !formData.branchCity) {
-        toast.error('Please fill all required fields');
-        setLoading(false);
-        return;
-      }
-      if (!/^\+?[\d\s-]{10,15}$/.test(formData.mobile)) {
-        toast.error('Please provide a valid mobile number');
-        setLoading(false);
-        return;
-      }
-    } else {
-      // Update mode
-      if (!formData.branchName || !formData.branchAddress || !formData.branchCity) {
-        toast.error('Please fill all required branch fields');
-        setLoading(false);
-        return;
+  // Fetch auth data
+  try {
+    const { cookies } = await import("next/headers");
+    const token = cookies().get("token")?.value;
+    if (token) {
+      const response = await authService.getMe();
+      if (response.success) {
+        store.dispatch({
+          type: "auth/setCredentials",
+          payload: { user: response.data.user, token },
+        });
+        isAuthenticated = true;
       }
     }
+  } catch (error) {
+    console.error("Failed to fetch user:", error);
+  }
 
-    // Validate city
-    if (formData.branchCity) {
-      const selectedCity = cities.find((city) => city._id === formData.branchCity);
-      if (!selectedCity || selectedCity.stateName !== formData.branchState || selectedCity.countryName !== formData.branchCountry) {
-        toast.error(`Invalid city selected`);
-        setLoading(false);
-        return;
-      }
-    }
+  // Fetch restaurants
+  try {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`, {
+      cache: "no-store", // Avoid caching for fresh data
+    });
+    restaurants = response.data.data;
+  } catch (error) {
+    console.error("Error fetching restaurants:", error);
+  }
 
-    // Prepare payload
-    const payload = branchId
-      ? {
-          name: formData.branchName,
-          parentRestaurant: formData.restaurantId,
-          location: {
-            address: formData.branchAddress,
-            city: formData.branchCity, // City _id
-            state: formData.branchState,
-            postalCode: formData.branchPostalCode || undefined,
-            country: formData.branchCountry,
-            coordinates: formData.branchCoordinates[0] !== 0 && formData.branchCoordinates[1] !== 0 ? formData.branchCoordinates : undefined
-          }
-        }
-      : {
-          name: formData.name,
-          mobile: formData.mobile,
-          email: formData.email || generateRandomEmail(),
-          password: formData.password,
-          restaurantId: formData.restaurantId || undefined,
-          restaurantName: formData.restaurantName || undefined,
-          branchName: formData.branchName,
-          branchAddress: formData.branchAddress,
-          branchCity: formData.branchCity, // City _id
-          branchState: formData.branchState,
-          branchPostalCode: formData.branchPostalCode || undefined,
-          branchCountry: formData.branchCountry,
-          branchCoordinates: formData.branchCoordinates[0] !== 0 && formData.branchCoordinates[1] !== 0 ? formData.branchCoordinates : undefined
-        };
+  // Fetch cities
+  try {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/cities`, {
+      cache: "no-store", // Avoid caching for fresh data
+    });
+    cities = response.data.data;
+  } catch (error) {
+    console.error("Error fetching cities:", error);
+  }
 
+  // Fetch branch data if branchId is provided (edit mode)
+  if (branchId) {
     try {
-      let response;
-      if (branchId) {
-        response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${branchId}`, payload);
-        toast.success('Branch updated successfully');
-      } else {
-        response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register-branch`, payload);
-        const { token, data } = response.data;
-        await dispatch(loginUser({ mobile: formData.mobile, password: formData.password, rememberMe: false })).unwrap();
-        toast.success('Registration and login successful!');
-        if (data.action === 'renderBranchProfile') {
-          router.push(`/branches/${data.branch._id}/complete-profile`);
-        } else {
-          router.push('/dashboard');
-        }
-      }
-
-      onSuccess?.();
-      onClose?.();
-      router.refresh();
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${branchId}`, {
+        cache: "no-store",
+      });
+      branchData = response.data.data;
     } catch (error) {
-      console.error('Submit error:', error);
-      toast.error(error.response?.data?.message || 'Something went wrong');
-    } finally {
-      setLoading(false);
+      console.error("Error fetching branch:", error);
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+            <div className="text-6xl mb-4">😢</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Branch Not Found</h2>
+            <p className="text-gray-600 mb-6">The branch you are trying to edit does not exist.</p>
+            <a href="/dashboard" className="inline-flex items-center text-blue-600 hover:text-blue-800">
+              Back to Dashboard
+            </a>
+          </div>
+        </div>
+      );
     }
-  };
+  }
 
-  // Prepare restaurant options for dropdown
-  const restaurantOptions = restaurants.map((restaurant) => ({
-    value: restaurant.name,
-    label: restaurant.name,
-    _id: restaurant._id,
-    name: restaurant.name
-  }));
+  initialReduxState = store.getState();
 
-  // Prepare city options for dropdown
-  const cityOptions = cities.map((city) => ({
-    value: city.name,
-    label: `${city.name}, ${city.stateName}`, // Show city and state in dropdown
-    _id: city._id,
-    stateName: city.stateName,
-    countryName: city.countryName,
-    coordinates: city.coordinates
-  }));
+  // Prepare initial form data
+  const hyderabad = cities.find((city) => city.name === "Hyderabad" && city.stateName === "Telangana");
+  const initialFormData = branchId
+    ? {
+        name: "",
+        mobile: "",
+        email: "",
+        password: "",
+        restaurantId: branchData.parentRestaurant?._id || "",
+        restaurantName: "",
+        branchName: branchData.name || "",
+        branchAddress: branchData.location?.address || "",
+        branchCity: branchData.cityDetails?._id || "",
+        branchState: branchData.cityDetails?.stateName || "",
+        branchPostalCode: branchData.location?.postalCode || "",
+        branchCountry: branchData.cityDetails?.countryName || "India",
+        branchCoordinates: branchData.location?.coordinates || [0, 0],
+      }
+    : {
+        name: "",
+        mobile: "",
+        email: "",
+        password: "",
+        restaurantId: "",
+        restaurantName: "",
+        branchName: "",
+        branchAddress: "",
+        branchCity: hyderabad?._id || "",
+        branchState: hyderabad?.stateName || "",
+        branchCountry: hyderabad?.countryName || "India",
+        branchCoordinates: hyderabad?.coordinates || [0, 0],
+      };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 sm:p-6 min-h-screen">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-dark text-center sm:text-left">
-            {branchId ? 'Complete Branch Profile' : 'Register Branch'}
-          </h1>
-          <p className="text-gray-500 text-sm sm:text-base text-center sm:text-left">
-            {branchId ? 'Update your branch details' : 'Create an account and register your branch'}
-          </p>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-        {/* User Information (only for registration) */}
-        {!branchId && (
-          <div className="bg-white shadow rounded-lg p-4 sm:p-6">
-            <h2 className="text-lg font-medium text-dark mb-4 flex items-center">
-              <Store className="h-5 w-5 mr-2 text-primary" />
-              User Information
-            </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Full Name *</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    required
-                    maxLength={100}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Mobile Number *</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <Phone className="w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    name="mobile"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={formData.mobile}
-                    onChange={handleChange}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    required
-                    placeholder="9876543210"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Email (Optional)</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    placeholder="john@example.com"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Password *</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <Lock className="w-4 h-4 text-gray-400" />
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    required
-                    minLength={6}
-                    placeholder="••••••••"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Branch Information */}
-        <div className="bg-white shadow rounded-lg p-4 sm:p-6">
-          <h2 className="text-lg font-medium text-dark mb-4 flex items-center">
-            <Store className="h-5 w-5 mr-2 text-primary" />
-            Branch Information
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-            {!branchId && (
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Restaurant</label>
-                <Select
-                  options={restaurantOptions}
-                  value={restaurantOptions.find((option) => option._id === formData.restaurantId) || null}
-                  onChange={handleRestaurantChange}
-                  placeholder="Search and select a restaurant"
-                  isClearable
-                  isSearchable
-                  className="w-full text-sm"
-                  classNamePrefix="select"
-                />
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-dark mb-1">Branch Name *</label>
-              <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                <input
-                  type="text"
-                  name="branchName"
-                  value={formData.branchName}
-                  onChange={handleChange}
-                  className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                  required
-                  maxLength={100}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Location Information */}
-        <div className="bg-white shadow rounded-lg p-4 sm:p-6">
-          <h2 className="text-lg font-medium text-dark mb-4 flex items-center">
-            <MapPin className="h-5 w-5 mr-2 text-primary" />
-            Location Information
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-dark mb-1">Address *</label>
-              <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                <input
-                  type="text"
-                  name="branchAddress"
-                  value={formData.branchAddress}
-                  onChange={handleChange}
-                  className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">City *</label>
-                <Select
-                  options={cityOptions}
-                  value={cityOptions.find((option) => option._id === formData.branchCity) || null}
-                  onChange={handleCityChange}
-                  placeholder="Search and select a city"
-                  isClearable
-                  isSearchable
-                  required
-                  className="w-full text-sm"
-                  classNamePrefix="select"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Postal Code</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <input
-                    type="text"
-                    name="branchPostalCode"
-                    value={formData.branchPostalCode}
-                    onChange={handleChange}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    placeholder="Postal code"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Latitude</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <input
-                    type="number"
-                    name="latitude"
-                    value={formData.branchCoordinates[1]}
-                    onChange={(e) => handleCoordinateChange('latitude', e.target.value)}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    placeholder="Latitude"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Longitude</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <input
-                    type="number"
-                    name="longitude"
-                    value={formData.branchCoordinates[0]}
-                    onChange={(e) => handleCoordinateChange('longitude', e.target.value)}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    placeholder="Longitude"
-                  />
-                </div>
-              </div>
-            </div>
-            <div>
-              <button
-                type="button"
-                onClick={handleGetCurrentLocation}
-                className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-soft shadow-sm text-sm font-medium text-dark bg-white hover:bg-gray-50 rounded-lg mt-4"
-              >
-                <Navigation className="h-5 w-5 mr-2 text-primary" />
-                Get Current Location
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Submit/Cancel Buttons */}
-        <div className="flex flex-col sm:flex-row sm:justify-end space-y-3 sm:space-y-0 sm:space-x-3">
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full sm:w-auto bg-primary text-white py-3 px-2 rounded-lg text-sm font-medium transition-all ${
-              loading ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'
-            }`}
-          >
-            {loading ? 'Processing...' : branchId ? 'Update Branch' : 'Register Branch'}
-          </button>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-full sm:w-auto px-4 py-2 border border-soft rounded-lg shadow-sm text-sm font-medium text-dark bg-white hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </div>
+    <Providers initialReduxState={initialReduxState}>
+      <OwnerBranchFormContent
+        branchId={branchId}
+        initialFormData={initialFormData}
+        restaurants={restaurants}
+        cities={cities}
+        isAuthenticated={isAuthenticated}
+      />
+    </Providers>
   );
-};
-
-export default OwnerBranchForm;
+}

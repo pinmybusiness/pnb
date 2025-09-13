@@ -19,6 +19,7 @@ const Branches = () => {
   const [sortBy, setSortBy] = useState("name");
   const [sortOrder, setSortOrder] = useState("asc");
 
+  console.log("br", branches)
   // Fetch data from API
 useEffect(() => {
   const fetchData = async () => {
@@ -240,7 +241,6 @@ const getRestaurantName = (restaurantIdOrObject) => {
                   <ArrowUpDown className="h-4 w-4" />
                 </div>
               </TableHead>
-              <TableHead>Trial Status</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -264,8 +264,8 @@ const getRestaurantName = (restaurantIdOrObject) => {
                 </TableCell>
                 <TableCell>
                  <div className="max-w-[200px] truncate" title={branch.location?.address}>
-                    {branch.location?.city && branch.location?.state 
-                      ? `${branch.location.city}, ${branch.location.state}`
+                    {branch.location && branch.location?.city 
+                      ? `${branch.location?.city?.name}, ${branch.location?.city?.state?.name}`
                       : 'No address'}
                   </div>
 
@@ -279,15 +279,6 @@ const getRestaurantName = (restaurantIdOrObject) => {
                       </div>
                     )}
                   </div>
-                </TableCell>
-                <TableCell>
-                  {branch.trial?.isActive ? (
-                    <Badge variant={branch.trial.daysLeft <= 7 ? "destructive" : "secondary"}>
-                      {Math.max(0, Math.ceil((new Date(branch.trial.endDate) - new Date()) / (1000 * 60 * 60 * 24)))} days left
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline">No trial</Badge>
-                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-2">

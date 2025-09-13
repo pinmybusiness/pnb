@@ -7,12 +7,12 @@ import {
 
 // ✅ Single menu list, roles are defined as numeric arrays
 export const allMenus = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [0,1,3,4,6,7] },
-  { name: "Restaurants", href: "/dashboard/restaurants", icon: Store, roles: [0] },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [0,1,2,3,4,6,7] },
+  { name: "Restaurants", href: "/dashboard/restaurants", icon: Store, roles: [0,1,2] },
   { 
     name: "Branches", 
     icon: MapPin, 
-    roles: [0,3], 
+    roles: [0,2,3], 
     children: [
       { name: "Add Branch", href: "/dashboard/branches/add" },
       { name: "List Branches", href: "/dashboard/branches" },
@@ -36,10 +36,10 @@ export const allMenus = [
   { 
     name: "Opportunities", 
     icon: GraduationCap, 
-    roles: [0,1,6,7], 
+    roles: [0,1,2,6,7], 
     children: [
-      { name: "Opportunities", href: "/dashboard/opportunities", roles: [0,1,6,7] },
-      { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [6,7] },
+      { name: "Opportunities", href: "/dashboard/opportunities", roles: [0,1,2,6,7] },
+      { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [2,6,7] },
     ]
   },
   // { name: "Work Type", href: "/dashboard/work-types", icon: FileBarChart, roles: [0] },

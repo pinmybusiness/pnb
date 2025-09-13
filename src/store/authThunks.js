@@ -61,17 +61,43 @@ export const registerCandidate = createAsyncThunk(
 );
 
 // Login user
+// Login user
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (userData, { rejectWithValue }) => {
     try {
       const response = await authService.login(userData);
+      console.log("Login response:", response.data);
+      
       if (!response.success) {
         throw new Error(response.message || 'Login failed');
       }
+
+      const userDataResponse = response.data;
+      
+      // Common user data for all roles
+      const commonUserData = {
+        _id: userDataResponse._id,
+        name: userDataResponse.name,
+        mobile: userDataResponse.mobile,
+        email: userDataResponse.email,
+        role: userDataResponse.role,
+        roleName: userDataResponse.roleName,
+        token: userDataResponse.token
+      };
+
+      // Add role-specific data
+      if (userDataResponse.role === 10) { // Candidate
+        commonUserData.candidateProfile = userDataResponse.candidateProfile;
+      } else if (userDataResponse.role === 6) { // Branch Manager
+        commonUserData.branch = userDataResponse.branch;
+        commonUserData.restaurant = userDataResponse.restaurant;
+      }
+      // Add more role-specific conditions as needed
+
       return {
-        user: response.data,
-        token: response.data.token
+        user: commonUserData,
+        token: userDataResponse.token
       };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');

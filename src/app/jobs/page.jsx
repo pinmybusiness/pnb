@@ -42,8 +42,7 @@ export default function StudentOpportunitiesPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [useGeolocation, setUseGeolocation] = useState(false);
   const router = useRouter();
-
-  console.log("toke", token)
+  console.log("selectedOpportunity", selectedOpportunity)
   useEffect(() => {
     const initialize = async () => {
       await checkAuth();
@@ -234,15 +233,16 @@ export default function StudentOpportunitiesPage() {
       router.push("/candidate/register");
       return;
     }
+
     if (user?.role !== 10) {
       toast.error("Only users can apply for opportunities");
       return;
     }
-    if (!hasProfile) {
-      toast.error("Please complete your candidate profile before applying");
-      router.push("/candidate-profile");
-      return;
-    }
+    // if (!hasProfile) {
+    //   toast.error("Please complete your candidate profile before applying");
+    //   router.push("/candidate-profile");
+    //   return;
+    // }
     setSelectedOpportunity(opportunity);
     setCoverLetter("");
     setResume(null);
@@ -266,18 +266,20 @@ export default function StudentOpportunitiesPage() {
         return;
       }
 
-      const formData = new FormData();
-      formData.append("opportunityId", selectedOpportunity._id);
-      formData.append("coverLetter", coverLetter);
-      if (resume) {
-        formData.append("resume", resume);
-      }
+    // Create a regular JSON object instead of FormData
+    const applicationData = {
+      opportunityId: selectedOpportunity._id,
+      coverLetter: coverLetter
+    };
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
+      method: "POST",
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json" 
+      },
+      body: JSON.stringify(applicationData),
+    });
 
       if (response.status === 401) {
         localStorage.removeItem("token");

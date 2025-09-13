@@ -2,7 +2,7 @@
 
 import { X } from "lucide-react";
 import PropTypes from "prop-types";
-import { getDurationText, getStipendText } from "@/utils/opportunity";
+import { getDurationText, getOpportunityTypeText, getStipendText } from "@/utils/opportunity";
 
 export default function ApplicationModal({
   isOpen,
@@ -49,8 +49,8 @@ export default function ApplicationModal({
           <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
             <h4 className="font-medium text-gray-900">{opportunity.title}</h4>
             <p className="text-gray-600 text-sm">
-              {opportunity.branch?.name}
-              {opportunity.branch?.location && ` • ${opportunity.branch.location.city}`}
+              {opportunity.branch?.parentRestaurant?.name}
+              {opportunity.branch?.location && ` • ${opportunity.branch.location.city.name}`}
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-500">
               <div className="flex items-center">
@@ -58,17 +58,10 @@ export default function ApplicationModal({
                 {getStipendText(opportunity.stipend)}
               </div>
               <div className="flex items-center">
-                <span className="font-medium mr-1">Duration:</span>
-                {getDurationText(opportunity)}
-              </div>
-              <div className="flex items-center">
                 <span className="font-medium mr-1">Type:</span>
-                {opportunity.opportunityType}
+                {getOpportunityTypeText(opportunity.opportunityType)}
               </div>
-              <div className="flex items-center">
-                <span className="font-medium mr-1">Schedule:</span>
-                {opportunity.internshipType}
-              </div>
+
             </div>
           </div>
           <div className="mb-6">

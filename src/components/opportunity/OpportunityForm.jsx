@@ -6,11 +6,8 @@ import {
   Save,
   Clock,
   DollarSign,
-  Users,
   BookOpen,
   CheckCircle,
-  Plus,
-  Trash2,
   AlertCircle,
   Calendar,
   Briefcase,
@@ -31,12 +28,11 @@ import {
   daysOfWeek,
   shifts,
   durationUnits,
-  paymentTypes,
   fetchWorkTypes,
 } from '@/data/opportunityData';
-import { getStipendText, getInternshipTypeText, getDayName, getDurationText, getLanguageText } from '@/utils/opportunity';
+import { getStipendText } from '@/utils/opportunity';
 
-const OpportunityForm = ({ editData = null }) => {
+const OpportunityForm = ({ editData = null, branchId }) => {
   const router = useRouter();
   const { user, token, isLoading: authLoading } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
@@ -45,7 +41,7 @@ const OpportunityForm = ({ editData = null }) => {
   const [workTypes, setWorkTypes] = useState([]);
   const [hasManuallyEditedTitle, setHasManuallyEditedTitle] = useState(false);
   const [formData, setFormData] = useState({
-    branch: user?.branch,
+    branch: branchId,
     workType: '',
     opportunityType: 0,
     internshipType: 0,

@@ -1,48 +1,62 @@
+export const dynamic = 'force-dynamic';
+
+import { cookies } from "next/headers";
 import { authService } from "@/services/authService";
-import { makeStore } from "@/store";
 import { Providers } from "../providers";
 import OpportunitiesContent from "@/components/csr/OpportunitiesContent";
 
-// Server Component (Root)
-export default async function StudentOpportunitiesPage() {
-  const store = makeStore();
-  let initialReduxState = {};
+export default async function OpportunitiesPage() {
+  const token = cookies().get("token")?.value;
   let opportunities = [];
   let appliedOpportunities = [];
   let isAuthenticated = false;
-  let hasProfile = false;
+  // let hasProfile = false;
 
-  // Fetch opportunities
+  // Fetch public opportunities
   try {
     const url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=20`;
-    const response = await fetch(url, { cache: "no-store" }); // Avoid caching for fresh data
+    const response = await fetch(url, { next: { revalidate: 300 } }); // Cache for 5 minutes
     const data = await response.json();
     if (data.success) {
       opportunities = data.data;
+    } else {
+      console.error("Failed to fetch opportunities:", data.message);
     }
   } catch (error) {
     console.error("Error fetching opportunities:", error);
   }
 
-  // Fetch applied opportunities if authenticated
-  if (isAuthenticated) {
+  // Check authentication and fetch user data
+  if (token) {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await response.json();
-      if (data.success) {
-        appliedOpportunities = data.data.map((app) => app.opportunity._id);
+      const userData = await authService.getMe(token);
+      if (userData.success && userData.data.role === 10) {
+        isAuthenticated = true;
+        hasProfile = !!userData.data.candidateProfile;
+
+        // Fetch applied opportunities
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
+            headers: { Authorization: `Bearer ${token}` },
+            next: { revalidate: 300 }, // Cache for 5 minutes
+          });
+          const data = await response.json();
+          if (data.success) {
+            appliedOpportunities = data.data.map((app) => app.opportunity._id);
+          } else {
+            console.error("Failed to fetch applications:", data.message);
+          }
+        } catch (error) {
+          console.error("Error fetching applications:", error);
+        }
       }
     } catch (error) {
-      console.error("Error fetching applications:", error);
+      console.error("Error checking auth:", error);
     }
   }
 
-  initialReduxState = store.getState();
-
   return (
-    <Providers initialReduxState={initialReduxState}>
+    <Providers>
       <OpportunitiesContent
         initialOpportunities={opportunities}
         initialAppliedOpportunities={appliedOpportunities}
@@ -52,4 +66,3 @@ export default async function StudentOpportunitiesPage() {
     </Providers>
   );
 }
-

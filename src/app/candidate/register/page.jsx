@@ -1,3 +1,6 @@
+// app/candidate/register/page.jsx (server component)
+export const dynamic = 'force-dynamic';
+
 import { authService } from "@/services/authService";
 import { makeStore } from "@/store";
 import { Providers } from "../../providers";

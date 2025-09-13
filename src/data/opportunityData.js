@@ -13,6 +13,22 @@ export const benefits = [
   { value: 'accommodation', label: 'Accommodation Provided', backendValue: 2, icon: Home }
 ];
 
+export const opportunityTypes = [
+  { 
+    value: 'job', 
+    label: 'Job', 
+    backendValue: 0, 
+    icon: Briefcase 
+  },
+  { 
+    value: 'internship', 
+    label: 'Internship', 
+    backendValue: 1, 
+    icon: Calendar 
+  }
+];
+
+
 export const internshipTypes = [
   { 
     value: 'daily', 

@@ -20,7 +20,7 @@ export default function OpportunitiesContent({
   initialOpportunities,
   initialAppliedOpportunities,
   isAuthenticated: initialIsAuthenticated,
-  hasProfile: initialHasProfile,
+  // hasProfile: initialHasProfile,
 }) {
   const { user, token } = useSelector((state) => state.auth);
   const [opportunities, setOpportunities] = useState(initialOpportunities || []);

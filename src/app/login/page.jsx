@@ -51,9 +51,6 @@ export default function LoginPage({ initialTab = "restaurant" }) {
           <div className="p-6" role="tabpanel" aria-labelledby={activeTab === "candidate" ? "candidate-tab" : "restaurant-tab"}>
             {activeTab === "candidate" ? (
               <div>
-                <h2 id="login-page-title" className="text-2xl font-bold text-gray-900 mb-4 text-center">
-                  Candidate Login
-                </h2>
                 <CandidateLoginForm />
               </div>
             ) : (

@@ -269,7 +269,7 @@ const OpportunityView = () => {
                 <p className="text-sm text-gray-600 mt-1">{opportunity?.workType?.name ?? 'Unknown Work Type'}</p>
               </div>
               <div className="text-left sm:text-right">
-                <div className="text-lg sm:text-xl font-bold text-primary">{getStipendText(opportunity.stipend)}</div>
+                <div className="text-lg sm:text-xl font-bold text-primary">{getStipendText(opportunity.compensation)}</div>
                 <div className="text-xs sm:text-sm text-gray-500">{getInternshipTypeText(opportunity.internshipType)}</div>
               </div>
             </div>
@@ -411,7 +411,7 @@ const OpportunityView = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Stipend/Salary</span>
-                  <span className="font-semibold text-dark">{getStipendText(opportunity.stipend)}</span>
+                  <span className="font-semibold text-dark">{getStipendText(opportunity.compensation)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">PaymentыгFrequency</span>

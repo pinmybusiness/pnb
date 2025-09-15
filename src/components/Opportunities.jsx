@@ -458,7 +458,7 @@ const Opportunities = ({ branchId }) => {
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <span className="font-medium text-dark">{getStipendText(opportunity.stipend)}</span>
+                      <span className="font-medium text-dark">{getStipendText(opportunity.compensation)}</span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <StatusBadge
@@ -558,7 +558,7 @@ const Opportunities = ({ branchId }) => {
                   </div>
                   <div>
                     <span className="font-medium">Stipend:</span>{' '}
-                    {getStipendText(opportunity.stipend)}
+                    {getStipendText(opportunity.compensation)}
                   </div>
                 </div>
                 <div className="flex gap-3 mt-4">

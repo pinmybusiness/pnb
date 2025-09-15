@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { MapPin, Clock, Bookmark, Briefcase, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getOpportunityTypeText, getInternshipTypeText, getDurationText, getStipendText, getBenefitsText } from '@/utils/opportunity';
-import { benefits } from '@/data/opportunityData';
 import CtaButton from '../CtaButton';
 
 export default function FeaturedJobs() {
@@ -186,7 +185,7 @@ export default function FeaturedJobs() {
                     <span className="p-2 rounded-full bg-orange-100">
                       <Clock className="h-4 w-4 text-orange-600" />
                     </span>
-                    <span>{getStipendText(opportunity.stipend) || 'Not disclosed'}</span>
+                    <span>{getStipendText(opportunity.compensation) || 'Not disclosed'}</span>
                   </div>
                 </div>
 

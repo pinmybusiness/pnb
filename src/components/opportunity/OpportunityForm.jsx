@@ -55,10 +55,12 @@ const OpportunityForm = ({ editData = null, branchId }) => {
       startDate: '',
       endDate: '',
     },
-    stipend: {
-      amount: 0,
+    compensation: {
+      minAmount: 0,
+      maxAmount: 0,
+      stipendAmount: 0,
       currency: 'INR',
-      paymentType: 2,
+      paymentType: 0, // Default to monthly for jobs
       includesTips: false,
       includesFood: false,
       includesAccommodation: false,
@@ -100,16 +102,16 @@ const OpportunityForm = ({ editData = null, branchId }) => {
         duration,
         durationUnit,
         schedule,
-        stipend,
+        compensation,
         title,
         description,
         languages,
         tags,
       } = editData;
 
-      const includesTips = stipend?.benefits?.includes(0) || false;
-      const includesFood = stipend?.benefits?.includes(1) || false;
-      const includesAccommodation = stipend?.benefits?.includes(2) || false;
+      const includesTips = compensation?.benefits?.includes(0) || false;
+      const includesFood = compensation?.benefits?.includes(1) || false;
+      const includesAccommodation = compensation?.benefits?.includes(2) || false;
 
       const workTypeId = workType?._id || workType || '';
 
@@ -128,14 +130,16 @@ const OpportunityForm = ({ editData = null, branchId }) => {
           startDate: schedule?.startDate ? new Date(schedule.startDate).toISOString().split('T')[0] : '',
           endDate: schedule?.endDate ? new Date(schedule.endDate).toISOString().split('T')[0] : '',
         },
-        stipend: {
-          amount: stipend?.amount || 0,
-          currency: stipend?.currency || 'INR',
-          paymentType: stipend?.paymentType || 2,
+        compensation: {
+          minAmount: compensation?.minAmount || 0,
+          maxAmount: compensation?.maxAmount || 0,
+          stipendAmount: compensation?.stipendAmount || 0,
+          currency: compensation?.currency || 'INR',
+          paymentType: compensation?.paymentType || (opportunityType === 0 ? 0 : 1),
           includesTips,
           includesFood,
           includesAccommodation,
-          benefits: stipend?.benefits || [],
+          benefits: compensation?.benefits || [],
         },
         title: title || '',
         description: description || '',
@@ -171,18 +175,18 @@ const OpportunityForm = ({ editData = null, branchId }) => {
 
   const calculateTotalAmount = () => {
     if (opportunityType === 1) {
-      if (formData.stipend.amount <= 0 || formData.duration <= 0) return 0;
+      if (formData.compensation.stipendAmount <= 0 || formData.duration <= 0) return 0;
       if (formData.durationUnit === 0) {
-        return formData.stipend.amount * formData.duration;
+        return formData.compensation.stipendAmount * formData.duration;
       } else if (formData.durationUnit === 1) {
         let daysPerWeek = formData.schedule.days.length;
         if (formData.internshipType === 4) {
           daysPerWeek = 2;
         }
-        return formData.stipend.amount * daysPerWeek * formData.duration;
+        return formData.compensation.stipendAmount * daysPerWeek * formData.duration;
       }
     }
-    return formData.stipend.amount;
+    return formData.compensation.minAmount; // For jobs, return minAmount for display purposes
   };
 
   const getCurrentTypeDetails = () => {
@@ -223,8 +227,9 @@ const OpportunityForm = ({ editData = null, branchId }) => {
           handleInputChange('duration', 1);
         }
       }
-      handleNestedChange('stipend', 'paymentType', 3);
+      handleNestedChange('compensation', 'paymentType', 1); // Internships: after_completion
     } else {
+      handleNestedChange('compensation', 'paymentType', 0); // Jobs: monthly
       handleNestedChange('schedule', 'startDate', null);
       handleNestedChange('schedule', 'endDate', null);
     }
@@ -232,7 +237,6 @@ const OpportunityForm = ({ editData = null, branchId }) => {
 
   useEffect(() => {
     if (opportunityType === 0) {
-      handleNestedChange('stipend', 'paymentType', 2);
       if (formData.internshipType === 1) {
         handleNestedChange('schedule', 'hoursPerDay', 4);
       } else if (formData.internshipType === 0) {
@@ -402,11 +406,23 @@ const OpportunityForm = ({ editData = null, branchId }) => {
           newErrors.duration = `Duration must be between 1-${maxWeeks} weeks`;
         }
       }
-    }
 
-    if (!formData.stipend.amount || formData.stipend.amount <= 0) {
-      newErrors.stipendAmount = 'Stipend/Salary amount is required';
-      handleNestedChange('stipend', 'amount', 0);
+      if (!formData.compensation.stipendAmount || formData.compensation.stipendAmount <= 0) {
+        newErrors.stipendAmount = 'Stipend amount is required';
+        handleNestedChange('compensation', 'stipendAmount', 0);
+      }
+    } else {
+      if (!formData.compensation.minAmount || formData.compensation.minAmount <= 0) {
+        newErrors.minAmount = 'Minimum salary is required';
+        handleNestedChange('compensation', 'minAmount', 0);
+      }
+      if (!formData.compensation.maxAmount || formData.compensation.maxAmount <= 0) {
+        newErrors.maxAmount = 'Maximum salary is required';
+        handleNestedChange('compensation', 'maxAmount', 0);
+      }
+      if (formData.compensation.maxAmount < formData.compensation.minAmount) {
+        newErrors.maxAmount = 'Maximum salary must be greater than or equal to minimum salary';
+      }
     }
 
     if (!formData.numberOfPeople || formData.numberOfPeople <= 0) {
@@ -454,19 +470,21 @@ const OpportunityForm = ({ editData = null, branchId }) => {
     }
 
     const benefits = [];
-    if (formData.stipend.includesTips) benefits.push(0);
-    if (formData.stipend.includesFood) benefits.push(1);
-    if (formData.stipend.includesAccommodation) benefits.push(2);
+    if (formData.compensation.includesTips) benefits.push(0);
+    if (formData.compensation.includesFood) benefits.push(1);
+    if (formData.compensation.includesAccommodation) benefits.push(2);
 
     const finalAmount = calculateTotalAmount();
     const submitData = {
       ...formData,
       workTypeSlug: selectedWorkType.slug,
       opportunityType,
-      stipend: {
-        amount: formData.stipend.amount,
-        currency: formData.stipend.currency,
-        paymentType: formData.stipend.paymentType,
+      compensation: {
+        minAmount: opportunityType === 0 ? formData.compensation.minAmount : undefined,
+        maxAmount: opportunityType === 0 ? formData.compensation.maxAmount : undefined,
+        stipendAmount: opportunityType === 1 ? formData.compensation.stipendAmount : undefined,
+        currency: formData.compensation.currency,
+        paymentType: opportunityType === 0 ? 0 : 1, // 0: monthly for jobs, 1: after_completion for internships
         totalAmount: finalAmount,
         benefits,
       },
@@ -534,7 +552,9 @@ const OpportunityForm = ({ editData = null, branchId }) => {
 
   const customSelectStyles = {
     control: (provided, state) => ({
-      ...provided,
+      ...
+
+provided,
       border: errors.workType ? '1px solid #f87171' : '1px solid #d1d5db',
       backgroundColor: errors.workType ? '#fef2f2' : '#fff',
       borderRadius: '0.375rem',
@@ -667,7 +687,7 @@ const OpportunityForm = ({ editData = null, branchId }) => {
                 <p className="text-red-600 text-sm mt-1 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" /> {errors.workType}
                 </p>
-              )}
+                )}
             </div>
           </div>
         </div>
@@ -868,62 +888,102 @@ const OpportunityForm = ({ editData = null, branchId }) => {
           </h3>
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {isJob ? 'Salary (₹) *' : 'Stipend (₹/day) *'}
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  value={formData.stipend.amount}
-                  onChange={(e) => handleNestedChange('stipend', 'amount', e.target.value === '' ? '' : parseInt(e.target.value))}
-                  onBlur={(e) => {
-                    if (e.target.value === '' || parseInt(e.target.value) < 0) {
-                      handleNestedChange('stipend', 'amount', 0);
-                    }
-                  }}
-                  className={inputClassName('stipendAmount')}
-                  placeholder="Enter amount"
-                />
-                {errors.stipendAmount && (
-                  <p className="text-red-600 text-sm mt-1 flex items-center">
-                    <AlertCircle className="h-4 w-4 mr-1" /> {errors.stipendAmount}
-                  </p>
-                )}
-                {!isJob && formData.stipend.amount > 0 && (
-                  <div className="mt-2 p-3 bg-blue-50 rounded-md border border-blue-200">
-                    <div className="flex items-center text-blue-700">
-                      <Calculator className="h-4 w-4 mr-1" />
-                      <span className="text-sm font-medium">
-                        Total: {getStipendText({ ...formData.stipend, totalAmount })}
-                      </span>
-                    </div>
-                    <p className="text-xs text-blue-600 mt-1 hidden sm:block">
-                      {formData.duration} {durationUnits.find((du) => du.backendValue === formData.durationUnit)?.label || 'Days'} × ₹{formData.stipend.amount}/day
-                      {formData.durationUnit === 1 && formData.schedule.days.length > 0 &&
-                        ` × ${formData.schedule.days.length} days/week`}
-                    </p>
+              {isJob ? (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Minimum Salary (₹/month) *
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.compensation.minAmount}
+                      onChange={(e) => handleNestedChange('compensation', 'minAmount', e.target.value === '' ? '' : parseInt(e.target.value))}
+                      onBlur={(e) => {
+                        if (e.target.value === '' || parseInt(e.target.value) < 0) {
+                          handleNestedChange('compensation', 'minAmount', 0);
+                        }
+                      }}
+                      className={inputClassName('minAmount')}
+                      placeholder="Enter minimum salary"
+                    />
+                    {errors.minAmount && (
+                      <p className="text-red-600 text-sm mt-1 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-1" /> {errors.minAmount}
+                      </p>
+                    )}
                   </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Payment Frequency
-                </label>
-                <div className="flex items-center px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                  <span className="text-gray-700">{isJob ? 'Monthly' : 'After Completion'}</span>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Maximum Salary (₹/month) *
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={formData.compensation.maxAmount}
+                      onChange={(e) => handleNestedChange('compensation', 'maxAmount', e.target.value === '' ? '' : parseInt(e.target.value))}
+                      onBlur={(e) => {
+                        if (e.target.value === '' || parseInt(e.target.value) < 0) {
+                          handleNestedChange('compensation', 'maxAmount', 0);
+                        }
+                      }}
+                      className={inputClassName('maxAmount')}
+                      placeholder="Enter maximum salary"
+                    />
+                    {errors.maxAmount && (
+                      <p className="text-red-600 text-sm mt-1 flex items-center">
+                        <AlertCircle className="h-4 w-4 mr-1" /> {errors.maxAmount}
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Stipend (₹/day) *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.compensation.stipendAmount}
+                    onChange={(e) => handleNestedChange('compensation', 'stipendAmount', e.target.value === '' ? '' : parseInt(e.target.value))}
+                    onBlur={(e) => {
+                      if (e.target.value === '' || parseInt(e.target.value) < 0) {
+                        handleNestedChange('compensation', 'stipendAmount', 0);
+                      }
+                    }}
+                    className={inputClassName('stipendAmount')}
+                    placeholder="Enter stipend amount"
+                  />
+                  {errors.stipendAmount && (
+                    <p className="text-red-600 text-sm mt-1 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" /> {errors.stipendAmount}
+                    </p>
+                  )}
+                  {formData.compensation.stipendAmount > 0 && (
+                    <div className="mt-2 p-3 bg-blue-50 rounded-md border border-blue-200">
+                      <div className="flex items-center text-blue-700">
+                        <Calculator className="h-4 w-4 mr-1" />
+                        <span className="text-sm font-medium">
+                          Total: {getStipendText({ ...formData.compensation, totalAmount })}
+                        </span>
+                      </div>
+                      <p className="text-xs text-blue-600 mt-1 hidden sm:block">
+                        {formData.duration} {durationUnits.find((du) => du.backendValue === formData.durationUnit)?.label || 'Days'} × ₹{formData.compensation.stipendAmount}/day
+                        {formData.durationUnit === 1 && formData.schedule.days.length > 0 &&
+                          ` × ${formData.schedule.days.length} days/week`}
+                      </p>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500 mt-1 hidden sm:block">
-                  {isJob ? 'Jobs are paid monthly' : 'Paid after completion'}
-                </p>
-              </div>
+              )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={formData.stipend.includesTips}
-                  onChange={(e) => handleNestedChange('stipend', 'includesTips', e.target.checked)}
+                  checked={formData.compensation.includesTips}
+                  onChange={(e) => handleNestedChange('compensation', 'includesTips', e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700">Tips</span>
@@ -931,8 +991,8 @@ const OpportunityForm = ({ editData = null, branchId }) => {
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={formData.stipend.includesFood}
-                  onChange={(e) => handleNestedChange('stipend', 'includesFood', e.target.checked)}
+                  checked={formData.compensation.includesFood}
+                  onChange={(e) => handleNestedChange('compensation', 'includesFood', e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700 flex items-center">
@@ -942,8 +1002,8 @@ const OpportunityForm = ({ editData = null, branchId }) => {
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={formData.stipend.includesAccommodation}
-                  onChange={(e) => handleNestedChange('stipend', 'includesAccommodation', e.target.checked)}
+                  checked={formData.compensation.includesAccommodation}
+                  onChange={(e) => handleNestedChange('compensation', 'includesAccommodation', e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <span className="ml-2 text-sm text-gray-700 flex items-center">

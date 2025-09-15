@@ -17,7 +17,8 @@ export default async function OwnerBranchFormPage({ params }) {
   // Fetch auth data
   try {
     const { cookies } = await import("next/headers");
-    const token = cookies().get("token")?.value;
+    const cookieStore = await cookies(); // Await cookies()
+    const token = cookieStore.get("token")?.value;
     if (token) {
       const response = await authService.getMe();
       if (response.success) {
@@ -95,6 +96,8 @@ export default async function OwnerBranchFormPage({ params }) {
         branchPostalCode: branchData.location?.postalCode || "",
         branchCountry: branchData.cityDetails?.countryName || "India",
         branchCoordinates: branchData.location?.coordinates || [0, 0],
+        helplineNumber: branchData.helplineNumber || "",
+        socialLink: branchData.socialLink || "",
       }
     : {
         name: "",
@@ -109,6 +112,8 @@ export default async function OwnerBranchFormPage({ params }) {
         branchState: hyderabad?.stateName || "",
         branchCountry: hyderabad?.countryName || "India",
         branchCoordinates: hyderabad?.coordinates || [0, 0],
+        helplineNumber: "",
+        socialLink: "",
       };
 
   return (

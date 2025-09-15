@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { MapPin, Navigation, X, Store } from 'lucide-react';
+import { MapPin, Navigation, X, Store, Phone, Link } from 'lucide-react';
 import Select from 'react-select';
 
 const BranchForm = ({ branchId, onSuccess, onClose }) => {
@@ -23,7 +23,9 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
       postalCode: '',
       country: 'India',
       coordinates: [0, 0]
-    }
+    },
+    helplineNumber: '',
+    socialLink: ''
   });
 
   useEffect(() => {
@@ -54,7 +56,9 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
               postalCode: branchData.location?.postalCode || '',
               country: cityExists ? branchData.cityDetails?.countryName || 'India' : 'India',
               coordinates: branchData.location?.coordinates || [0, 0]
-            }
+            },
+            helplineNumber: branchData.helplineNumber || '',
+            socialLink: branchData.socialLink || ''
           });
 
           if (branchData.cityDetails?._id && !cityExists) {
@@ -75,7 +79,11 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === 'helplineNumber') {
+      setFormData((prev) => ({ ...prev, [name]: value.replace(/\D/g, '') }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleRestaurantChange = (selected) => {
@@ -210,6 +218,20 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
         return;
       }
 
+      // Validate helpline number
+      if (formData.helplineNumber && !/^\+?[\d\s-]{10,15}$/.test(formData.helplineNumber)) {
+        toast.error('Please provide a valid helpline number', { id: 'helpline-error' });
+        setLoading(false);
+        return;
+      }
+
+      // Validate social link (Zomato)
+      // if (formData.socialLink && !/^https?:\/\/(www\.)?zomato\.com\/.+$/.test(formData.socialLink)) {
+      //   toast.error('Please provide a valid Zomato link', { id: 'social-link-error' });
+      //   setLoading(false);
+      //   return;
+      // }
+
       const payload = {
         name: formData.name,
         parentRestaurant: formData.parentRestaurant || undefined,
@@ -220,7 +242,9 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
           postalCode: formData.location.postalCode || undefined,
           country: formData.location.country,
           coordinates: formData.location.coordinates[0] !== 0 && formData.location.coordinates[1] !== 0 ? formData.location.coordinates : undefined
-        }
+        },
+        helplineNumber: formData.helplineNumber || undefined,
+        socialLink: formData.socialLink || undefined
       };
 
       try {
@@ -237,8 +261,6 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
         onSuccess?.();
         console.log('onClose called');
         onClose?.();
-        // Remove router.refresh to avoid duplicate navigation
-        // router.refresh();
       } catch (error) {
         console.error('Submit error:', error);
         toast.error(error.response?.data?.message || 'Something went wrong', { id: 'branch-error' });
@@ -333,6 +355,36 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
                   required
                 />
               )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-dark mb-1">Helpline Number</label>
+              <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
+                <Phone className="w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  name="helplineNumber"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={formData.helplineNumber}
+                  onChange={handleChange}
+                  className="flex-1 px-2 py-2 focus:outline-none text-sm"
+                  placeholder="9876543210"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-dark mb-1">Social Link</label>
+              <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
+                <Link className="w-4 h-4 text-gray-400" />
+                <input
+                  type="url"
+                  name="socialLink"
+                  value={formData.socialLink}
+                  onChange={handleChange}
+                  className="flex-1 px-2 py-2 focus:outline-none text-sm"
+                  placeholder="https://www.zomato.com/..."
+                />
+              </div>
             </div>
           </div>
         </div>

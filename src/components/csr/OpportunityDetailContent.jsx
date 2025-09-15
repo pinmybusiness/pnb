@@ -44,6 +44,8 @@ export default function OpportunityDetailContent({
   const { user, token } = useSelector((state) => state.auth);
   const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated);
 
+  console.log("bdd", opportunity)
+
   // Sync authentication state with Redux after hydration
   useEffect(() => {
     if (token) {
@@ -195,14 +197,25 @@ export default function OpportunityDetailContent({
             <div className="flex items-start justify-between">
               <div>
                 <h1 className="!text-xl font-bold text-gray-900 mb-2">{opportunity.title}</h1>
+                 <Link
+                      href={`/restaurant/${opportunity.branch.location?.city?.name.toLowerCase().replace(/\s+/g, "-")}/${opportunity.branch.slug}`}
+                    >
                 <p className="text-gray-700 flex items-center">
                   <Building className="h-4 w-4 mr-2 text-orange-500" />
                   {opportunity?.branch?.parentRestaurant?.name}
                 </p>
+                    </Link>
               </div>
+
+
               <div className="flex-shrink-0 ml-4">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-orange-50 to-amber-100 flex items-center justify-center border border-orange-100">
+                   <Link
+                      href={`/restaurant/${opportunity.branch.location?.city?.name.toLowerCase().replace(/\s+/g, "-")}/${opportunity.branch.slug}`}
+                      className="inline-flex items-center text-sm text-orange-600 hover:text-orange-800 font-medium"
+                    >
                   <Building className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
+                  </Link>
                 </div>
               </div>
             </div>
@@ -344,6 +357,7 @@ export default function OpportunityDetailContent({
             </ul>
           </div>
         </div>
+        
         {opportunity.languages && (
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-100">
             <h3 className="text-lg font-semibold mb-4 flex items-center">

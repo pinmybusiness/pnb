@@ -241,7 +241,7 @@ const Opportunities = ({ branchId }) => {
           <h1 className="text-xl sm:text-2xl font-bold text-dark">Opportunity Management</h1>
           <p className="text-sm text-gray-500">Manage opportunities for your branch</p>
         </div>
-        {[6, 7].includes(user?.role) && (
+        {[0,1,2,6, 7].includes(user?.role) && (
           <Link href={`/dashboard/opportunities/add?branchId=${branchId}`}>
             <Button className="rounded-lg bg-primary hover:bg-primary/90 text-sm px-4 py-3">
               <Plus className="h-5 w-5 mr-2" />
@@ -458,7 +458,7 @@ const Opportunities = ({ branchId }) => {
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <span className="font-medium text-dark">{getStipendText(opportunity.stipend)}</span>
+                      <span className="font-medium text-dark">{getStipendText(opportunity.compensation)}</span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <StatusBadge
@@ -558,7 +558,7 @@ const Opportunities = ({ branchId }) => {
                   </div>
                   <div>
                     <span className="font-medium">Stipend:</span>{' '}
-                    {getStipendText(opportunity.stipend)}
+                    {getStipendText(opportunity.compensation)}
                   </div>
                 </div>
                 <div className="flex gap-3 mt-4">

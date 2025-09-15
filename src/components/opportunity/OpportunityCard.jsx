@@ -51,7 +51,7 @@ export const OpportunityCard = ({ opportunity, appliedOpportunities, isAuthentic
                     {distance.toFixed(1)} km away
                   </span>
                 )}
-                <span>{getStipendText(opportunity.stipend)}</span>
+                <span>{getStipendText(opportunity.compensation)}</span>
                 {opportunity.duration && (
                   <span className="flex items-center">
                     <Clock className="h-3 w-3 mr-1 text-gray-500" />

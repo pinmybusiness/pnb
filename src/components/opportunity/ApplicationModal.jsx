@@ -44,7 +44,7 @@ export default function ApplicationModal({
             <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-gray-500">
               <div className="flex items-center">
                 <span className="font-medium mr-1">Stipend:</span>
-                {getStipendText(opportunity.stipend)}
+                {getStipendText(opportunity.compensation)}
               </div>
               <div className="flex items-center">
                 <span className="font-medium mr-1">Type:</span>

@@ -243,7 +243,7 @@ export default function OpportunityDetailContent({
                 </span>
               )}
               <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex items-center">
-                {getStipendText(opportunity.stipend)}
+                {getStipendText(opportunity.compensation)}
               </span>
             </div>
             <div className="flex items-center gap-4 flex-wrap mt-4">

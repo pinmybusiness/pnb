@@ -447,7 +447,7 @@ const Opportunities = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
-                      <span className="font-medium text-dark">{getStipendText(opportunity.stipend)}</span>
+                      <span className="font-medium text-dark">{getStipendText(opportunity.compensation)}</span>
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap">
                       <StatusBadge
@@ -545,8 +545,8 @@ const Opportunities = () => {
                     </div>
                   </div>
                   <div>
-                    <span className="font-medium">Stipend:</span>{' '}
-                    {getStipendText(opportunity.stipend)}
+                    <span className="font-medium">Compensation:</span>{' '}
+                    {getStipendText(opportunity.compensation)}
                   </div>
                  
                 </div>
@@ -565,16 +565,6 @@ const Opportunities = () => {
                   >
                     Edit
                   </button>
-
-                  {/* <CtaButton
-                    text="Edit"
-                    href=''
-                    onClick={() => router.push(`/dashboard/opportunities/${opportunity._id}/edit`)}
-                    showIcon={false}
-                    size="sm"
-                    variant="outline"
-                    asButton={true}
-                  /> */}
                 </div>
               </div>
             );

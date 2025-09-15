@@ -1,11 +1,10 @@
-// Client Component
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import { MapPin, Navigation, X, Store, Phone, Lock } from "lucide-react";
+import { MapPin, Navigation, X, Store, Phone, Lock, Link } from "lucide-react";
 import Select from "react-select";
 import { loginUser } from "@/store/authThunks";
 
@@ -44,7 +43,7 @@ export default function OwnerBranchFormContent({ branchId, initialFormData, rest
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "mobile") {
+    if (name === "mobile" || name === "helplineNumber") {
       setFormData((prev) => ({ ...prev, [name]: value.replace(/\D/g, "") }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -159,6 +158,20 @@ export default function OwnerBranchFormContent({ branchId, initialFormData, rest
       }
     }
 
+    // Validate helpline number
+    if (formData.helplineNumber && !/^\+?[\d\s-]{10,15}$/.test(formData.helplineNumber)) {
+      toast.error("Please provide a valid helpline number");
+      setLoading(false);
+      return;
+    }
+
+    // Validate zomato link
+    // if (formData.socialLink && !/^https?:\/\/(www\.)?zomato\.com\/.+$/.test(formData.socialLink)) {
+    //   toast.error("Please provide a valid Social link");
+    //   setLoading(false);
+    //   return;
+    // }
+
     // Prepare payload
     const payload = branchId
       ? {
@@ -172,6 +185,8 @@ export default function OwnerBranchFormContent({ branchId, initialFormData, rest
             country: formData.branchCountry,
             coordinates: formData.branchCoordinates[0] !== 0 && formData.branchCoordinates[1] !== 0 ? formData.branchCoordinates : undefined,
           },
+          helplineNumber: formData.helplineNumber || undefined,
+          socialLink: formData.socialLink || undefined
         }
       : {
           name: formData.name,
@@ -187,6 +202,8 @@ export default function OwnerBranchFormContent({ branchId, initialFormData, rest
           branchPostalCode: formData.branchPostalCode || undefined,
           branchCountry: formData.branchCountry,
           branchCoordinates: formData.branchCoordinates[0] !== 0 && formData.branchCoordinates[1] !== 0 ? formData.branchCoordinates : undefined,
+          helplineNumber: formData.helplineNumber || undefined,
+          socialLink: formData.socialLink || undefined
         };
 
     try {
@@ -354,6 +371,36 @@ export default function OwnerBranchFormContent({ branchId, initialFormData, rest
                   className="flex-1 px-2 py-2 focus:outline-none text-sm"
                   required
                   maxLength={100}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-dark mb-1">Helpline Number</label>
+              <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
+                <Phone className="w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  name="helplineNumber"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={formData.helplineNumber}
+                  onChange={handleChange}
+                  className="flex-1 px-2 py-2 focus:outline-none text-sm"
+                  placeholder="9876543210"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-dark mb-1">Social Link</label>
+              <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
+                <Link className="w-4 h-4 text-gray-400" />
+                <input
+                  type="url"
+                  name="socialLink"
+                  value={formData.socialLink}
+                  onChange={handleChange}
+                  className="flex-1 px-2 py-2 focus:outline-none text-sm"
+                  placeholder="https://www.zomato.com/..."
                 />
               </div>
             </div>

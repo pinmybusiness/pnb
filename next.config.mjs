@@ -5,6 +5,14 @@ const nextConfig = {
     domains: ['lh3.googleusercontent.com', 'localhost', 'www.pridelocation.com', 'api.fasterq.in'],
   },
   output: 'standalone', // For AWS Amplify serverful deployment
+  async rewrites() {
+    return [
+      {
+        source: '/restaurant/register',
+        destination: '/restaurant/register',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

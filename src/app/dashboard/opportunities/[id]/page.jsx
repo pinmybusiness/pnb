@@ -181,7 +181,7 @@ const OpportunityView = () => {
     opportunity.stipend?.includesAccommodation && 2,
   ].filter(Boolean);
 
-  const canEdit = user.role <= 2 || (user.role >= 6 && user.branch === opportunity.branch?._id);
+  const canEdit = user?.role <= 2 || (user?.role >= 6 && user?.branch === opportunity.branch?._id);
 
   return (
     <div className="p-4 sm:p-6 max-w-6xl mx-auto">

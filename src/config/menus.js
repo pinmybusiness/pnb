@@ -39,7 +39,7 @@ export const allMenus = [
     roles: [0,1,2,6,7], 
     children: [
       { name: "Opportunities", href: "/dashboard/opportunities", roles: [0,1,2,6,7] },
-      { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [0,2,6,7] },
+      { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [6,7] },
     ]
   },
   // { name: "Work Type", href: "/dashboard/work-types", icon: FileBarChart, roles: [0] },

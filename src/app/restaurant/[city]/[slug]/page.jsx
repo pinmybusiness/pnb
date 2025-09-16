@@ -98,43 +98,46 @@ export default async function BranchInfoPage({ params }) {
         )}
 
         <h1 className="mt-4 text-3xl font-bold">{branch.parentRestaurant?.name}</h1>
-        <p className="text-sm sm:text-base text-[#696d7d]">{formattedAddress}</p>
+        <p className="text-sm sm:text-base text-[#696d7d] flex items-center justify-center gap-2 mt-2">
+          <MapPin className="h-5 w-5 text-primary" />
+          {formattedAddress}
+        </p>
 
-<div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 justify-center items-center">
-  {branch.helplineNumber && (
-    <a
-      href={`tel:${branch.helplineNumber}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-green-50 text-green-700 rounded-full font-semibold shadow-md hover:bg-green-100 transition"
-    >
-      <Phone className="h-5 w-5 mr-2" />
-      {branch.helplineNumber}
-    </a>
-  )}
+        <div className="mt-6 flex flex-col sm:flex-row sm:flex-wrap gap-3 sm:gap-4 justify-center items-center">
+          {branch.helplineNumber && (
+            <a
+              href={`tel:${branch.helplineNumber}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-green-50 text-green-700 rounded-full font-semibold shadow-md hover:bg-green-100 transition"
+            >
+              <Phone className="h-5 w-5 mr-2" />
+              {branch.helplineNumber}
+            </a>
+          )}
 
-  <a
-    href={mapsUrl}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-white text-primary rounded-full font-semibold shadow-md hover:bg-gray-100 transition"
-  >
-    <Navigation className="h-5 w-5 mr-2" />
-    Get Directions
-  </a>
+          <a
+            href={mapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-white text-primary rounded-full font-semibold shadow-md hover:bg-gray-100 transition"
+          >
+            <Navigation className="h-5 w-5 mr-2" />
+            Get Directions
+          </a>
 
-  {branch.socialLink && (
-    <a
-      href={branch.socialLink}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-blue-50 text-blue-700 rounded-full font-semibold hover:bg-blue-100 transition"
-    >
-      <ExternalLink className="h-5 w-5 mr-2" />
-      Visit on {platformLabel}
-    </a>
-  )}
-</div>
+          {branch.socialLink && (
+            <a
+              href={branch.socialLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3 bg-blue-50 text-blue-700 rounded-full font-semibold hover:bg-blue-100 transition"
+            >
+              <ExternalLink className="h-5 w-5 mr-2" />
+              Visit on {platformLabel}
+            </a>
+          )}
+        </div>
 
       </div>
 

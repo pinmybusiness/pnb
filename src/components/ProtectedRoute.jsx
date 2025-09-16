@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children }) {
         }
 
         // If user role is not between 0–9
-        if (user?.role === undefined || user?.role < 0 || user?.role > 9) {
+        if (user?.role < 0 || user?.role > 9) {
           router.push('/unauthorized');
           return;
         }

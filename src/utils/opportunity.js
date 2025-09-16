@@ -219,21 +219,43 @@ export const getWorkTypeText = (workTypeId, workTypes) => {
   return workType ? workType.label : 'Unknown Work Type';
 };
 
-export const getStipendText = ({ minAmount, maxAmount, stipendAmount, totalAmount, currency, paymentType }) => {
+export const getStipendText = ({ 
+  minAmount, 
+  maxAmount, 
+  stipendAmount, 
+  totalAmount, 
+  currency, 
+  paymentType 
+}) => {
   const currencySymbol = currency?.toLowerCase() === "inr" ? "₹" : currency || "₹";
 
   if (paymentType === 0) {
     // Job: Display salary range
     if (!minAmount && !maxAmount) return "Unpaid";
-    return `${currencySymbol}${minAmount.toLocaleString('en-IN')} - ${currencySymbol}${maxAmount.toLocaleString('en-IN')} (monthly)`;
+
+    if (minAmount && maxAmount && minAmount === maxAmount) {
+      // Same salary → show single amount
+      return `${currencySymbol}${minAmount.toLocaleString('en-IN')} (monthly)`;
+    }
+
+    if (minAmount && maxAmount) {
+      return `${currencySymbol}${minAmount.toLocaleString('en-IN')} - ${currencySymbol}${maxAmount.toLocaleString('en-IN')} (monthly)`;
+    }
+
+    // If only one amount is given
+    if (minAmount) return `${currencySymbol}${minAmount.toLocaleString('en-IN')} (monthly)`;
+    if (maxAmount) return `${currencySymbol}${maxAmount.toLocaleString('en-IN')} (monthly)`;
+
   } else if (paymentType === 1) {
     // Internship: Display total stipend
     if (!stipendAmount || stipendAmount <= 0) return "Unpaid";
     const displayAmount = totalAmount || stipendAmount;
     return `${currencySymbol}${displayAmount.toLocaleString('en-IN')} (after completion)`;
   }
+
   return "Unpaid";
 };
+  
 
 export const getBenefitsText = (benefitNumbers, benefits) => {
   if (!benefitNumbers || benefitNumbers.length === 0) return "None";

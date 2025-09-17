@@ -1,8 +1,10 @@
+// app/opportunities/[slug]/page.jsx
 import { authService } from "@/services/authService";
 import { makeStore } from "@/store";
 import { Providers } from "../../providers";
 import OpportunityDetailContent from "@/components/csr/OpportunityDetailContent";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User, Phone, Lock, MapPin } from "lucide-react";
+import axios from "axios";
 
 // Server Component (Root)
 export default async function PublicOpportunityDetail({ params }) {
@@ -13,24 +15,25 @@ export default async function PublicOpportunityDetail({ params }) {
   let isAuthenticated = false;
   let hasProfile = false;
   let appliedOpportunities = [];
+  let cities = [];
 
-  // Fetch auth data
+  // Check auth status
   // try {
   //   const { cookies } = await import("next/headers");
   //   const token = cookies().get("token")?.value;
   //   if (token) {
-  //     const response = await authService.getMe();
+  //     // const response = await authService.getMe();
   //     if (response.success) {
   //       store.dispatch({
   //         type: "auth/setCredentials",
   //         payload: { user: response.data.user, token },
   //       });
   //       isAuthenticated = true;
-  //       hasProfile = !!response.data.user?.candidateProfile?.mobileNumber;
+  //       hasProfile = !!response.data.user.profile;
   //     }
   //   }
   // } catch (error) {
-  //   console.error("Failed to fetch user:", error);
+  //   console.error("Failed to check auth:", error);
   // }
 
   // Fetch opportunity
@@ -68,6 +71,7 @@ export default async function PublicOpportunityDetail({ params }) {
   // Fetch applied opportunities if authenticated
   if (isAuthenticated && hasProfile) {
     try {
+      const token = store.getState().auth.token; // Get token from Redux state
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -82,6 +86,16 @@ export default async function PublicOpportunityDetail({ params }) {
     }
   }
 
+  // Fetch cities for registration form
+  try {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/cities`, {
+      cache: "no-store",
+    });
+    cities = response.data.data;
+  } catch (error) {
+    console.error("Error fetching cities:", error);
+  }
+
   initialReduxState = store.getState();
 
   return (
@@ -91,6 +105,7 @@ export default async function PublicOpportunityDetail({ params }) {
         initialAppliedOpportunities={appliedOpportunities}
         isAuthenticated={isAuthenticated}
         hasProfile={hasProfile}
+        cities={cities}
       />
     </Providers>
   );

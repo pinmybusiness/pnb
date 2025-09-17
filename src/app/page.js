@@ -13,10 +13,10 @@ export default function Home() {
     {/* <Header activeLink="/" /> */}
     <HeroSection />          {/* Grab attention */}
     <QuickStats />
+    <FeaturedJobs />         {/* Actual jobs */}
     <PopularJobRoles />      {/* Show opportunities */}
     <WhyChooseUs />          {/* Build trust */}
     {/* <HowItWorks />            */}
-    <FeaturedJobs />         {/* Actual jobs */}
     <Testimonials />         {/* Social proof */}
     <CTASection />           {/* Final call-to-action */}
   </main>

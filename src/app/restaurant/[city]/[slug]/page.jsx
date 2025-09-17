@@ -98,7 +98,7 @@ export default async function BranchInfoPage({ params }) {
         )}
 
         <h1 className="mt-4 text-3xl font-bold">{branch.parentRestaurant?.name}</h1>
-        <p className="text-sm sm:text-base text-[#696d7d] flex items-center justify-center gap-2 mt-2">
+        <p className="text-sm sm:text-base text-[#696d7d] flex items-center justify-center gap-2 mt-3">
           <MapPin className="h-5 w-5 text-primary" />
           {formattedAddress}
         </p>

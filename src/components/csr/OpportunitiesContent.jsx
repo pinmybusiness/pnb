@@ -1,36 +1,35 @@
-// Client Component
+// src/components/csr/OpportunitiesContent.jsx
 "use client";
+
 import { useState, useEffect } from "react";
-import { Inter } from "next/font/google";
 import { useRouter } from "next/navigation";
 import {
-  Search, Filter, MapPin, Calendar, Clock, DollarSign,
-  BookOpen, X, ChevronDown, Building, Award, Users,
-  CheckCircle, ExternalLink, Briefcase, FileText
+  Search,
+  Award,
+  Briefcase,
+  ChevronDown,
 } from "lucide-react";
-import Link from "next/link";
 import { OpportunityCard } from "@/components/opportunity/OpportunityCard";
-import ApplicationModal from "@/components/opportunity/ApplicationModal";
 import { useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
-
-const inter = Inter({ subsets: ["latin"] });
+import FilterSidebar from "../opportunity/FilterSidebar";
 
 export default function OpportunitiesContent({
   initialOpportunities,
   initialAppliedOpportunities,
   isAuthenticated: initialIsAuthenticated,
-  // hasProfile: initialHasProfile,
+  pageTitle,
+  initialFilters,
+  currentPage = 1,
+  totalPages = 1,
+  basePath = "/jobs",
 }) {
-  const { user, token } = useSelector((state) => state.auth);
+  const { token } = useSelector((state) => state.auth);
   const [opportunities, setOpportunities] = useState(initialOpportunities || []);
   const [filteredOpportunities, setFilteredOpportunities] = useState(initialOpportunities || []);
   const [loading, setLoading] = useState(false);
   const [appliedOpportunities, setAppliedOpportunities] = useState(new Set(initialAppliedOpportunities || []));
   const [appliedLoading, setAppliedLoading] = useState(false);
-  const [showApplicationModal, setShowApplicationModal] = useState(false);
-  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
-  const [coverLetter, setCoverLetter] = useState("");
   const [filters, setFilters] = useState({
     category: "",
     opportunityType: "",
@@ -41,24 +40,14 @@ export default function OpportunitiesContent({
     longitude: "",
     latitude: "",
     maxDistance: "5000",
+    baseSearch: "", // From slug (city)
+    baseWorkTypeSlug: "", // From slug (role)
+    ...initialFilters,
   });
   const [showFilters, setShowFilters] = useState(false);
   const [useGeolocation, setUseGeolocation] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated);
-  // const [hasProfile, setHasProfile] = useState(initialHasProfile);
   const router = useRouter();
-
-  // Sync authentication state with Redux after hydration
-  useEffect(() => {
-    if (token) {
-      setIsAuthenticated(true);
-      // setHasProfile(!!user?.candidateProfile?.mobileNumber);
-    } else {
-      setIsAuthenticated(false);
-      // setHasProfile(false);
-    }
-    console.log("Redux auth state:", { user, token });
-  }, [user, token]);
 
   useEffect(() => {
     if (isAuthenticated && !initialAppliedOpportunities.length) {
@@ -70,42 +59,33 @@ export default function OpportunitiesContent({
     if (!loading) {
       fetchOpportunities();
     }
-  }, [filters.latitude, filters.longitude, filters.maxDistance, filters.category, filters.opportunityType, filters.durationUnit, filters.minStipend, filters.search]);
+  }, [
+    filters.latitude,
+    filters.longitude,
+    filters.maxDistance,
+    filters.category,
+    filters.opportunityType,
+    filters.durationUnit,
+    filters.minStipend,
+    filters.search,
+    filters.location,
+    currentPage,
+    filters.baseSearch,
+    filters.baseWorkTypeSlug, // Ensure slug-based filters trigger fetch
+  ]);
 
   useEffect(() => {
     filterOpportunities();
-  }, [filters, opportunities]);
-
-  const getUserLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setFilters((prev) => ({
-            ...prev,
-            latitude: position.coords.latitude.toString(),
-            longitude: position.coords.longitude.toString(),
-          }));
-          setUseGeolocation(true);
-          toast.success("Location retrieved successfully!");
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-          toast.error("Unable to retrieve location. Please enter manually.");
-        }
-      );
-    } else {
-      toast.error("Geolocation is not supported by your browser.");
-    }
-  };
+  }, [opportunities]);
 
   const fetchOpportunities = async () => {
     try {
       setLoading(true);
-      const { latitude, longitude, maxDistance, category, opportunityType, durationUnit, minStipend, search } = filters;
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=20`;
+      const { latitude, longitude, maxDistance, category, opportunityType, durationUnit, minStipend, search, location, baseSearch, baseWorkTypeSlug } = filters;
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=20&page=${currentPage}`;
 
       if (useGeolocation && latitude && longitude) {
-        url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public/nearby?limit=20&latitude=${latitude}&longitude=${longitude}&maxDistance=${maxDistance}`;
+        url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public/nearby?limit=20&page=${currentPage}&latitude=${latitude}&longitude=${longitude}&maxDistance=${maxDistance}`;
       } else {
         const params = new URLSearchParams();
         if (category) params.append("category", category);
@@ -113,6 +93,9 @@ export default function OpportunitiesContent({
         if (durationUnit) params.append("durationUnit", durationUnit);
         if (minStipend) params.append("minStipend", minStipend);
         if (search) params.append("search", search);
+        if (location) params.append("search", location);
+        if (baseSearch && !location && !search) params.append("search", baseSearch); // Prioritize slug-based city
+        if (baseWorkTypeSlug) params.append("workTypeSlug", baseWorkTypeSlug); // Always include slug-based role
         if (params.toString()) url += `&${params.toString()}`;
       }
 
@@ -138,7 +121,6 @@ export default function OpportunitiesContent({
       setAppliedLoading(true);
       if (!token) {
         setIsAuthenticated(false);
-        // setHasProfile(false);
         return;
       }
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
@@ -147,7 +129,6 @@ export default function OpportunitiesContent({
       if (response.status === 401) {
         localStorage.removeItem("token");
         setIsAuthenticated(false);
-        // setHasProfile(false);
         toast.error("Session expired. Please login again.");
         router.push("/login");
         return;
@@ -168,28 +149,31 @@ export default function OpportunitiesContent({
   const filterOpportunities = () => {
     let results = [...opportunities];
 
-    if (!useGeolocation && filters.location) {
+    if (!useGeolocation && filters.location && !filters.baseSearch) {
       results = results.filter(
         (opportunity) =>
           opportunity.branch?.address?.toLowerCase().includes(filters.location.toLowerCase()) ||
-          opportunity.branch?.location?.city?.toLowerCase().includes(filters.location.toLowerCase()) ||
+          opportunity.branch?.location?.city?.name.toLowerCase().includes(filters.location.toLowerCase()) ||
           opportunity.branch?.location?.state?.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
 
     if (filters.category) {
-      results = results.filter((opportunity) => opportunity.category === filters.category);
+      results = results.filter((opportunity) => opportunity.categorySlug === filters.category);
     }
     if (filters.opportunityType) {
-      results = results.filter((opportunity) => opportunity.opportunityType === filters.opportunityType);
+      results = results.filter((opportunity) => opportunity.opportunityType === parseInt(filters.opportunityType));
     }
     if (filters.durationUnit) {
-      results = results.filter((opportunity) => opportunity.durationUnit === filters.durationUnit);
+      results = results.filter((opportunity) => opportunity.durationUnit === parseInt(filters.durationUnit));
     }
     if (filters.minStipend) {
-      results = results.filter((opportunity) => opportunity.stipend?.amount >= parseInt(filters.minStipend));
+      results = results.filter((opportunity) => 
+        (opportunity.opportunityType === 1 && opportunity.compensation?.stipendAmount >= parseInt(filters.minStipend)) ||
+        (opportunity.opportunityType === 0 && opportunity.compensation?.minAmount >= parseInt(filters.minStipend))
+      );
     }
-    if (filters.search) {
+    if (filters.search && !filters.baseWorkTypeSlug) {
       const searchTerm = filters.search.toLowerCase();
       results = results.filter(
         (opportunity) =>
@@ -210,94 +194,27 @@ export default function OpportunitiesContent({
     setFilters({
       category: "",
       opportunityType: "",
-      location: "",
+      location: filters.baseSearch || "", // Preserve slug-based city
       durationUnit: "",
       minStipend: "",
-      search: "",
+      search: filters.baseWorkTypeSlug || "", // Preserve slug-based role
       longitude: "",
       latitude: "",
       maxDistance: "5000",
+      baseSearch: filters.baseSearch || "",
+      baseWorkTypeSlug: filters.baseWorkTypeSlug || "",
     });
     setUseGeolocation(false);
   };
 
-  const handleApply = (opportunity) => {
-    if (!isAuthenticated && !token) {
-      toast.error("Please login to apply for opportunities");
-      router.push("/candidate/register");
-      return;
-    }
-
-    if (user?.role !== 10) {
-      toast.error("Only candidates can apply for opportunities");
-      return;
-    }
-
-    setSelectedOpportunity(opportunity);
-    setCoverLetter("");
-    setShowApplicationModal(true);
-  };
-
-  const submitApplication = async () => {
-    try {
-      if (!token) {
-        toast.error("Please login to apply");
-        router.push("/candidate/register");
-        return;
-      }
-
-      if (!selectedOpportunity?._id) {
-        toast.error("Invalid opportunity selected");
-        return;
-      }
-
-      const applicationData = {
-        opportunityId: selectedOpportunity._id,
-        coverLetter: coverLetter || "",
-      };
-
-      console.log("Submitting application with data:", applicationData);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(applicationData),
-      });
-
-      if (response.status === 401) {
-        localStorage.removeItem("token");
-        setIsAuthenticated(false);
-        // setHasProfile(false);
-        toast.error("Session expired. Please login again.");
-        router.push("/login");
-        return;
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        setAppliedOpportunities((prev) => new Set([...prev, selectedOpportunity._id]));
-        setShowApplicationModal(false);
-        toast.success(`Application submitted for ${selectedOpportunity.title}!`);
-      } else {
-        toast.error(`Error: ${data.message}`);
-      }
-    } catch (error) {
-      console.error("Application error:", error);
-      toast.error("Error submitting application. Please try again.");
-    }
-  };
-
   return (
-    <div className={`min-h-screen bg-gray-50 ${inter.className}`}>
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="relative bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 md:p-8 mb-8 md:mb-12 shadow-sm">
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 leading-snug md:leading-tight">
-              Restaurant & Hospitality <span className="text-orange-600">Opportunities</span>
+              {pageTitle}
             </h1>
             <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 px-2">
               Explore opportunities across{" "}
@@ -329,283 +246,19 @@ export default function OpportunitiesContent({
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar - Desktop */}
-          <div className="hidden lg:block lg:w-80">
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 sticky top-4">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
-                <button
-                  onClick={clearFilters}
-                  className="text-sm text-amber-600 hover:text-amber-700 font-medium"
-                >
-                  Clear all
-                </button>
-              </div>
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Find Nearby Opportunities</label>
-                  <button
-                    onClick={getUserLocation}
-                    className="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm mb-3"
-                  >
-                    <MapPin className="h-5 w-5 mr-2" />
-                    Use My Location
-                  </button>
-                  {useGeolocation && (
-                    <div className="relative rounded-lg shadow-sm">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Max Distance (meters)</label>
-                      <input
-                        type="number"
-                        value={filters.maxDistance}
-                        onChange={(e) => handleFilterChange("maxDistance", e.target.value)}
-                        className="block w-full pl-3 pr-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 transition-colors duration-200"
-                        placeholder="Max distance (e.g., 5000)"
-                      />
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                  <div className="relative rounded-lg shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      value={filters.location}
-                      onChange={(e) => handleFilterChange("location", e.target.value)}
-                      disabled={useGeolocation}
-                      className={`block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 transition-colors duration-200 ${useGeolocation ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      placeholder="City or area"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <div className="relative">
-                    <select
-                      value={filters.category}
-                      onChange={(e) => handleFilterChange("category", e.target.value)}
-                      className="block w-full pl-3 pr-10 py-3 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 appearance-none transition-colors duration-200"
-                    >
-                      <option value="">All Categories</option>
-                      <option value="Kitchen Helper">Kitchen Helper</option>
-                      <option value="Service Staff">Service Staff</option>
-                      <option value="Management Trainee">Management Trainee</option>
-                      <option value="Marketing Assistant">Marketing Assistant</option>
-                      <option value="Events Coordinator">Events Coordinator</option>
-                      <option value="Delivery Helper">Delivery Helper</option>
-                      <option value="Other">Other</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Opportunity Type</label>
-                  <div className="relative">
-                    <select
-                      value={filters.opportunityType}
-                      onChange={(e) => handleFilterChange("opportunityType", e.target.value)}
-                      className="block w-full pl-3 pr-10 py-3 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 appearance-none transition-colors duration-200"
-                    >
-                      <option value="">All Types</option>
-                      <option value="internship">Internship</option>
-                      <option value="job">Job</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
-                  <div className="relative">
-                    <select
-                      value={filters.durationUnit}
-                      onChange={(e) => handleFilterChange("durationUnit", e.target.value)}
-                      className="block w-full pl-3 pr-10 py-3 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 appearance-none transition-colors duration-200"
-                    >
-                      <option value="">Any Duration</option>
-                      <option value="days">Days</option>
-                      <option value="weeks">Weeks</option>
-                      <option value="months">Months</option>
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                      <ChevronDown className="h-4 w-4" />
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Stipend</label>
-                  <div className="relative rounded-lg shadow-sm">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <DollarSign className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <input
-                      type="number"
-                      value={filters.minStipend}
-                      onChange={(e) => handleFilterChange("minStipend", e.target.value)}
-                      className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 transition-colors duration-200"
-                      placeholder="Minimum amount"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Mobile Filter Button and Modal */}
-          <div className="lg:hidden mb-4">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center justify-center w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm"
-            >
-              <Filter className="h-5 w-5 mr-2" />
-              Filters
-              {Object.values(filters).some((value) => value !== "") && (
-                <span className="ml-2 bg-amber-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {Object.values(filters).filter((value) => value !== "").length}
-                </span>
-              )}
-            </button>
-            {showFilters && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-end">
-                <div className="bg-white rounded-t-2xl p-6 w-full max-h-[80vh] overflow-y-auto">
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
-                    <button onClick={() => setShowFilters(false)}>
-                      <X className="h-5 w-5 text-gray-500" />
-                    </button>
-                  </div>
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Find Nearby Opportunities</label>
-                      <button
-                        onClick={getUserLocation}
-                        className="w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 font-medium shadow-sm mb-3"
-                      >
-                        <MapPin className="h-5 w-5 mr-2" />
-                        Use My Location
-                      </button>
-                      {useGeolocation && (
-                        <div className="relative rounded-lg shadow-sm">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">Max Distance (meters)</label>
-                          <input
-                            type="number"
-                            value={filters.maxDistance}
-                            onChange={(e) => handleFilterChange("maxDistance", e.target.value)}
-                            className="block w-full pl-3 pr-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 transition-colors duration-200"
-                            placeholder="Max distance (e.g., 5000)"
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
-                      <div className="relative rounded-lg shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <MapPin className="h-4 w-4 text-gray-400" />
-                        </div>
-                        <input
-                          type="text"
-                          value={filters.location}
-                          onChange={(e) => handleFilterChange("location", e.target.value)}
-                          disabled={useGeolocation}
-                          className={`block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 transition-colors duration-200 ${useGeolocation ? 'opacity-50 cursor-not-allowed' : ''}`}
-                          placeholder="City or area"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                      <div className="relative">
-                        <select
-                          value={filters.category}
-                          onChange={(e) => handleFilterChange("category", e.target.value)}
-                          className="block w-full pl-3 pr-10 py-3 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 appearance-none transition-colors duration-200"
-                        >
-                          <option value="">All Categories</option>
-                          <option value="Kitchen Helper">Kitchen Helper</option>
-                          <option value="Service Staff">Service Staff</option>
-                          <option value="Management Trainee">Management Trainee</option>
-                          <option value="Marketing Assistant">Marketing Assistant</option>
-                          <option value="Events Coordinator">Events Coordinator</option>
-                          <option value="Delivery Helper">Delivery Helper</option>
-                          <option value="Other">Other</option>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                          <ChevronDown className="h-4 w-4" />
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Opportunity Type</label>
-                      <div className="relative">
-                        <select
-                          value={filters.opportunityType}
-                          onChange={(e) => handleFilterChange("opportunityType", e.target.value)}
-                          className="block w-full pl-3 pr-10 py-3 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 appearance-none transition-colors duration-200"
-                        >
-                          <option value="">All Types</option>
-                          <option value="internship">Internship</option>
-                          <option value="job">Job</option>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                          <ChevronDown className="h-4 w-4" />
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
-                      <div className="relative">
-                        <select
-                          value={filters.durationUnit}
-                          onChange={(e) => handleFilterChange("durationUnit", e.target.value)}
-                          className="block w-full pl-3 pr-10 py-3 text-base border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 appearance-none transition-colors duration-200"
-                        >
-                          <option value="">Any Duration</option>
-                          <option value="days">Days</option>
-                          <option value="weeks">Weeks</option>
-                          <option value="months">Months</option>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
-                          <ChevronDown className="h-4 w-4" />
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Stipend</label>
-                      <div className="relative rounded-lg shadow-sm">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <DollarSign className="h-4 w-4 text-gray-400" />
-                        </div>
-                        <input
-                          type="number"
-                          value={filters.minStipend}
-                          onChange={(e) => handleFilterChange("minStipend", e.target.value)}
-                          className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 transition-colors duration-200"
-                          placeholder="Minimum amount"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowFilters(false)}
-                    className="mt-6 w-full py-2 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700"
-                  >
-                    Apply Filters
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          {/* Filter Sidebar */}
+          <FilterSidebar
+            filters={filters}
+            handleFilterChange={handleFilterChange}
+            clearFilters={clearFilters}
+            showFilters={showFilters}
+            setShowFilters={setShowFilters}
+          />
 
           {/* Opportunities List */}
           <div className="w-full lg:flex-1">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
+              <h2 className="!text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
                 {filteredOpportunities.length} Opportunities Available
               </h2>
               <div className="text-sm text-gray-500 flex items-center">
@@ -640,19 +293,33 @@ export default function OpportunitiesContent({
                 ))}
               </div>
             ) : filteredOpportunities.length > 0 ? (
-              <div className="grid grid-cols-1 gap-5">
-                {filteredOpportunities.map((opportunity) => (
-                  <OpportunityCard
-                    key={opportunity._id}
-                    opportunity={opportunity}
-                    appliedOpportunities={appliedOpportunities}
-                    isAuthenticated={isAuthenticated || !!token}
-                    handleApply={handleApply}
-                    userLat={filters.latitude}
-                    userLon={filters.longitude}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {filteredOpportunities.map((opportunity) => (
+                    <OpportunityCard
+                      key={opportunity._id}
+                      opportunity={opportunity}
+                      appliedOpportunities={appliedOpportunities}
+                      isAuthenticated={isAuthenticated || !!token}
+                      userLat={filters.latitude}
+                      userLon={filters.longitude}
+                    />
+                  ))}
+                </div>
+                {totalPages > 1 && (
+                  <div className="mt-6 flex justify-center gap-2">
+                    {Array.from({ length: totalPages }, (_, i) => (
+                      <a
+                        key={i + 1}
+                        href={`${basePath}?page=${i + 1}`}
+                        className={`px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                      >
+                        {i + 1}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
               <div className="bg-white rounded-xl p-8 text-center border border-gray-100">
                 <div className="mx-auto h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
@@ -671,16 +338,6 @@ export default function OpportunitiesContent({
           </div>
         </div>
       </div>
-
-      {/* Application Modal */}
-      <ApplicationModal
-        isOpen={showApplicationModal}
-        onClose={() => setShowApplicationModal(false)}
-        opportunity={selectedOpportunity}
-        coverLetter={coverLetter}
-        setCoverLetter={setCoverLetter}
-        onSubmit={submitApplication}
-      />
     </div>
   );
 }

@@ -1,40 +1,47 @@
-'use client';
-
-import { MapPin, Clock, Bookmark, Briefcase } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { MapPin, Clock, Bookmark, Users } from 'lucide-react';
 import CtaButton from '../CtaButton';
-import { getOpportunityTypeText, getInternshipTypeText, getDurationText, getStipendText } from '@/utils/opportunity';
+import { getOpportunityTypeText, getInternshipTypeText, getStipendText } from '@/utils/opportunity';
 import { calculatePostedTime } from '@/utils/dateFormat';
 
-export default function JobCard({ opportunity,  cardVariants }) {
+export default function JobCard({ opportunity }) {
   return (
-    <motion.div
+    <div
       key={opportunity._id}
-      className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 p-8 border border-gray-200 cursor-pointer"
-    //   variants={cardVariants}
-      whileHover={{ scale: 1.03, transition: { type: 'spring', stiffness: 400, damping: 10 } }}
-      whileTap={{ scale: 0.98 }}
+      className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 p-8 border border-gray-200"
     >
       {/* Header */}
-      <div className="flex justify-between items-start mb-6">
+        <div className="flex justify-between items-start mb-6">
         <div className="space-y-1">
-          <h3 className="text-2xl font-bold text-gray-900 line-clamp-1">
-            {opportunity.title || 'Untitled Opportunity'}
+          <h3 className="!text-xl font-bold text-gray-900 line-clamp-1">
+            {opportunity.title || "Untitled Opportunity"}
           </h3>
-          <p className="text-sm text-gray-600">
-            {opportunity?.branch?.restaurantName || 'Unknown Restaurant'}
-          </p>
+          {opportunity.branch?.parentRestaurant && (
+            <p className="text-sm text-gray-600">
+              {opportunity.branch.parentRestaurant.name || "Unknown Restaurant"}
+            </p>
+          )}
         </div>
-        <button
-          className="text-gray-300 hover:text-orange-600 transition-colors"
-          aria-label="Bookmark opportunity"
-        >
-          <Bookmark className="h-6 w-6" />
-        </button>
+
+       {/* Applied count */}
+        {opportunity.applications?.length > 0 && (
+          <div className="w-18 text-center ">
+            <span className="flex flex-wrap gap-1 p-1 items-center text-[10px] sm:text-xs text-gray-500 bg-gray-50 px-2 rounded-full">
+              {/* <Users className="h-3 w-3" /> */}
+              <span>{opportunity.applications.length} applied</span>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Details */}
       <div className="space-y-3 mb-6">
+        <div className="flex items-center gap-3 text-sm text-gray-500">
+          <span className="p-2 rounded-full bg-orange-100">
+            <Clock className="h-4 w-4 text-orange-600" />
+          </span>
+          <span>{getStipendText(opportunity.compensation) || 'Not disclosed'}</span>
+        </div>
+
         <div className="flex items-center gap-3 text-sm text-gray-500">
           <span className="p-2 rounded-full bg-orange-100">
             <MapPin className="h-4 w-4 text-orange-600" />
@@ -45,17 +52,18 @@ export default function JobCard({ opportunity,  cardVariants }) {
               : 'Unknown Location'}
           </span>
         </div>
+
         <div className="flex items-center gap-3 text-sm text-gray-500">
           <span className="p-2 rounded-full bg-orange-100">
-            <Briefcase className="h-4 w-4 text-orange-600" />
+            <Users className="h-4 w-4 text-orange-600" />
           </span>
-          <span>{getDurationText(opportunity) || 'Not specified'}</span>
-        </div>
-        <div className="flex items-center gap-3 text-sm text-gray-500">
-          <span className="p-2 rounded-full bg-orange-100">
-            <Clock className="h-4 w-4 text-orange-600" />
+          <span>
+            {opportunity?.numberOfPeople
+              ? `${opportunity.numberOfPeople} ${
+                  opportunity.numberOfPeople === 1 ? 'Position' : 'Positions'
+                }`
+              : 'Not specified'}
           </span>
-          <span>{getStipendText(opportunity.compensation) || 'Not disclosed'}</span>
         </div>
       </div>
 
@@ -80,12 +88,12 @@ export default function JobCard({ opportunity,  cardVariants }) {
         </span>
         <CtaButton
           href={`/job/${opportunity.slug}`}
-          text="View Details"
+          text="Apply Now"
           size="sm"
           showIcon={true}
           className="rounded-full"
         />
       </div>
-    </motion.div>
+    </div>
   );
 }

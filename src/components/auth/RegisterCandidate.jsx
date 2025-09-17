@@ -8,7 +8,7 @@ import { toast } from "react-hot-toast";
 import Select from "react-select";
 import { registerCandidate } from "@/store/authThunks";
 
-export default function RegisterFormContent({
+export default function RegisterCandidate({
   initialFormData,
   formFields,
   title = "Register",
@@ -77,7 +77,8 @@ export default function RegisterFormContent({
         })
       ).unwrap();
       toast.success("Registration successful!");
-      router.back();
+    //   router.refresh();
+    window.location.reload();
     } catch (error) {
       console.error("Candidate registration error:", error);
       toast.error(error.message || "Candidate registration failed. Please try again.");
@@ -85,8 +86,8 @@ export default function RegisterFormContent({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6">
+    <div className="flex items-center justify-center p-4">
+      <div className="w-full max-w-md rounded-2xl  p-6">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">{title}</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">

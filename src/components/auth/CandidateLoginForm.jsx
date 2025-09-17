@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { Lock, Phone, Eye, EyeOff } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "@/store/authThunks";
 import { toast } from "react-hot-toast";
@@ -15,6 +15,7 @@ export default function CandidateLoginForm({ onSuccess }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
+   const pathname = usePathname(); // 👈 current page
   const dispatch = useDispatch();
   const { user, token, role } = useSelector((state) => state.auth);
 
@@ -31,8 +32,8 @@ export default function CandidateLoginForm({ onSuccess }) {
 
     try {
       await dispatch(loginUser({ mobile, password, rememberMe })).unwrap();
+      // router.push(pathname);
       toast.success("Login successful!");
-      router.push("/jobs");
       if (onSuccess) {
         onSuccess();
       }

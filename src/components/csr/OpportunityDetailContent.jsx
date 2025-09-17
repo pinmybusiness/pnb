@@ -345,13 +345,21 @@ export default function OpportunityDetailContent({
                   </a>
                 </>
               ) : (
+               <>
+               <p className="w-full text-sm text-gray-600 mb-0">
+                  Please click the call button below to apply directly.
+                </p>
                 <button
                   onClick={handleApply}
                   className="inline-flex items-center px-6 py-2 bg-[#007A0C] text-white rounded-lg font-semibold hover:bg-green-800 transition"
                 >
-                  <Phone className="h-5 w-5 mr-2" /> {opportunity?.branch?.helplineNumber}
+                  <Phone className="h-5 w-5 mr-2" /> 
+            {opportunity?.branch?.helplineNumber
+          ? opportunity?.branch?.helplineNumber.slice(0, -3) + 'XXX'
+          : ''}
                   {/* Apply Now */}
                 </button>
+               </>
               )}
             </div>
           </div>

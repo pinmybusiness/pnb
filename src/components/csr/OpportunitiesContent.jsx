@@ -1,14 +1,8 @@
-// src/components/csr/OpportunitiesContent.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Search,
-  Award,
-  Briefcase,
-  ChevronDown,
-} from "lucide-react";
+import { Search, Award, Briefcase, ChevronDown } from "lucide-react";
 import { OpportunityCard } from "@/components/opportunity/OpportunityCard";
 import { useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
@@ -31,21 +25,15 @@ export default function OpportunitiesContent({
   const [appliedOpportunities, setAppliedOpportunities] = useState(new Set(initialAppliedOpportunities || []));
   const [appliedLoading, setAppliedLoading] = useState(false);
   const [filters, setFilters] = useState({
-    category: "",
     opportunityType: "",
     location: "",
-    durationUnit: "",
     minStipend: "",
     search: "",
-    longitude: "",
-    latitude: "",
-    maxDistance: "5000",
     baseSearch: "", // From slug (city)
     baseWorkTypeSlug: "", // From slug (role)
     ...initialFilters,
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [useGeolocation, setUseGeolocation] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated);
   const router = useRouter();
 
@@ -60,12 +48,7 @@ export default function OpportunitiesContent({
       fetchOpportunities();
     }
   }, [
-    filters.latitude,
-    filters.longitude,
-    filters.maxDistance,
-    filters.category,
     filters.opportunityType,
-    filters.durationUnit,
     filters.minStipend,
     filters.search,
     filters.location,
@@ -78,43 +61,50 @@ export default function OpportunitiesContent({
     filterOpportunities();
   }, [opportunities]);
 
-  const fetchOpportunities = async () => {
-    try {
-      setLoading(true);
-      const { latitude, longitude, maxDistance, category, opportunityType, durationUnit, minStipend, search, location, baseSearch, baseWorkTypeSlug } = filters;
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=20&page=${currentPage}`;
+// src/components/csr/OpportunitiesContent.jsx (only fetchOpportunities function updated; rest remains same)
+const fetchOpportunities = async () => {
+  try {
+    setLoading(true);
+    const { opportunityType, minStipend, search, location, baseSearch, baseWorkTypeSlug } = filters;
+    let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=20&page=${currentPage}`;
 
-      if (useGeolocation && latitude && longitude) {
-        url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public/nearby?limit=20&page=${currentPage}&latitude=${latitude}&longitude=${longitude}&maxDistance=${maxDistance}`;
-      } else {
-        const params = new URLSearchParams();
-        if (category) params.append("category", category);
-        if (opportunityType) params.append("opportunityType", opportunityType);
-        if (durationUnit) params.append("durationUnit", durationUnit);
-        if (minStipend) params.append("minStipend", minStipend);
-        if (search) params.append("search", search);
-        if (location) params.append("search", location);
-        if (baseSearch && !location && !search) params.append("search", baseSearch); // Prioritize slug-based city
-        if (baseWorkTypeSlug) params.append("workTypeSlug", baseWorkTypeSlug); // Always include slug-based role
-        if (params.toString()) url += `&${params.toString()}`;
-      }
+    const params = new URLSearchParams();
+    if (opportunityType) params.append("opportunityType", opportunityType);
+    if (minStipend) params.append("minStipend", minStipend);
 
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.success) {
-        setOpportunities(data.data);
-        setFilteredOpportunities(data.data);
-      } else {
-        console.error("Failed to fetch opportunities:", data.message);
-        toast.error(data.message || "Failed to fetch opportunities");
-      }
-    } catch (error) {
-      console.error("Error fetching opportunities:", error);
-      toast.error("Error fetching opportunities. Please try again.");
-    } finally {
-      setLoading(false);
+    // Combine search sources to avoid duplicates
+    let effectiveSearch = '';
+    if (baseSearch) effectiveSearch += baseSearch;
+    if (location && location !== baseSearch) {
+      effectiveSearch += (effectiveSearch ? ' ' : '') + location;
     }
-  };
+    if (search && search !== baseWorkTypeSlug) {
+      effectiveSearch += (effectiveSearch ? ' ' : '') + search;
+    }
+    if (effectiveSearch) {
+      params.append("search", effectiveSearch.trim());
+    }
+
+    if (baseWorkTypeSlug) params.append("workTypeSlug", baseWorkTypeSlug);
+
+    if (params.toString()) url += `&${params.toString()}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.success) {
+      setOpportunities(data.data);
+      setFilteredOpportunities(data.data);
+    } else {
+      console.error("Failed to fetch opportunities:", data.message);
+      toast.error(data.message || "Failed to fetch opportunities");
+    }
+  } catch (error) {
+    console.error("Error fetching opportunities:", error);
+    toast.error("Error fetching opportunities. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const fetchAppliedOpportunities = async () => {
     try {
@@ -149,30 +139,17 @@ export default function OpportunitiesContent({
   const filterOpportunities = () => {
     let results = [...opportunities];
 
-    if (!useGeolocation && filters.location && !filters.baseSearch) {
-      results = results.filter(
-        (opportunity) =>
-          opportunity.branch?.address?.toLowerCase().includes(filters.location.toLowerCase()) ||
-          opportunity.branch?.location?.city?.name.toLowerCase().includes(filters.location.toLowerCase()) ||
-          opportunity.branch?.location?.state?.toLowerCase().includes(filters.location.toLowerCase())
-      );
-    }
-
-    if (filters.category) {
-      results = results.filter((opportunity) => opportunity.categorySlug === filters.category);
-    }
     if (filters.opportunityType) {
       results = results.filter((opportunity) => opportunity.opportunityType === parseInt(filters.opportunityType));
     }
-    if (filters.durationUnit) {
-      results = results.filter((opportunity) => opportunity.durationUnit === parseInt(filters.durationUnit));
-    }
+
     if (filters.minStipend) {
-      results = results.filter((opportunity) => 
+      results = results.filter((opportunity) =>
         (opportunity.opportunityType === 1 && opportunity.compensation?.stipendAmount >= parseInt(filters.minStipend)) ||
         (opportunity.opportunityType === 0 && opportunity.compensation?.minAmount >= parseInt(filters.minStipend))
       );
     }
+
     if (filters.search && !filters.baseWorkTypeSlug) {
       const searchTerm = filters.search.toLowerCase();
       results = results.filter(
@@ -183,6 +160,17 @@ export default function OpportunitiesContent({
           opportunity.tags?.some((tag) => tag.toLowerCase().includes(searchTerm))
       );
     }
+
+    if (filters.location && !filters.baseSearch) {
+      const locationTerm = filters.location.toLowerCase();
+      results = results.filter(
+        (opportunity) =>
+          opportunity.branch?.address?.toLowerCase().includes(locationTerm) ||
+          opportunity.branch?.location?.city?.name.toLowerCase().includes(locationTerm) ||
+          opportunity.branch?.location?.state?.toLowerCase().includes(locationTerm)
+      );
+    }
+
     setFilteredOpportunities(results);
   };
 
@@ -192,19 +180,13 @@ export default function OpportunitiesContent({
 
   const clearFilters = () => {
     setFilters({
-      category: "",
       opportunityType: "",
-      location: filters.baseSearch || "", // Preserve slug-based city
-      durationUnit: "",
+      location: filters.baseSearch || "",
       minStipend: "",
-      search: filters.baseWorkTypeSlug || "", // Preserve slug-based role
-      longitude: "",
-      latitude: "",
-      maxDistance: "5000",
+      search: filters.baseWorkTypeSlug || "",
       baseSearch: filters.baseSearch || "",
       baseWorkTypeSlug: filters.baseWorkTypeSlug || "",
     });
-    setUseGeolocation(false);
   };
 
   return (
@@ -301,8 +283,6 @@ export default function OpportunitiesContent({
                       opportunity={opportunity}
                       appliedOpportunities={appliedOpportunities}
                       isAuthenticated={isAuthenticated || !!token}
-                      userLat={filters.latitude}
-                      userLon={filters.longitude}
                     />
                   ))}
                 </div>

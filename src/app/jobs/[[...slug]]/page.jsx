@@ -43,9 +43,14 @@ export default async function JobsPage({ params, searchParams }) {
       opportunities = data.data || [];
       // Verify city or role matches
       if (city) {
-        isCity = opportunities.some(
-          (opp) => slugify(opp.branch?.location?.city?.name || '', { lower: true }) === city.name.toLowerCase()
-        );
+        isCity = opportunities.some((opp) => {
+          const cityName = opp.branch?.location?.city?.name;
+          if (!cityName) {
+            console.warn(`Missing city name for opportunity ID: ${opp._id}`, opp);
+            return false;
+          }
+          return slugify(cityName, { lower: true }) === city.toLowerCase();
+        });
         isRole = opportunities.some((opp) => opp.workTypeSlug === city);
       }
       if (role) {
@@ -112,17 +117,12 @@ export default async function JobsPage({ params, searchParams }) {
   // Dynamic title and initial filters
   const title = city && role ? `Jobs in ${city} for ${role}` : city ? (isCity ? `Jobs in ${city}` : `Jobs for ${city}`) : 'Restaurant & Hospitality Opportunities';
   const initialFilters = {
-    category: '',
     opportunityType: '',
     location: isCity ? city : '',
-    durationUnit: '',
     minStipend: '',
     search: role || (isRole ? city : ''),
-    longitude: '',
-    latitude: '',
-    maxDistance: '5000',
-    baseSearch: isCity ? city : '', // Preserve city for API queries
-    baseWorkTypeSlug: role || (isRole ? city : ''), // Preserve role for API queries
+    baseSearch: isCity ? city : '',
+    baseWorkTypeSlug: role || (isRole ? city : ''),
   };
 
   return (

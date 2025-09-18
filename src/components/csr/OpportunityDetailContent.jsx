@@ -317,7 +317,19 @@ export default function OpportunityDetailContent({
               {/* Restaurant Info */}
               <div className="flex items-center text-gray-600">
                 <MapPin className="h-4 w-4 mr-2" />
-                {opportunity.branch?.name}, {opportunity.branch?.location?.city?.name}
+                {opportunity.branch?.name},{"\u00A0"}
+                {opportunity.branch?.location?.city?.name ? (
+                  <Link
+                    href={`/jobs/${opportunity.branch.location.city.name
+                      .toLowerCase()
+                      .replace(/\s+/g, "-")}`}
+                    className="hover:text-primary"
+                  >
+                    {opportunity.branch.location.city.name}
+                  </Link>
+                ) : (
+                  "unknown"
+                )}
               </div>
 
               <div className="flex flex-wrap gap-3">

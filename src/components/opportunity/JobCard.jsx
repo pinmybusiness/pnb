@@ -6,6 +6,7 @@ import {
   getStipendText,
 } from '@/utils/opportunity';
 import { calculatePostedTime } from '@/utils/dateFormat';
+import Link from 'next/link';
 
 export default function JobCard({ opportunity, appliedOpportunities }) {
   // ✅ Default empty Set if undefined/null
@@ -25,7 +26,14 @@ export default function JobCard({ opportunity, appliedOpportunities }) {
           </h3>
           {opportunity.branch?.parentRestaurant && (
             <p className="text-sm text-gray-600">
-              {opportunity.branch.parentRestaurant.name || 'Unknown Restaurant'}
+              <Link
+                href={`/restaurant/${opportunity?.branch?.location?.city?.name
+                  ?.toLowerCase()
+                  ?.replace(/\s+/g, "-")}/${opportunity?.branch?.slug}`}
+                className="hover:text-primary"
+              >
+                {opportunity.branch?.parentRestaurant?.name || "unknown"}
+              </Link>
             </p>
           )}
         </div>
@@ -54,9 +62,16 @@ export default function JobCard({ opportunity, appliedOpportunities }) {
             <MapPin className="h-4 w-4 text-orange-600" />
           </span>
           <span>
-            {opportunity.branch?.location?.city
-              ? `${opportunity.branch.location.city.name || 'Unknown City'}`
-              : 'Unknown Location'}
+            {opportunity.branch?.location?.city ? (
+              <Link
+                href={`/jobs/${opportunity?.branch?.location?.city?.name?.toLowerCase()?.replace(/\s+/g, "-")}`}
+                className="hover:text-primary"
+              >
+                {opportunity.branch.location.city.name || "unknown"}
+              </Link>
+            ) : (
+              "Unknown Location"
+            )}
           </span>
         </div>
 

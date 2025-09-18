@@ -19,7 +19,7 @@ export default function WhyChooseUs() {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-orange-500 rounded-tl-full" style={{ transform: 'translateX(50%) translateY(50%)' }}></div>
 
       <div className="max-w-[1440px] mx-auto px-6 relative z-10">
-        <div className=" rounded-3xl shadow-sm p-8 md:p-16">
+        <div className="p-8 md:p-16">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900">
              Why Students & Restaurants Choose <span className="text-orange-600">FasterQ</span>

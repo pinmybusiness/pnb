@@ -40,7 +40,7 @@ const CandidateApplicationsPage = () => {
         order: sortOrder,
         ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
       };
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/applications/my`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
         headers: { Authorization: `Bearer ${token}` },
         params,
       });

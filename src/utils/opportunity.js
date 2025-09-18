@@ -239,7 +239,7 @@ export const getStipendText = ({
     }
 
     if (minAmount && maxAmount) {
-      return `${currencySymbol}${minAmount.toLocaleString('en-IN')} - ${maxAmount.toLocaleString('en-IN')} /month`;
+      return `${currencySymbol} ${minAmount.toLocaleString('en-IN')} - ${maxAmount.toLocaleString('en-IN')} /month`;
     }
 
     // If only one amount is given

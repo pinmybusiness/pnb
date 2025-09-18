@@ -4,33 +4,7 @@ import { getStipendText, getOpportunityTypeText, getInternshipTypeText } from "@
 import { calculatePostedTime } from "@/utils/dateFormat";
 import CtaButton from "../CtaButton";
 
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Earth's radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
-
-export const OpportunityCard = ({ opportunity, appliedOpportunities, userLat, userLon }) => {
-  let distance = null;
-
-  if (userLat && userLon && opportunity.branch?.location?.coordinates) {
-    const [jobLon, jobLat] = opportunity.branch.location.coordinates;
-    distance = calculateDistance(
-      parseFloat(userLat),
-      parseFloat(userLon),
-      jobLat,
-      jobLon
-    );
-  }
+export const OpportunityCard = ({ opportunity, appliedOpportunities}) => {
 
   const isApplied = appliedOpportunities.has(opportunity._id);
 

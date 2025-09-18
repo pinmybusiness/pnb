@@ -79,13 +79,15 @@ export default function Footer() {
             <h3 className="text-white text-lg font-semibold mb-4 tracking-wide">Follow Us</h3>
             <div className="flex space-x-3">
               {[
-                { Icon: Linkedin, href: "#linkedin" },
-                { Icon: Facebook, href: "#facebook" },
-                { Icon: Instagram, href: "#instagram" },
+                // { Icon: Linkedin, href: "#linkedin" },
+                { Icon: Facebook, href: "https://www.facebook.com/fasterqin" },
+                { Icon: Instagram, href: "https://www.instagram.com/fasterq.in" },
               ].map(({ Icon, href }, index) => (
                 <a
                   key={index}
                   href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-700 hover:bg-orange-600 transition-colors duration-300"
                   aria-label={`Follow us on ${Icon.name}`}
                 >

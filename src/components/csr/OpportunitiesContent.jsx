@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Award, Briefcase, ChevronDown } from "lucide-react";
-import { OpportunityCard } from "@/components/opportunity/OpportunityCard";
 import { useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 import FilterSidebar from "../opportunity/FilterSidebar";
+import JobCard from "../opportunity/JobCard";
+import JobCardSkeleton from "../opportunity/JobCardSkeleton";
 
 export default function OpportunitiesContent({
   initialOpportunities,
@@ -187,6 +188,7 @@ const fetchOpportunities = async () => {
       baseSearch: filters.baseSearch || "",
       baseWorkTypeSlug: filters.baseWorkTypeSlug || "",
     });
+    router.push("/jobs");
   };
 
   return (
@@ -243,46 +245,21 @@ const fetchOpportunities = async () => {
               <h2 className="!text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
                 {filteredOpportunities.length} Opportunities Available
               </h2>
-              <div className="text-sm text-gray-500 flex items-center">
-                <span className="mr-2">Sort by:</span>
-                <div className="relative">
-                  <select
-                    className="pl-3 pr-8 py-1.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 appearance-none"
-                  >
-                    <option>Most Recent</option>
-                    <option>Highest Stipend</option>
-                    <option>Nearest Location</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                    <ChevronDown className="h-4 w-4" />
-                  </div>
-                </div>
-              </div>
             </div>
             {loading || appliedLoading ? (
-              <div className="grid grid-cols-1 gap-5">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="bg-white rounded-xl p-6 animate-pulse border border-gray-100">
-                    <div className="flex space-x-4">
-                      <div className="rounded-lg bg-gray-200 h-14 w-14"></div>
-                      <div className="flex-1 space-y-3">
-                        <div className="h-5 bg-gray-200 rounded w-3/4"></div>
-                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                      </div>
-                    </div>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {[1, 2, 3, 4].map((i) => (
+                 <JobCardSkeleton key={i} />
                 ))}
               </div>
             ) : filteredOpportunities.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {filteredOpportunities.map((opportunity) => (
-                    <OpportunityCard
+                    <JobCard
                       key={opportunity._id}
                       opportunity={opportunity}
                       appliedOpportunities={appliedOpportunities}
-                      isAuthenticated={isAuthenticated || !!token}
                     />
                   ))}
                 </div>

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import JobCard from "@/components/opportunity/JobCard";
+import BranchCTA from "@/components/BranchCTA";
 
 // Slugify function
 const slugify = (str) =>
@@ -156,6 +157,9 @@ export default async function BranchInfoPage({ params }) {
           </p>
         )}
       </div>
+
+            {/* CTA Section for Restaurant Owners */}
+      {/* <BranchCTA /> */}
     </div>
   );
 }

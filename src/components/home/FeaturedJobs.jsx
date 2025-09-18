@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Clock, Bookmark, Briefcase, Home } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getOpportunityTypeText, getInternshipTypeText, getDurationText, getStipendText, getBenefitsText } from '@/utils/opportunity';
 import CtaButton from '../CtaButton';
 import JobCard from '../opportunity/JobCard';
+import JobCardSkeleton from '../opportunity/JobCardSkeleton';
 
 export default function FeaturedJobs() {
   const [opportunities, setOpportunities] = useState([]);
@@ -53,11 +52,6 @@ export default function FeaturedJobs() {
     },
   };
 
-  // const cardVariants = {
-  //   hidden: { opacity: 0, y: 50 },
-  //   show: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-  // };
-
   // Show loading state
   if (loading) {
     return (
@@ -70,23 +64,14 @@ export default function FeaturedJobs() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[1, 2, 3].map((item) => (
-              <div key={item} className="bg-white rounded-3xl shadow-xl p-8 border border-gray-200 animate-pulse">
-                <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
-                <div className="space-y-3 mb-6">
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                  <div className="h-4 bg-gray-200 rounded"></div>
-                </div>
-                <div className="h-8 bg-gray-200 rounded w-full"></div>
-              </div>
+               <JobCardSkeleton key={item} />
             ))}
           </div>
         </div>
       </section>
     );
   }
-
+  
   // Show error state
   if (error) {
     return (

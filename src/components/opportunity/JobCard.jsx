@@ -1,36 +1,43 @@
-import { MapPin, Clock, Bookmark, Users } from 'lucide-react';
+import { MapPin, Clock, Users } from 'lucide-react';
 import CtaButton from '../CtaButton';
-import { getOpportunityTypeText, getInternshipTypeText, getStipendText } from '@/utils/opportunity';
+import {
+  getOpportunityTypeText,
+  getInternshipTypeText,
+  getStipendText,
+} from '@/utils/opportunity';
 import { calculatePostedTime } from '@/utils/dateFormat';
 
-export default function JobCard({ opportunity }) {
+export default function JobCard({ opportunity, appliedOpportunities }) {
+  // ✅ Default empty Set if undefined/null
+  const appliedSet = appliedOpportunities || new Set();
+  const isApplied = appliedSet.has(opportunity._id);
+
   return (
     <div
       key={opportunity._id}
       className="bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 p-8 border border-gray-200"
     >
       {/* Header */}
-        <div className="flex justify-between items-start mb-6">
+      <div className="flex justify-between items-start mb-6">
         <div className="space-y-1">
-          <h3 className="!text-xl font-bold text-gray-900 line-clamp-1">
-            {opportunity.title || "Untitled Opportunity"}
+          <h3 className="line-clamp-1">
+            {opportunity.title || 'Untitled Opportunity'}
           </h3>
           {opportunity.branch?.parentRestaurant && (
             <p className="text-sm text-gray-600">
-              {opportunity.branch.parentRestaurant.name || "Unknown Restaurant"}
+              {opportunity.branch.parentRestaurant.name || 'Unknown Restaurant'}
             </p>
           )}
         </div>
 
-       {/* Applied count */}
-        {opportunity.applications?.length > 0 && (
-          <div className="w-18 text-center ">
+        {/* Applied count */}
+        {/* {opportunity.applications?.length > 0 && (
+          <div className="w-18 text-center">
             <span className="flex flex-wrap gap-1 p-1 items-center text-[10px] sm:text-xs text-gray-500 bg-gray-50 px-2 rounded-full">
-              {/* <Users className="h-3 w-3" /> */}
               <span>{opportunity.applications.length} applied</span>
             </span>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Details */}
@@ -88,9 +95,10 @@ export default function JobCard({ opportunity }) {
         </span>
         <CtaButton
           href={`/job/${opportunity.slug}`}
-          text="Apply Now"
+          variant={isApplied ? 'outline' : 'filled'}
+          text={isApplied ? 'View Details' : 'Apply Now'}
           size="sm"
-          showIcon={true}
+          showIcon
           className="rounded-full"
         />
       </div>

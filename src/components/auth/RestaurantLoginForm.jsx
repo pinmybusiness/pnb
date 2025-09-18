@@ -16,14 +16,14 @@ export default function RestaurantLoginForm({ onSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
-  const { user, token, role, error } = useSelector((state) => state.auth);
+  const { user, token, error } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    if (token && user && role) {
+    if (token && user) {
       if (onSuccess) onSuccess();
       router.push("/dashboard");
     }
-  }, [user, token, role, onSuccess, router]);
+  }, [user, token, onSuccess, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,7 +32,8 @@ export default function RestaurantLoginForm({ onSuccess }) {
     try {
       await dispatch(loginUser({ mobile, password, rememberMe })).unwrap();
       toast.success("Login successful!");
-      router.push("/dashboard");
+// Page reload with redirect
+window.location.href = "/dashboard";
     } catch (error) {
       console.error('Login error:', error);
       toast.error(error.message || "Login failed. Please try again.");

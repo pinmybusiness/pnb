@@ -78,18 +78,23 @@ export default function Header({ activeLink = "" }) {
             </a>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center space-x-10">
               {links.map((link) => (
                 <Link
                   key={link.name}
                   href={link.path}
-                  className={`text-sm md:xl font-medium transition-colors duration-300 ${
+                  className={`text-sm md:text-lg font-medium transition-colors duration-300 flex items-center relative ${
                     activeLink === link.path
                       ? "text-orange-600 border-b-2 font-bold border-orange-600"
                       : "text-gray-700 hover:text-orange-600"
                   }`}
                 >
                   {link.name}
+                  {link.name === "Jobs" && (
+                    <span className="ml-1 text-[10px] font-bold uppercase text-white bg-orange-600 rounded-full px-1.5 py-0.5 shadow-sm">
+                      Free
+                    </span>
+                  )}
                 </Link>
               ))}
             </nav>
@@ -175,7 +180,6 @@ export default function Header({ activeLink = "" }) {
                       </div>
                     </div>
                   </div>
-                  
                   <div className="relative">
                     <CtaButton
                       text="Register"
@@ -236,13 +240,18 @@ export default function Header({ activeLink = "" }) {
                   key={link.name}
                   href={link.path}
                   onClick={() => setMobileOpen(false)}
-                  className={`text-sm font-medium py-2 px-3 rounded-lg transition-colors ${
+                  className={`text-sm font-medium py-2 px-3 rounded-lg transition-colors flex items-center ${
                     activeLink === link.path
                       ? "text-orange-600 bg-orange-50"
                       : "text-gray-700 hover:text-orange-600 hover:bg-orange-50"
                   }`}
                 >
                   {link.name}
+                  {link.name === "Jobs" && (
+                    <span className="ml-2 text-[10px] font-bold uppercase text-white bg-orange-600 rounded-full px-1.5 py-0.5 shadow-sm">
+                      Free
+                    </span>
+                  )}
                 </a>
               ))}
               <div className="pt-2 border-t border-orange-100 flex flex-col gap-2">

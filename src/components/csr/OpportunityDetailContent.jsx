@@ -394,7 +394,7 @@ export default function OpportunityDetailContent({
 
         {/* Details and Benefits */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {(opportunity && (displayBenefits.length > 0 || opportunity.compensation?.paymentType !== undefined)) && (
+          {(opportunity && (displayBenefits.length > 0)) && (
             <div className="pb-4 md:pb-0 border-b md:border-b-0 md:border-r border-gray-200">
               <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900">
                 <UserCheck className="h-5 w-5 mr-2 text-green-500" />
@@ -491,7 +491,7 @@ export default function OpportunityDetailContent({
 
         {/* Job Description */}
         {opportunity?.description && (
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="border-b border-gray-200">
             <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900">
               <FileText className="h-5 w-5 mr-2 text-orange-500" />
               Job Description

@@ -45,7 +45,7 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
     mobile: '',
     email: '',
     password: '',
-    role: 8,
+    role: 6,
     branch: branchId,
   });
   const [editMemberForm, setEditMemberForm] = useState({

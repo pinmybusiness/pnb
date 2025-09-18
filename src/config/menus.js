@@ -2,7 +2,8 @@
 import { 
   Store, Users, BarChart3, MapPin, Settings, 
   FileBarChart, LayoutDashboard, GraduationCap, 
-  ClipboardList
+  ClipboardList,
+  FileCheck
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
@@ -42,14 +43,14 @@ export const allMenus = [
       { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [6,7] },
     ]
   },
-  // { name: "Work Type", href: "/dashboard/work-types", icon: FileBarChart, roles: [0] },
+  { name: "Applications", href: "/dashboard/applications", icon: FileCheck, roles: [0,1,2] },
   { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0] },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [0,3] },
 ];
 
 // ✅ Panel titles/subtitles based on role number
 export const panelInfo = {
-  0: { title: "Wait Pro", subtitle: "Company Admin" },
+  0: { title: "FasterQ", subtitle: "Company Admin" },
   1: { title: "CRM System", subtitle: "Sales Dashboard" },
   2: { title: "Company Team", subtitle: "Team Dashboard" },
   3: { title: "Restaurant Hub", subtitle: "Admin Portal" },

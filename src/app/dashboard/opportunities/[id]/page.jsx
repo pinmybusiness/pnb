@@ -135,7 +135,7 @@ const OpportunityView = () => {
       case 1: return 'bg-yellow-100 text-yellow-800';
       case 2: return 'bg-green-100 text-green-800';
       case 3: return 'bg-red-100 text-red-800';
-      case 4: return 'bg-purple-100 text-purple-800';
+      case 4: return 'bg-red-100 text-red-800';
       case 5: return 'bg-blue-100 text-blue-800';
       default: return 'bg-gray-100 text-gray-800';
     }
@@ -189,7 +189,7 @@ const OpportunityView = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push('/dashboard/opportunities')}
+            onClick={() => {router.back()}}
             className="p-2 text-gray-600 hover:text-primary rounded-md"
             aria-label="Back to opportunities"
           >
@@ -234,11 +234,11 @@ const OpportunityView = () => {
               </Button>
             </>
           )}
-          {opportunity.status === 2 && canEdit && (
+          {opportunity.status !== 1 && (
             <Button
               variant="secondary"
-              onClick={handleClose}
-              className="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white"
+              onClick={() => {router.back(); }}
+              className="px-4 py-2 text-sm bg-primary text-white"
               aria-label="Close opportunity"
             >
               <XCircle className="h-5 w-5 mr-2" />
@@ -414,7 +414,7 @@ const OpportunityView = () => {
                   <span className="font-semibold text-dark">{getStipendText(opportunity.compensation)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">PaymentыгFrequency</span>
+                  <span className="text-gray-600">Payment Frequency</span>
                   <span className="font-semibold text-dark">
                     {getPaymentTypeText(opportunity.stipend?.paymentType)}
                   </span>
@@ -494,8 +494,7 @@ const OpportunityView = () => {
                 <div className="flex items-start gap-3">
                   <Building className="h-5 w-5 text-gray-400 mt-1" />
                   <div>
-                    <p className="font-medium text-dark">{opportunity.branch.name}</p>
-                    <p className="text-xs text-gray-500">Branch</p>
+                    <p className="font-medium text-dark">{opportunity?.branch?.parentRestaurant?.name}({opportunity?.branch?.name})</p>
                   </div>
                 </div>
                 {opportunity.branch.address && (
@@ -592,12 +591,23 @@ const OpportunityView = () => {
               {opportunity.status === 2 && (
                 <Button
                   variant="secondary"
-                  className="w-full py-2 text-sm bg-purple-600 hover:bg-purple-700 text-white"
+                  className="w-full py-2 text-sm bg-red-600 hover:bg-red-700 text-white"
                   onClick={handleClose}
                   aria-label="Close opportunity"
                 >
                   <XCircle className="h-5 w-5 mr-2" />
                   Close Opportunity
+                </Button>
+              )}
+              {(opportunity.status === 3 || opportunity.status === 4) && user.role <= 2 && (
+                <Button
+                  variant="success"
+                  className="w-full py-2 text-sm bg-green-600 hover:bg-green-700 text-white"
+                  onClick={handleApprove}
+                  aria-label="Activate opportunity"
+                >
+                  <CheckCircle className="h-5 w-5 mr-2" />
+                  Activate Opportunity
                 </Button>
               )}
             </div>

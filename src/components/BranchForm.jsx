@@ -313,21 +313,7 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
             Branch Information
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
-            <div>
-              <label className="block text-sm font-medium text-dark mb-1">Branch Name *</label>
-              <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                  required
-                  maxLength={100}
-                />
-              </div>
-            </div>
-            <div>
+                        <div>
               <label className="block text-sm font-medium text-dark mb-1">
                 Restaurant {effectiveBranchId ? '' : '*'}
               </label>
@@ -356,6 +342,21 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
                 />
               )}
             </div>
+            <div>
+              <label className="block text-sm font-medium text-dark mb-1">Branch Name *</label>
+              <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="flex-1 px-2 py-2 focus:outline-none text-sm"
+                  required
+                  maxLength={100}
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-dark mb-1">Helpline Number</label>
               <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">

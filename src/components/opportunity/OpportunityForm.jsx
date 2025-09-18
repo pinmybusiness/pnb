@@ -76,7 +76,6 @@ const OpportunityForm = ({ editData = null, branchId }) => {
   });
   const [originalWorkType, setOriginalWorkType] = useState('');
   const [originalInternshipType, setOriginalInternshipType] = useState('');
-
   const isEdit = Boolean(editData);
 
   useEffect(() => {
@@ -530,7 +529,11 @@ const OpportunityForm = ({ editData = null, branchId }) => {
             isEdit ? 'updated' : 'created'
           } successfully!`
         );
-        router.push('/dashboard/opportunities');
+        if ([0, 1, 2].includes(user?.role)) {
+          router.back();
+        } else {
+          router.push('/dashboard/opportunities');
+        }
       }
     } catch (error) {
       console.error(`${isEdit ? 'Update' : 'Create'} opportunity error:`, error);

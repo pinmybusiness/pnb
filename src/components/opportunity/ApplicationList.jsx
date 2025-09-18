@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { formatDateWithSuffix } from '@/utils/dateFormat';
 import { useRouter } from 'next/navigation';
+import StatusBadge from '../ui/StatusBadge';
+import { getStatusText } from '@/utils/application';
 
 const ApplicationList = ({ applications, opportunityId, onApplicationUpdate }) => {
   const router = useRouter();
@@ -50,10 +52,10 @@ const ApplicationList = ({ applications, opportunityId, onApplicationUpdate }) =
               <h4 className="font-semibold text-gray-900">
                 {application.candidate?.name || 'Unknown Candidate'}
               </h4>
-              <p className="text-sm text-gray-500">{application.candidate?.email}</p>
+              <p className="text-sm text-gray-500">{application.candidate?.mobile}</p>
             </div>
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[application.status] || 'bg-gray-100 text-gray-800'}`}>
-              {application.status}
+              <StatusBadge status={getStatusText(application.status)} />
             </span>
           </div>
 

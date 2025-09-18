@@ -1,117 +1,100 @@
 'use client';
 import { useState, useEffect } from "react";
-import { MapPin, Search, Plus, DollarSign, Star, TrendingUp, ArrowUpDown, Eye, Edit, Trash2 } from "lucide-react";
+import { MapPin, Search, Plus, DollarSign, Star, TrendingUp, ArrowUpDown, Eye, Edit, ChevronLeft, ChevronRight } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
 import KPICard from "@/components/ui/KPICard";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, Button, Input, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
+import { Card, Button, Input, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
+import { useSelector } from "react-redux";
+import { useDebounce } from 'use-debounce';
 
 const Branches = () => {
   const router = useRouter();
+  const { user, token } = useSelector((state) => state.auth);
   const [branches, setBranches] = useState([]);
-  const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [debouncedSearchTerm] = useDebounce(searchTerm, 1000);
+  const [statusFilter, setStatusFilter] = useState("");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [pagination, setPagination] = useState({ current: 1, totalPages: 1, totalRecords: 0 });
 
-  console.log("br", branches)
+  // Map frontend status values to backend numeric values
+  const statusMap = {
+    "": "", // All statuses
+    no_status: 0,
+    in_progress: 1,
+    partnered: 2,
+    closed: 3,
+  };
+
+  const statusOptions = [
+    { value: "", label: "All Status" },
+    { value: "no_status", label: "No Status" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "partnered", label: "Partnered" },
+    { value: "closed", label: "Closed" },
+  ];
+
   // Fetch data from API
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const branchesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`);
-      
-      // Safely process branches data
-      const processedBranches = branchesRes.data.data.map(branch => {
-        return {
-          ...branch,
-          status: typeof branch.status === 'string' 
-            ? { current: branch.status, reason: '' }
-            : branch.status
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const params = {
+          page: pagination.current,
+          limit: 10,
+          sort: sortBy,
+          order: sortOrder,
+          status: statusMap[statusFilter] !== undefined ? statusMap[statusFilter] : undefined,
+          search: debouncedSearchTerm || undefined,
         };
-      });
-      
-      setBranches(processedBranches);
-    } catch (error) {
-      toast.error("Failed to fetch branches");
-      console.error("Fetch error:", error);
-    } finally {
-      setLoading(false);
+
+        const branchesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params,
+        });
+
+        setBranches(branchesRes.data.data);
+        setPagination({
+          current: branchesRes.data.pagination.current,
+          totalPages: branchesRes.data.pagination.totalPages,
+          totalRecords: branchesRes.data.pagination.totalRecords,
+        });
+      } catch (error) {
+        toast.error("Failed to fetch branches");
+        console.error("Fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (token) {
+      fetchData();
+    }
+  }, [token, sortBy, sortOrder, statusFilter, debouncedSearchTerm, pagination.current]);
+
+  const getRestaurantName = (branch) => {
+    // Handle both parentRestaurant and parentRestaurantData (from aggregation)
+    const restaurant = branch.parentRestaurant || branch.parentRestaurantData;
+    return restaurant?.name || "Unknown";
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 0: return 'bg-gray-100 text-gray-800'; // No Status
+      case 1: return 'bg-yellow-100 text-yellow-800'; // In Progress
+      case 2: return 'bg-green-100 text-green-800'; // Partnered
+      case 3: return 'bg-red-100 text-red-800'; // Closed
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
-  
-  fetchData();
-}, []);
-
-const getRestaurantName = (restaurantIdOrObject) => {
-  // Handle case where we get the full restaurant object (new API format)
-  if (typeof restaurantIdOrObject === 'object' && restaurantIdOrObject !== null) {
-    return restaurantIdOrObject.name || "Unknown";
-  }
-  
-  // Handle case where we get just the ID string (old API format)
-  if (typeof restaurantIdOrObject === 'string') {
-    const restaurant = restaurants.find(r => r._id === restaurantIdOrObject);
-    return restaurant ? restaurant.name : "Unknown";
-  }
-  
-  return "Unknown";
-};
-
-  const filteredAndSortedBranches = branches
-    .filter(branch => {
-      const matchesSearch =
-        branch.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        branch.location?.address?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        getRestaurantName(branch.parentRestaurant)?.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesStatus =
-        statusFilter === "all" || branch.status?.current?.toLowerCase() === statusFilter.toLowerCase();
-
-      return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
-      let aValue, bValue;
-      switch (sortBy) {
-        case "name":
-          aValue = a.name || '';
-          bValue = b.name || '';
-          break;
-        case "restaurant":
-          aValue = getRestaurantName(a.parentRestaurant) || '';
-          bValue = getRestaurantName(b.parentRestaurant) || '';
-          break;
-        case "status":
-          aValue = a.status?.current || '';
-          bValue = b.status?.current || '';
-          break;
-        case "revenue":
-          aValue = a.revenue || 0;
-          bValue = b.revenue || 0;
-          break;
-        case "footfall":
-          aValue = a.footfall || 0;
-          bValue = b.footfall || 0;
-          break;
-        case "rating":
-          aValue = a.rating || 0;
-          bValue = b.rating || 0;
-          break;
-        default:
-          return 0;
-      }
-
-      if (typeof aValue === "string") {
-        return sortOrder === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-      }
-      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-    });
 
   const handleSort = (field) => {
     if (sortBy === field) {
@@ -120,14 +103,8 @@ const getRestaurantName = (restaurantIdOrObject) => {
       setSortBy(field);
       setSortOrder("asc");
     }
+    setPagination((prev) => ({ ...prev, current: 1 }));
   };
-
-  const statusOptions = [
-    { value: "all", label: "All Status" },
-    { value: "partnered", label: "Partnered" },
-    { value: "in_progress", label: "In Progress" },
-    { value: "closed", label: "Closed" },
-  ];
 
   const calculateKPIs = () => {
     if (branches.length === 0) return { totalRevenue: 0, avgFootfall: 0, avgRating: 0 };
@@ -139,7 +116,7 @@ const getRestaurantName = (restaurantIdOrObject) => {
     return {
       totalRevenue,
       avgFootfall: Math.round(avgFootfall),
-      avgRating: avgRating.toFixed(1)
+      avgRating: avgRating.toFixed(1),
     };
   };
 
@@ -162,32 +139,30 @@ const getRestaurantName = (restaurantIdOrObject) => {
           <p className="text-gray-500">Monitor and manage all restaurant branches</p>
         </div>
         <Link href='/dashboard/branches/add'>
-        <Button 
-          className="rounded-lg" 
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add Branch
-        </Button>
+          <Button className="rounded-lg">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Branch
+          </Button>
         </Link>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <KPICard title="Total Branches" value={branches.length} icon={MapPin} />
-        <KPICard 
-          title="Avg Revenue" 
-          value={branches.length > 0 ? `$${(kpiData.totalRevenue / branches.length / 1000).toFixed(0)}K` : '$0K'} 
-          icon={DollarSign} 
+        <KPICard title="Total Branches" value={pagination.totalRecords} icon={MapPin} />
+        <KPICard
+          title="Avg Revenue"
+          value={branches.length > 0 ? `$${(kpiData.totalRevenue / branches.length / 1000).toFixed(0)}K` : '$0K'}
+          icon={DollarSign}
         />
-        <KPICard 
-          title="Avg Footfall" 
-          value={branches.length > 0 ? kpiData.avgFootfall.toLocaleString() : '0'} 
-          icon={TrendingUp} 
+        <KPICard
+          title="Avg Footfall"
+          value={branches.length > 0 ? kpiData.avgFootfall.toLocaleString() : '0'}
+          icon={TrendingUp}
         />
-        <KPICard 
-          title="Avg Rating" 
-          value={branches.length > 0 ? kpiData.avgRating : '0.0'} 
-          icon={Star} 
+        <KPICard
+          title="Avg Rating"
+          value={branches.length > 0 ? kpiData.avgRating : '0.0'}
+          icon={Star}
         />
       </div>
 
@@ -197,7 +172,7 @@ const getRestaurantName = (restaurantIdOrObject) => {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
-              placeholder="Search branches..."
+              placeholder="Search branches by name, address, or restaurant..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -205,7 +180,10 @@ const getRestaurantName = (restaurantIdOrObject) => {
           </div>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPagination((prev) => ({ ...prev, current: 1 }));
+            }}
             className="px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-900"
           >
             {statusOptions.map(option => (
@@ -222,19 +200,25 @@ const getRestaurantName = (restaurantIdOrObject) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead onClick={() => handleSort("name")} className="cursor-pointer">
-                <div className="flex items-center gap-2">
-                  Branch Name
-                  <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
               <TableHead onClick={() => handleSort("restaurant")} className="cursor-pointer">
                 <div className="flex items-center gap-2">
                   Restaurant
                   <ArrowUpDown className="h-4 w-4" />
                 </div>
               </TableHead>
+              <TableHead onClick={() => handleSort("name")} className="cursor-pointer">
+                <div className="flex items-center gap-2">
+                  Branch Name
+                  <ArrowUpDown className="h-4 w-4" />
+                </div>
+              </TableHead>
               <TableHead>Location</TableHead>
+              <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer">
+                <div className="flex items-center gap-2">
+                  Created At
+                  <ArrowUpDown className="h-4 w-4" />
+                </div>
+              </TableHead>
               <TableHead onClick={() => handleSort("status")} className="cursor-pointer">
                 <div className="flex items-center gap-2">
                   Status
@@ -245,37 +229,44 @@ const getRestaurantName = (restaurantIdOrObject) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedBranches.map((branch) => (
+            {branches.map((branch) => (
               <TableRow key={branch._id} className="hover:bg-gray-50">
-                <TableCell>
-                  <div>
-                    <div className="font-medium">{branch.name || 'Unnamed Branch'}</div>
-                    <div className="text-sm text-gray-500">
-                      {branch.teamCount || 0} team members
-                    </div>
-                  </div>
-                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <span className="font-medium">
-                      {getRestaurantName(branch.parentRestaurant)}
+                      {getRestaurantName(branch)}
                     </span>
                   </div>
                 </TableCell>
                 <TableCell>
-                 <div className="max-w-[200px] truncate" title={branch.location?.address}>
-                    {branch.location && branch.location?.city 
+                  <div>
+                    <div className="font-medium">{branch.name || 'Unnamed Branch'}</div>
+                    <div className="text-sm text-gray-500">
+                      {branch.teamsCount || 0} team members
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="max-w-[200px] truncate" title={branch.location?.address}>
+                    {branch.location && branch.location?.city
                       ? `${branch.location?.city?.name}, ${branch.location?.city?.state?.name}`
                       : 'No address'}
                   </div>
-
+                </TableCell>
+                <TableCell>
+                  <div className="max-w-[200px] truncate" title={branch.createdAt}>
+                    {branch.createdAt ? new Date(branch.createdAt).toLocaleDateString() : 'Unknown'}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    <StatusBadge status={branch.status?.current} />
-                    {branch.status?.reason && (
-                      <div className="text-xs text-gray-500 max-w-[150px] truncate" title={branch.status.reason}>
-                        {branch.status.reason}
+                    <StatusBadge
+                      status={branch.statusText}
+                      className={`${getStatusColor(branch.status)} text-xs px-2.5 py-0.5`}
+                    />
+                    {branch.statusReasonText && (
+                      <div className="text-xs text-gray-500 max-w-[150px] truncate" title={branch.statusReasonText}>
+                        {branch.statusReasonText}
                       </div>
                     )}
                   </div>
@@ -303,18 +294,50 @@ const getRestaurantName = (restaurantIdOrObject) => {
           </TableBody>
         </Table>
 
-        {filteredAndSortedBranches.length === 0 && (
+        {branches.length === 0 && (
           <div className="p-12 text-center">
             <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No branches found</h3>
             <p className="text-gray-500">
-              {searchTerm || statusFilter !== "all"
+              {searchTerm || statusFilter
                 ? "Try adjusting your search or filter criteria"
                 : "Get started by adding your first branch"}
             </p>
           </div>
         )}
-      </Card>     
+
+        {/* Pagination */}
+        {branches.length > 0 && (
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4 p-4">
+            <p className="text-sm text-gray-500">
+              Showing {branches.length} of {pagination.totalRecords} branches
+            </p>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setPagination((prev) => ({ ...prev, current: prev.current - 1 }))}
+                disabled={pagination.current === 1}
+                className="px-3 py-1"
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm text-gray-600">
+                Page {pagination.current} of {pagination.totalPages}
+              </span>
+              <Button
+                variant="outline"
+                onClick={() => setPagination((prev) => ({ ...prev, current: prev.current + 1 }))}
+                disabled={pagination.current === pagination.totalPages}
+                className="px-3 py-1"
+                aria-label="Next page"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
     </div>
   );
 };

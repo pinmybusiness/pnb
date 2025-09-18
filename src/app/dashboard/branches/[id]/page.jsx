@@ -14,7 +14,7 @@ import {
 import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import OverviewTab from '@/components/BranchView/OverviewTab';
 import PerformanceTab from '@/components/BranchView/PerformanceTab';
@@ -34,12 +34,16 @@ const Button = ({ children, className = '', ...props }) => (
 const BranchView = () => {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = params.id;
+
+  // Initialize activeTab from URL query parameter or default to 'overview'
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
   const [branch, setBranch] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
   const [teamMembers, setTeamMembers] = useState([]);
 
+  // Fetch branch data
   useEffect(() => {
     const fetchBranch = async () => {
       try {
@@ -58,6 +62,14 @@ const BranchView = () => {
       fetchBranch();
     }
   }, [id]);
+
+  // Update URL when activeTab changes
+  useEffect(() => {
+    const currentTab = searchParams.get('tab');
+    if (activeTab !== currentTab) {
+      router.push(`/dashboard/branches/${id}?tab=${activeTab}`, { scroll: false });
+    }
+  }, [activeTab, id, router, searchParams]);
 
   const handleCancelBranch = async () => {
     router.push('/dashboard/branches');

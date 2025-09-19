@@ -519,8 +519,9 @@ export default function OpportunityDetailContent({
           </div>
         )}
 
+      </div>
         {/* Hyderabad Latest Jobs Section */}
-        <div className=" rounded-lg py-6 border-t border-gray-200">
+        <div className="mt-5 rounded-lg py-6 max-w-4xl mx-auto">
           <h2 className="text-lg font-semibold mb-4 flex items-center text-gray-900">
             <Briefcase className="h-5 w-5 mr-2 text-orange-500" />
             Hyderabad Latest Jobs
@@ -553,7 +554,6 @@ export default function OpportunityDetailContent({
             </div>
           )}
         </div>
-      </div>
 
       {/* Auth Modal */}
       {isAuthModalOpen && (

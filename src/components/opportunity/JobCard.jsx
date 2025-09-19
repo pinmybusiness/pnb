@@ -1,4 +1,4 @@
-import { MapPin, Clock, Users } from 'lucide-react';
+import { MapPin, Clock, Users, IndianRupee } from 'lucide-react';
 import CtaButton from '../CtaButton';
 import {
   getOpportunityTypeText,
@@ -52,7 +52,7 @@ export default function JobCard({ opportunity, appliedOpportunities }) {
       <div className="space-y-3 mb-6">
         <div className="flex items-center gap-3 text-sm text-gray-500">
           <span className="p-2 rounded-full bg-orange-100">
-            <Clock className="h-4 w-4 text-orange-600" />
+            <IndianRupee className="h-4 w-4 text-orange-600" />
           </span>
           <span>{getStipendText(opportunity.compensation) || 'Not disclosed'}</span>
         </div>

@@ -1,0 +1,87 @@
+import sanitizeHtml from 'sanitize-html';
+
+// Helper function to map shift or internshipType to employmentType
+export function getEmploymentType(opp) {
+  if (opp.opportunityType === 1) {
+    switch (opp.internshipType) {
+      case 0: return "FULL_TIME";
+      case 1: return "PART_TIME";
+      default: return "FULL_TIME";
+    }
+  }
+  switch (opp.schedule?.shift) {
+    case 0: return "FULL_TIME"; // morning
+    case 1: return "PART_TIME"; // evening
+    default: return "FULL_TIME";
+  }
+}
+
+// Generate a single JobPosting schema
+export function generateJobPostingSchema(opp) {
+  if (!opp.title) console.warn(`Missing title for opportunity ID: ${opp._id}`);
+  const location = opp.location || opp.branch?.location || {};
+  const salary = opp.opportunityType === 0 ? {
+    "@type": "MonetaryAmount",
+    "currency": opp.compensation?.currency || "INR",
+    "value": {
+      "@type": "QuantitativeValue",
+      "minValue": opp.compensation?.minAmount,
+      "maxValue": opp.compensation?.maxAmount,
+      "unitText": opp.compensation?.paymentType === 0 ? "MONTH" :
+                  opp.compensation?.paymentType === 2 ? "DAY" :
+                  opp.compensation?.paymentType === 3 ? "WEEK" : "MONTH"
+    }
+  } : opp.compensation?.stipendAmount ? {
+    "@type": "MonetaryAmount",
+    "currency": opp.compensation?.currency || "INR",
+    "value": {
+      "@type": "QuantitativeValue",
+      "value": opp.compensation.stipendAmount,
+      "unitText": opp.compensation?.paymentType === 0 ? "MONTH" :
+                  opp.compensation?.paymentType === 1 ? "MONTH" :
+                  opp.compensation?.paymentType === 2 ? "DAY" :
+                  opp.compensation?.paymentType === 3 ? "WEEK" : "MONTH"
+    }
+  } : undefined;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "JobPosting",
+    "title": opp.title || "Unknown Job",
+    "description": sanitizeHtml(opp.description || "No description available.", { allowedTags: [] }),
+    "hiringOrganization": {
+      "@type": "Organization",
+      "name": opp.branch?.parentRestaurant?.name || "Unknown Restaurant"
+    },
+    "jobLocation": {
+      "@type": "Place",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": opp.branch?.location?.city?.name || "Unknown City",
+        "addressRegion": opp.branch?.location?.city?.state?.name || "Unknown State",
+        "streetAddress": opp.branch?.location?.address || "",
+        "postalCode": opp.branch?.location?.postalCode || ""
+      }
+    },
+    "datePosted": opp.createdAt ? new Date(opp.createdAt).toISOString() : new Date().toISOString(),
+    "validThrough": opp.schedule?.endDate ? new Date(opp.schedule.endDate).toISOString() :
+      opp.publishedAt ? new Date(new Date(opp.publishedAt).setDate(new Date(opp.publishedAt).getDate() + 30)).toISOString() :
+      undefined,
+    "employmentType": getEmploymentType(opp),
+    "baseSalary": salary,
+    "directApply": `https://www.fasterq.in/job/${opp.slug}`,
+    "identifier": {
+      "@type": "PropertyValue",
+      "name": "Opportunity ID",
+      "value": opp._id
+    },
+    "jobBenefits": opp.compensation?.benefits?.map(b => {
+      const benefitMap = { 0: "Tips", 1: "Food", 2: "Accommodation", 3: "Travel", 4: "Uniform", 5: "Training" };
+      return benefitMap[b];
+    }) || [],
+    "experienceRequirements": opp.requirements?.experience ? {
+      "@type": "OccupationalExperienceRequirements",
+      "yearsOfExperience": opp.requirements.experience
+    } : undefined
+  };
+}

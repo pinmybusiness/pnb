@@ -55,57 +55,56 @@ export default function OpportunitiesContent({
     filters.location,
     currentPage,
     filters.baseSearch,
-    filters.baseWorkTypeSlug, // Ensure slug-based filters trigger fetch
+    filters.baseWorkTypeSlug,
   ]);
 
   useEffect(() => {
     filterOpportunities();
   }, [opportunities]);
 
-// src/components/csr/OpportunitiesContent.jsx (only fetchOpportunities function updated; rest remains same)
-const fetchOpportunities = async () => {
-  try {
-    setLoading(true);
-    const { opportunityType, minStipend, search, location, baseSearch, baseWorkTypeSlug } = filters;
-    let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=20&page=${currentPage}`;
+  const fetchOpportunities = async () => {
+    try {
+      setLoading(true);
+      const { opportunityType, minStipend, search, location, baseSearch, baseWorkTypeSlug } = filters;
+      let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=20&page=${currentPage}`;
 
-    const params = new URLSearchParams();
-    if (opportunityType) params.append("opportunityType", opportunityType);
-    if (minStipend) params.append("minStipend", minStipend);
+      const params = new URLSearchParams();
+      if (opportunityType) params.append("opportunityType", opportunityType);
+      if (minStipend) params.append("minStipend", minStipend);
 
-    // Combine search sources to avoid duplicates
-    let effectiveSearch = '';
-    if (baseSearch) effectiveSearch += baseSearch;
-    if (location && location !== baseSearch) {
-      effectiveSearch += (effectiveSearch ? ' ' : '') + location;
+      // Combine search sources to avoid duplicates
+      let effectiveSearch = '';
+      if (baseSearch) effectiveSearch += baseSearch;
+      if (location && location !== baseSearch) {
+        effectiveSearch += (effectiveSearch ? ' ' : '') + location;
+      }
+      if (search && search !== baseWorkTypeSlug) {
+        effectiveSearch += (effectiveSearch ? ' ' : '') + search;
+      }
+      if (effectiveSearch) {
+        params.append("search", effectiveSearch.trim());
+      }
+
+      if (baseWorkTypeSlug) params.append("workTypeSlug", baseWorkTypeSlug);
+
+      if (params.toString()) url += `&${params.toString()}`;
+
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.success) {
+        setOpportunities(data.data);
+        setFilteredOpportunities(data.data);
+      } else {
+        console.error("Failed to fetch opportunities:", data.message);
+        toast.error(data.message || "Failed to fetch opportunities");
+      }
+    } catch (error) {
+      console.error("Error fetching opportunities:", error);
+      toast.error("Error fetching opportunities. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    if (search && search !== baseWorkTypeSlug) {
-      effectiveSearch += (effectiveSearch ? ' ' : '') + search;
-    }
-    if (effectiveSearch) {
-      params.append("search", effectiveSearch.trim());
-    }
-
-    if (baseWorkTypeSlug) params.append("workTypeSlug", baseWorkTypeSlug);
-
-    if (params.toString()) url += `&${params.toString()}`;
-
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.success) {
-      setOpportunities(data.data);
-      setFilteredOpportunities(data.data);
-    } else {
-      console.error("Failed to fetch opportunities:", data.message);
-      toast.error(data.message || "Failed to fetch opportunities");
-    }
-  } catch (error) {
-    console.error("Error fetching opportunities:", error);
-    toast.error("Error fetching opportunities. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const fetchAppliedOpportunities = async () => {
     try {
@@ -175,10 +174,6 @@ const fetchOpportunities = async () => {
     setFilteredOpportunities(results);
   };
 
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
   const clearFilters = () => {
     setFilters({
       opportunityType: "",
@@ -192,48 +187,13 @@ const fetchOpportunities = async () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hero Section */}
-        <div className="relative bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl p-6 md:p-8 mb-8 md:mb-12 shadow-sm">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-gray-900 leading-snug md:leading-tight">
-              {pageTitle}
-            </h1>
-            <p className="mt-3 sm:mt-4 text-base sm:text-lg text-gray-700 px-2">
-              Explore opportunities across{" "}
-              <span className="font-medium">Kitchen, Service, Management, Marketing, Delivery</span>{" "}
-              and more. Kickstart your career in the food & hospitality industry today.
-            </p>
-            <div className="mt-6 sm:mt-8 relative max-w-md sm:max-w-xl mx-auto">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                value={filters.search}
-                onChange={(e) => handleFilterChange("search", e.target.value)}
-                className="block w-full pl-12 pr-4 py-3 sm:py-4 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 shadow-sm text-sm sm:text-base"
-                placeholder="Search by role, skills, or location..."
-              />
-            </div>
-            {(!isAuthenticated && !token) && (
-              <div className="mt-5 sm:mt-6 inline-flex items-center bg-white border border-orange-200 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-orange-700 shadow-sm">
-                <Award className="w-4 h-4 mr-2" />
-                Create a free account to apply and track your applications
-              </div>
-            )}
-          </div>
-          <div className="absolute right-3 sm:right-6 top-3 sm:top-6 hidden md:block opacity-10 text-orange-500">
-            <Briefcase className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32" />
-          </div>
-        </div>
-
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filter Sidebar */}
           <FilterSidebar
             filters={filters}
-            handleFilterChange={handleFilterChange}
+            setFilters={setFilters} // Pass setFilters instead of handleFilterChange
             clearFilters={clearFilters}
             showFilters={showFilters}
             setShowFilters={setShowFilters}

@@ -235,22 +235,22 @@ export const getStipendText = ({
 
     if (minAmount && maxAmount && minAmount === maxAmount) {
       // Same salary → show single amount
-      return `${currencySymbol}${minAmount.toLocaleString('en-IN')} /month`;
+      return `${minAmount.toLocaleString('en-IN')} /month`;
     }
 
     if (minAmount && maxAmount) {
-      return `${currencySymbol} ${minAmount.toLocaleString('en-IN')} - ${maxAmount.toLocaleString('en-IN')} /month`;
+      return `${minAmount.toLocaleString('en-IN')} - ${maxAmount.toLocaleString('en-IN')} /month`;
     }
 
     // If only one amount is given
-    if (minAmount) return `${currencySymbol}${minAmount.toLocaleString('en-IN')} /month`;
-    if (maxAmount) return `${currencySymbol}${maxAmount.toLocaleString('en-IN')} /month`;
+    if (minAmount) return `${minAmount.toLocaleString('en-IN')} /month`;
+    if (maxAmount) return `${maxAmount.toLocaleString('en-IN')} /month`;
 
   } else if (paymentType === 1) {
     // Internship: Display total stipend
     if (!stipendAmount || stipendAmount <= 0) return "Unpaid";
     const displayAmount = totalAmount || stipendAmount;
-    return `${currencySymbol}${displayAmount.toLocaleString('en-IN')} (after completion)`;
+    return `${displayAmount.toLocaleString('en-IN')} (after completion)`;
   }
 
   return "Unpaid";

@@ -1,13 +1,18 @@
 "use client";
-import { MapPin, Filter, DollarSign, ChevronDown, X } from "lucide-react";
+import { MapPin, Filter, DollarSign, ChevronDown, X, Search } from "lucide-react";
 
 export default function FilterSidebar({
   filters,
-  handleFilterChange,
+  setFilters, // Add setFilters to update state directly
   clearFilters,
   showFilters,
   setShowFilters,
 }) {
+  // Move handleFilterChange from OpportunitiesContent to here
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
   return (
     <>
       {/* Mobile Filter Button */}
@@ -39,6 +44,27 @@ export default function FilterSidebar({
             </button>
           </div>
           <div className="space-y-6">
+            {/* Search Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+              <div className="relative rounded-lg shadow-sm">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={filters.search || filters.baseWorkTypeSlug || ""}
+                  onChange={(e) => handleFilterChange("search", e.target.value)}
+                  disabled={filters.baseWorkTypeSlug}
+                  className={`block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 transition-colors duration-200 ${filters.baseWorkTypeSlug ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  placeholder="Search by role, skills"
+                />
+                {filters.baseWorkTypeSlug && (
+                  <p className="pl-2 text-xs text-gray-500">Role set to {filters.baseWorkTypeSlug} from URL</p>
+                )}
+              </div>
+            </div>
+            {/* Location Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
               <div className="relative rounded-lg shadow-sm">
@@ -54,7 +80,7 @@ export default function FilterSidebar({
                   placeholder="City or area"
                 />
                 {filters.baseSearch && (
-                  <p className="mt-1 text-xs text-gray-500">Location set to {filters.baseSearch} from URL</p>
+                  <p className="pl-2 text-xs text-gray-500">Location set to {filters.baseSearch} from URL</p>
                 )}
               </div>
             </div>
@@ -105,6 +131,27 @@ export default function FilterSidebar({
               </button>
             </div>
             <div className="space-y-6">
+              {/* Search Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                <div className="relative rounded-lg shadow-sm">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    value={filters.search || filters.baseWorkTypeSlug || ""}
+                    onChange={(e) => handleFilterChange("search", e.target.value)}
+                    disabled={filters.baseWorkTypeSlug}
+                    className={`block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 bg-gray-50 transition-colors duration-200 ${filters.baseWorkTypeSlug ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    placeholder="Search by role, skills, or location"
+                  />
+                  {filters.baseWorkTypeSlug && (
+                    <p className="mt-1 text-xs text-gray-500">Role set to {filters.baseWorkTypeSlug} from URL</p>
+                  )}
+                </div>
+              </div>
+              {/* Location Input */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
                 <div className="relative rounded-lg shadow-sm">

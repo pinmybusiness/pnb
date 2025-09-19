@@ -287,239 +287,167 @@ export default function OpportunityDetailContent({
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
-      {/* Back Button and Title */}
-      {/* <div className="flex justify-center py-6">
-        <h1 className="text-center">
-          {opportunity.title} - {getOpportunityTypeText(opportunity.opportunityType)}
-        </h1>
-      </div> */}
-      <div className="p-6 bg-white/90 max-w-4xl border border-[#EEEEEE] mx-auto space-y-6">
-        {/* Opportunity Header */}
-        <div className="pb-6 border-b border-gray-200">
-          <div className="space-y-6">
-            {/* Title + Positions */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="space-y-2">
-                <span className="text-lg md:text-xl font-semibold text-gray-900">{opportunity.title}</span>
-                <Link
-                  href={`/restaurant/${opportunity.branch.location?.city?.name.toLowerCase().replace(/\s+/g, "-")}/${opportunity.branch.slug}`}
-                  className="block text-sm md:text-md text-gray-500 hover:text-orange-600 font-semibold transition-colors"
-                >
-                  {opportunity?.branch?.parentRestaurant?.name}
-                </Link>
-              </div>
-              <span className="flex items-center text-sm font-medium text-gray-700">
-                <Users className="h-4 w-4 mr-2 " />
-                {opportunity.numberOfPeople} Positions
-              </span>
-            </div>
-
-            <div className="space-y-4">
-              {/* Restaurant Info */}
-              <div className="flex items-center text-gray-600">
-                <MapPin className="h-4 w-4 mr-1" />
-                {opportunity.branch?.name},{"\u00A0"}
-                {opportunity.branch?.location?.city?.name ? (
-                  <Link
-                    href={`/jobs/${opportunity.branch.location.city.name
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                    className="hover:text-primary"
-                  >
-                    {opportunity.branch.location.city.name}
-                  </Link>
-                ) : (
-                  "unknown"
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <span className=" text-gray-700 rounded-full text-sm font-medium flex items-center">
-                <IndianRupee className="h-4 w-4 mr-1" />
-                {getStipendText(opportunity.compensation) || "Not disclosed"}
-              </span>
-                {opportunity.internshipType !== undefined && (
-                  <span className="px-4 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium flex items-center">
-                    <Clock className="h-5 w-5 mr-2" />
-                    {getInternshipTypeText(opportunity.internshipType)}
-                  </span>
-                )}
-              </div>
-
-              {/* Stats Section */}
-              <div className="flex flex-wrap gap-6 text-sm text-gray-600">
-                <div className="flex items-center">
-                  <Users className="h-4 w-4 mr-2" />
-                  <span>{opportunity.applications?.length || 0} Applicants</span>
-                </div>
-                <div className="flex items-center">
-                  <Eye className="h-4 w-4 mr-2" />
-                  <span>{opportunity.views || 0} Views</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              {appliedOpportunities.has(opportunity._id) ? (
-                <>
-                  <a
-                    href={`tel:${opportunity?.branch?.helplineNumber}`}
-                    className="inline-flex items-center px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
-                  >
-                    <Phone className="h-5 w-5 mr-2" />
-                    {opportunity?.branch?.helplineNumber}
-                  </a>
-                  <div className="inline-flex items-center px-6 py-2 bg-green-50 border border-green-200 rounded-lg">
-                    <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-                    <span className="font-medium text-green-700">Already Applied</span>
-                  </div>
-                </>
-              ) : (
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">
-                    Please click the call button below to apply directly.
-                  </p>
-                  <button
-                    onClick={handleApply}
-                    className="inline-flex items-center px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
-                  >
-                    <Phone className="h-5 w-5 mr-2" />
-                    {opportunity?.branch?.helplineNumber
-                      ? opportunity?.branch?.helplineNumber.slice(0, -3) + 'XXX'
-                      : ''}
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
+<div className="p-6 bg-white max-w-4xl mx-auto space-y-6 border border-gray-100 rounded-2xl shadow-sm">
+  {/* Opportunity Header */}
+  <div className="pb-6 border-b border-gray-100">
+    <div className="space-y-6">
+      {/* Title + Positions */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-2">
+          <span className="text-lg md:text-xl font-semibold text-gray-900">
+            {opportunity.title}
+          </span>
+          <Link
+            href={`/restaurant/${opportunity.branch.location?.city?.name.toLowerCase().replace(/\s+/g, "-")}/${opportunity.branch.slug}`}
+            className="block text-sm md:text-md text-gray-500 hover:text-primary font-medium transition-colors"
+          >
+            {opportunity?.branch?.parentRestaurant?.name}
+          </Link>
         </div>
-
-        {/* Details and Benefits */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {(opportunity && (displayBenefits.length > 0)) && (
-            <div className="pb-4 md:pb-0 border-b md:border-b-0 md:border-r border-gray-200">
-              <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900">
-                <UserCheck className="h-5 w-5 mr-2 text-green-500" />
-                Benefits
-              </h3>
-              <ul className="space-y-2 text-gray-700">
-                {displayBenefits.map((benefit, index) => {
-                  const benefitData = benefits.find((b) => b.backendValue === benefit);
-                  const Icon = benefitData?.icon || Gift;
-                  return (
-                    <li key={index} className="flex items-center text-sm text-green-600">
-                      <Icon className="h-5 w-5 mr-2" />
-                      <span>{benefitData?.label || "Unknown Benefit"}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-
-          <div className="">
-            <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900">
-              <Calendar className="h-5 w-5 mr-2 text-orange-500" />
-              Other Details
-            </h3>
-            <ul className="space-y-2 text-gray-700">
-              {opportunity.schedule?.startDate && (
-                <li className="flex justify-between text-sm">
-                  <span>Start Date:</span>
-                  <span className="font-medium">{formatDateWithSuffix(opportunity.schedule.startDate)}</span>
-                </li>
-              )}
-              {opportunity.schedule?.endDate && (
-                <li className="flex justify-between text-sm">
-                  <span>End Date:</span>
-                  <span className="font-medium">{formatDateWithSuffix(opportunity.schedule.endDate)}</span>
-                </li>
-              )}
-              {opportunity.schedule?.days?.length > 0 && (
-                <li>
-                  <div className="flex justify-between mb-2 text-sm">
-                    <span>Working Days:</span>
-                    <span className="font-medium">{opportunity.schedule.days.length} days/week</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {opportunity.schedule.days.map((day, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium capitalize"
-                      >
-                        {getDayName(day)}
-                      </span>
-                    ))}
-                  </div>
-                </li>
-              )}
-              {opportunity.schedule?.shift !== undefined && (
-                <li className="flex justify-between text-sm">
-                  <span>Shift:</span>
-                  <span className="font-medium">{getShiftText(opportunity.schedule.shift)}</span>
-                </li>
-              )}
-              {opportunity.schedule?.hoursPerDay && (
-                <li className="flex justify-between text-sm">
-                  <span>Hours Per Day:</span>
-                  <span className="font-medium">{opportunity.schedule.hoursPerDay} hours</span>
-                </li>
-              )}
-              {opportunity.duration && (
-                <li className="flex justify-between text-sm">
-                  <span>Duration:</span>
-                  <span className="font-medium">{getDurationText(opportunity)}</span>
-                </li>
-              )}
-              {opportunity.languages?.required?.length > 0 && (
-                <li className="flex justify-between text-sm">
-                  <span>Required Languages:</span>
-                  <span className="text-gray-700">
-                    {opportunity.languages.required.map(lang => getLanguageText(lang, languages)).join("/ ")}
-                  </span>
-                </li>
-              )}
-              {opportunity.languages?.preferred?.length > 0 && (
-                <li className="flex justify-between text-sm">
-                  <span>Preferred Languages:</span>
-                  <span className="text-gray-700">
-                    {opportunity.languages.preferred.map(lang => getLanguageText(lang, languages)).join(" / ")}
-                  </span>
-                </li>
-              )}
-            </ul>
-          </div>
-        </div>
-
-        {/* Job Description */}
-        {opportunity?.description && (
-          <div className="border-b py-6 border-gray-200">
-            <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900">
-              <FileText className="h-5 w-5 mr-2 text-orange-500" />
-              Job Description
-            </h3>
-            <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
-              {opportunity.description || "No description provided."}
-            </p>
-          </div>
-        )}
-
-        {/* Requirements */}
-        {opportunity.requirements?.length > 0 && (
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
-            <h3 className="text-lg font-semibold mb-4 text-gray-900">Requirements</h3>
-            <ul className="space-y-2 text-gray-700">
-              {opportunity.requirements.map((req, index) => (
-                <li key={index} className="flex items-start text-sm">
-                  <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-1" />
-                  {req}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
+        <span className="flex items-center text-sm font-medium text-gray-700">
+          <Users className="h-4 w-4 mr-2 " />
+          {opportunity.numberOfPeople} Positions
+        </span>
       </div>
+
+      <div className="space-y-4">
+        {/* Restaurant Info */}
+        <div className="flex items-center text-gray-600 text-sm">
+          <MapPin className="h-4 w-4 mr-1 text-primary" />
+          {opportunity.branch?.name},{"\u00A0"}
+          {opportunity.branch?.location?.city?.name ? (
+            <Link
+              href={`/jobs/${opportunity.branch.location.city.name
+                .toLowerCase()
+                .replace(/\s+/g, "-")}`}
+              className="hover:text-primary"
+            >
+              {opportunity.branch.location.city.name}
+            </Link>
+          ) : (
+            "unknown"
+          )}
+        </div>
+
+        {/* Compensation & Internship */}
+        <div className="flex flex-wrap gap-3">
+          <span className=" text-xs sm:text-sm font-medium flex items-center">
+            <IndianRupee className="h-4 w-4 mr-1" />
+            {getStipendText(opportunity.compensation) || "Not disclosed"}
+          </span>
+          {opportunity.internshipType !== undefined && (
+            <span className="px-3 py-1 bg-yellow-50 border border-yellow-200 text-yellow-700 rounded-full text-xs sm:text-sm font-medium flex items-center">
+              <Clock className="h-4 w-4 mr-1" />
+              {getInternshipTypeText(opportunity.internshipType)}
+            </span>
+          )}
+        </div>
+
+        {/* Stats */}
+        <div className="flex flex-wrap gap-6 text-sm text-gray-600">
+          <div className="flex items-center">
+            <Users className="h-4 w-4 mr-2 text-gray-400" />
+            <span>{opportunity.applications?.length || 0} Applicants</span>
+          </div>
+          <div className="flex items-center">
+            <Eye className="h-4 w-4 mr-2 text-gray-400" />
+            <span>{opportunity.views || 0} Views</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Apply / Applied */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        {appliedOpportunities.has(opportunity._id) ? (
+          <>
+            <a
+              href={`tel:${opportunity?.branch?.helplineNumber}`}
+              className="inline-flex items-center px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors shadow-sm"
+            >
+              <Phone className="h-5 w-5 mr-2" />
+              {opportunity?.branch?.helplineNumber}
+            </a>
+            <div className="inline-flex items-center px-6 py-2 bg-green-50 border border-green-200 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
+              <span className="font-medium text-green-700">Already Applied</span>
+            </div>
+          </>
+        ) : (
+          <div>
+            <p className="text-sm text-gray-600 mb-1">
+              Please click the call button below to apply directly.
+            </p>
+            <button
+              onClick={handleApply}
+              className="inline-flex items-center px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors shadow-sm"
+            >
+              <Phone className="h-5 w-5 mr-2" />
+              {opportunity?.branch?.helplineNumber
+                ? opportunity?.branch?.helplineNumber.slice(0, -3) + 'XXX'
+                : ''}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+
+  {/* Details, Benefits, Description, Requirements */}
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    {/* Benefits */}
+    {opportunity && displayBenefits.length > 0 && (
+      <div className="p-4 ">
+        <h3 className="text-base font-semibold mb-3 flex items-center text-gray-900">
+          <UserCheck className="h-5 w-5 mr-2 text-green-500" />
+          Benefits
+        </h3>
+        <ul className="space-y-2 text-gray-700 text-sm">
+          {displayBenefits.map((benefit, index) => {
+            const benefitData = benefits.find((b) => b.backendValue === benefit);
+            const Icon = benefitData?.icon || Gift;
+            return (
+              <li key={index} className="flex items-center">
+                <Icon className="h-5 w-5 mr-2 text-green-500" />
+                <span>{benefitData?.label || "Unknown Benefit"}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    )}
+
+{/* Other Details */} <div className="px-6 py-3"> <h3 className="text-lg font-semibold flex items-center text-gray-900 mb-4"> <Calendar className="h-5 w-5 mr-2 text-orange-500" /> Other Details </h3> <ul className="space-y-3 text-gray-700"> {opportunity.schedule?.startDate && ( <li className="flex justify-between text-sm"> <span>Start Date:</span> <span className="font-medium">{formatDateWithSuffix(opportunity.schedule.startDate)}</span> </li> )} {opportunity.schedule?.endDate && ( <li className="flex justify-between text-sm"> <span>End Date:</span> <span className="font-medium">{formatDateWithSuffix(opportunity.schedule.endDate)}</span> </li> )} {opportunity.schedule?.days?.length > 0 && ( <li> <div className="flex justify-between mb-2 text-sm"> <span>Working Days:</span> <span className="font-medium">{opportunity.schedule.days.length} days/week</span> </div> <div className="flex flex-wrap gap-2"> {opportunity.schedule.days.map((day, index) => ( <span key={index} className="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-medium capitalize" > {getDayName(day)} </span> ))} </div> </li> )} {opportunity.schedule?.shift !== undefined && ( <li className="flex justify-between text-sm"> <span>Shift:</span> <span className="font-medium">{getShiftText(opportunity.schedule.shift)}</span> </li> )} {opportunity.schedule?.hoursPerDay && ( <li className="flex justify-between text-sm"> <span>Hours Per Day:</span> <span className="font-medium">{opportunity.schedule.hoursPerDay} hours</span> </li> )} {opportunity.duration && ( <li className="flex justify-between text-sm"> <span>Duration:</span> <span className="font-medium">{getDurationText(opportunity)}</span> </li> )} {opportunity.languages?.required?.length > 0 && ( <li className="flex justify-between text-sm"> <span>Required Languages:</span> <span>{opportunity.languages.required.map(lang => getLanguageText(lang, languages)).join(" / ")}</span> </li> )} {opportunity.languages?.preferred?.length > 0 && ( <li className="flex justify-between text-sm"> <span>Preferred Languages:</span> <span>{opportunity.languages.preferred.map(lang => getLanguageText(lang, languages)).join(" / ")}</span> </li> )} </ul> </div>
+
+    {/* Job Description */}
+    {opportunity?.description && (
+      <div className="p-4 lg:col-span-2">
+        <h3 className="text-base font-semibold flex items-center text-gray-900 mb-3">
+          <FileText className="h-5 w-5 mr-2 text-orange-500" />
+          Job Description
+        </h3>
+        <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
+          {opportunity.description || "No description provided."}
+        </p>
+      </div>
+    )}
+
+    {/* Requirements */}
+    {opportunity.requirements?.length > 0 && (
+      <div className="p-4 ">
+        <h3 className="text-base font-semibold mb-3 text-gray-900">Requirements</h3>
+        <ul className="space-y-2 text-gray-700 text-sm">
+          {opportunity.requirements.map((req, index) => (
+            <li key={index} className="flex items-start">
+              <CheckCircle className="h-5 w-5 text-green-500 mr-2 mt-1" />
+              {req}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+</div>
+  
         {/* Hyderabad Latest Jobs Section */}
         <div className="mt-5 rounded-lg py-6 max-w-4xl mx-auto">
           <h2 className="text-lg font-semibold mb-4 flex items-center text-gray-900">

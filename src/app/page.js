@@ -13,9 +13,9 @@ export default function Home() {
     {/* <Header activeLink="/" /> */}
     <HeroSection />          {/* Grab attention */}
     <QuickStats />
-    <PopularJobRoles />      {/* Show opportunities */}
     <FeaturedJobs />         {/* Actual jobs */}
     <WhyChooseUs />          {/* Build trust */}
+    <PopularJobRoles />      {/* Show opportunities */}
     {/* <HowItWorks />            */}
     <Testimonials />         {/* Social proof */}
     <CTASection />           {/* Final call-to-action */}

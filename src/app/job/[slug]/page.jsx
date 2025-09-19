@@ -1,12 +1,53 @@
-// app/opportunities/[slug]/page.jsx
+// app/job/[slug]/page.jsx
 import { authService } from "@/services/authService";
 import { makeStore } from "@/store";
 import { Providers } from "../../providers";
 import OpportunityDetailContent from "@/components/csr/OpportunityDetailContent";
 import { ArrowLeft, User, Phone, Lock, MapPin } from "lucide-react";
 import axios from "axios";
+import sanitizeHtml from 'sanitize-html';
+import { generateJobPostingSchema } from '@/utils/jobSchemaUtils';
 
-// Server Component (Root)
+// Generate dynamic metadata
+export async function generateMetadata({ params }) {
+  const { slug } = params;
+  let opportunity = null;
+
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public/${slug}`, {
+      cache: "no-store",
+    });
+    if (!response.ok) throw new Error("Opportunity not found");
+    const data = await response.json();
+    if (data.success) {
+      opportunity = data.data;
+    } else {
+      throw new Error(data.message || "Failed to fetch opportunity");
+    }
+  } catch (error) {
+    console.error("Error fetching opportunity for metadata:", error);
+    return {
+      title: "Opportunity Not Found | FasterQ.in",
+      description: "The opportunity you are looking for does not exist. Explore other jobs on FasterQ.in.",
+      alternates: {
+        canonical: `https://www.fasterq.in/job/${slug}`,
+      },
+    };
+  }
+
+  const role = opportunity?.title || "Job";
+  const city = opportunity?.location?.city || opportunity?.branch?.location?.city?.name || "Unknown City";
+  const restaurant = opportunity?.branch?.parentRestaurant?.name || "Unknown Restaurant";
+
+  return {
+    title: `${role} Job at ${restaurant} in ${city} | FasterQ.in`,
+    description: `Apply for ${role} at ${restaurant} in ${city}. Discover details, salary, and benefits. Join FasterQ.in to get hired quickly.`,
+    alternates: {
+      canonical: `https://www.fasterq.in/job/${slug}`,
+    },
+  };
+}
+
 export default async function PublicOpportunityDetail({ params }) {
   const { slug } = params;
   const store = makeStore();
@@ -17,29 +58,9 @@ export default async function PublicOpportunityDetail({ params }) {
   let appliedOpportunities = [];
   let cities = [];
 
-  // Check auth status
-  // try {
-  //   const { cookies } = await import("next/headers");
-  //   const token = cookies().get("token")?.value;
-  //   if (token) {
-  //     // const response = await authService.getMe();
-  //     if (response.success) {
-  //       store.dispatch({
-  //         type: "auth/setCredentials",
-  //         payload: { user: response.data.user, token },
-  //       });
-  //       isAuthenticated = true;
-  //       hasProfile = !!response.data.user.profile;
-  //     }
-  //   }
-  // } catch (error) {
-  //   console.error("Failed to check auth:", error);
-  // }
-
-  // Fetch opportunity
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public/${slug}`, {
-      cache: "no-store", // Avoid caching for fresh data
+      cache: "no-store",
     });
     if (!response.ok) throw new Error("Opportunity not found");
     const data = await response.json();
@@ -68,10 +89,12 @@ export default async function PublicOpportunityDetail({ params }) {
     );
   }
 
-  // Fetch applied opportunities if authenticated
+  // Generate JobPosting schema
+  const jobSchema = generateJobPostingSchema(opportunity);
+
   if (isAuthenticated && hasProfile) {
     try {
-      const token = store.getState().auth.token; // Get token from Redux state
+      const token = store.getState().auth.token;
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -86,7 +109,6 @@ export default async function PublicOpportunityDetail({ params }) {
     }
   }
 
-  // Fetch cities for registration form
   try {
     const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/cities`, {
       cache: "no-store",
@@ -98,15 +120,32 @@ export default async function PublicOpportunityDetail({ params }) {
 
   initialReduxState = store.getState();
 
+  const role = opportunity?.title || "Job";
+  const city = opportunity?.location?.city || opportunity?.branch?.location?.city?.name || "Unknown City";
+  const restaurant = opportunity?.branch?.parentRestaurant?.name || "Unknown Restaurant";
+
   return (
-    <Providers initialReduxState={initialReduxState}>
-      <OpportunityDetailContent
-        initialOpportunity={opportunity}
-        initialAppliedOpportunities={appliedOpportunities}
-        isAuthenticated={isAuthenticated}
-        hasProfile={hasProfile}
-        cities={cities}
+    <div className="min-h-screen bg-gray-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jobSchema) }}
       />
-    </Providers>
+      <div className="py-8 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-center py-6 max-w-4xl mx-auto">
+          <h1 className="text-center text-3xl font-bold text-gray-900">
+            {role} Job in {city} at {restaurant}
+          </h1>
+        </div>
+        <Providers initialReduxState={initialReduxState}>
+          <OpportunityDetailContent
+            initialOpportunity={opportunity}
+            initialAppliedOpportunities={appliedOpportunities}
+            isAuthenticated={isAuthenticated}
+            hasProfile={hasProfile}
+            cities={cities}
+          />
+        </Providers>
+      </div>
+    </div>
   );
 }

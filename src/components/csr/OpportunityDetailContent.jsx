@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import {
   MapPin, Calendar, Clock, Building, Briefcase, ArrowLeft,
   FileText, CheckCircle, Languages, UserCheck, Gift, Users, Eye,
-  Phone, User, Lock, Search
+  Phone, User, Lock, Search,
+  IndianRupee
 } from "lucide-react";
 import Link from "next/link";
 import { formatDateWithSuffix } from "@/utils/dateFormat";
@@ -285,13 +286,13 @@ export default function OpportunityDetailContent({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
       {/* Back Button and Title */}
-      <div className="flex justify-center py-6">
+      {/* <div className="flex justify-center py-6">
         <h1 className="text-center">
           {opportunity.title} - {getOpportunityTypeText(opportunity.opportunityType)}
         </h1>
-      </div>
+      </div> */}
       <div className="p-6 bg-white/90 max-w-4xl border border-[#EEEEEE] mx-auto space-y-6">
         {/* Opportunity Header */}
         <div className="pb-6 border-b border-gray-200">
@@ -316,7 +317,7 @@ export default function OpportunityDetailContent({
             <div className="space-y-4">
               {/* Restaurant Info */}
               <div className="flex items-center text-gray-600">
-                <MapPin className="h-4 w-4 mr-2" />
+                <MapPin className="h-4 w-4 mr-1" />
                 {opportunity.branch?.name},{"\u00A0"}
                 {opportunity.branch?.location?.city?.name ? (
                   <Link
@@ -333,9 +334,10 @@ export default function OpportunityDetailContent({
               </div>
 
               <div className="flex flex-wrap gap-3">
-                <span className="ml-1 text-gray-700 rounded-full text-sm font-medium flex items-center">
-                  {getStipendText(opportunity.compensation)}
-                </span>
+                <span className=" text-gray-700 rounded-full text-sm font-medium flex items-center">
+                <IndianRupee className="h-4 w-4 mr-1" />
+                {getStipendText(opportunity.compensation) || "Not disclosed"}
+              </span>
                 {opportunity.internshipType !== undefined && (
                   <span className="px-4 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium flex items-center">
                     <Clock className="h-5 w-5 mr-2" />
@@ -491,7 +493,7 @@ export default function OpportunityDetailContent({
 
         {/* Job Description */}
         {opportunity?.description && (
-          <div className="border-b border-gray-200">
+          <div className="border-b py-6 border-gray-200">
             <h3 className="text-lg font-semibold mb-4 flex items-center text-gray-900">
               <FileText className="h-5 w-5 mr-2 text-orange-500" />
               Job Description

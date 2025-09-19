@@ -18,11 +18,11 @@ export default function HomePage() {
               </div>
 
               <h1 className="!text-4xl md:!text-5xl lg:!text-5xl !font-extrabold  leading-tight animate-fade-in delay-100">
-               Find Restaurant Jobs <br/> <span className="text-primary">Fast & Easy</span> 
+               Restaurant Jobs & Hiring<br/> <span className="text-primary">Made Faster</span> 
               </h1>
 
               <p className="text-lg  text-gray-600 leading-relaxed animate-fade-in delay-200 max-w-lg">
- Find verified restaurant jobs across India for chefs, waiters, managers, baristas, and more. Apply easily and grow your hospitality career with FasterQ.
+                Find verified restaurant jobs across India for chefs, waiters, managers, baristas, and more. Apply easily and grow your hospitality career with FasterQ.
               </p>
 
               {/* CTA Buttons */}

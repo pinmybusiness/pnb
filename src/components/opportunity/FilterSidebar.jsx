@@ -3,16 +3,11 @@ import { MapPin, Filter, DollarSign, ChevronDown, X, Search } from "lucide-react
 
 export default function FilterSidebar({
   filters,
-  setFilters, // Add setFilters to update state directly
+  handleFilterChange, // Changed from setFilters to handleFilterChange
   clearFilters,
   showFilters,
   setShowFilters,
 }) {
-  // Move handleFilterChange from OpportunitiesContent to here
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
   return (
     <>
       {/* Mobile Filter Button */}

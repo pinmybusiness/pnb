@@ -11,12 +11,29 @@ export default function ContactPage() {
     phone: "",
     message: ""
   });
+  const [status, setStatus] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log("Form submitted:", formData);
-    // Add your form submission logic here (API call, etc.)
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        setStatus({ type: 'success', message: 'Form submitted successfully!' });
+        setFormData({ name: "", phone: "", message: "" }); // Reset form
+      } else {
+        setStatus({ type: 'error', message: data.error || 'Failed to submit form.' });
+      }
+    } catch (error) {
+      setStatus({ type: 'error', message: 'An error occurred. Please try again.' });
+    }
   };
 
   const handleChange = (e) => {
@@ -43,7 +60,6 @@ export default function ContactPage() {
 
   return (
     <div className="bg-gray-50 ">
-
       {/* Main Section */}
       <section className="py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -67,6 +83,15 @@ export default function ContactPage() {
               <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">
                 Request a Call Back
               </h2>
+              {status && (
+                <div
+                  className={`mb-4 p-4 rounded-xl ${
+                    status.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  }`}
+                >
+                  {status.message}
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-6">
                 <motion.div variants={itemVariants}>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -130,10 +155,9 @@ export default function ContactPage() {
                     icon={Send}
                     size="lg"
                     className="w-full rounded-full"
-                    onClick={handleSubmit} // triggers form submission
+                    onClick={handleSubmit}
                   />
                 </motion.div>
-
               </form>
             </motion.div>
           </div>

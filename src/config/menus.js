@@ -44,6 +44,7 @@ export const allMenus = [
     ]
   },
   { name: "Applications", href: "/dashboard/applications", icon: FileCheck, roles: [0,1,2] },
+  { name: "Contacts", href: "/dashboard/contacts", icon: Users, roles: [0] },
   { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0] },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [0,3] },
 ];

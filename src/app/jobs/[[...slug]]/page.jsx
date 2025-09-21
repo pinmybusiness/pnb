@@ -70,7 +70,7 @@ export async function generateMetadata({ params }) {
 
   if (city && !role) {
     const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public`;
-    const response = await fetch(`${baseUrl}?page=1&limit=20&workTypeSlug=${encodeURIComponent(city)}`, {
+    const response = await fetch(`${baseUrl}?page=1&limit=12&workTypeSlug=${encodeURIComponent(city)}`, {
       headers: { 'Cache-Control': 'no-store' },
       next: { revalidate: 300 },
     });
@@ -99,7 +99,7 @@ export async function generateMetadata({ params }) {
 
 export default async function JobsPage({ params, searchParams }) {
   const { slug = [] } = params || {};
-  const { page = 1, limit = 20 } = searchParams || {};
+  const { page = 1, limit = 12 } = searchParams || {};
 
   const city = slug[0];
   const role = slug[1];
@@ -109,12 +109,12 @@ export default async function JobsPage({ params, searchParams }) {
   let isAuthenticated = false;
   let isCity = false;
   let isRole = false;
-
+  let paginationData = { current: 1, total: 1, totalRecords: 0 }; // Initialize pagination data
   
   const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public`;
   
   try {
-    let url = `${baseUrl}?page=${page}&limit=${limit}`;
+    let url = `${baseUrl}?page=1&limit=${limit}`;
     if (city && role) {
       url += `&search=${encodeURIComponent(city)}&workTypeSlug=${encodeURIComponent(role)}`;
     } else if (city) {
@@ -128,6 +128,7 @@ export default async function JobsPage({ params, searchParams }) {
     const data = await response.json();
     if (data.success) {
       opportunities = data.data || [];
+      paginationData = data.pagination || { current: 1, total: 1, totalRecords: opportunities.length }; // Store pagination data
       if (city) {
         isCity = opportunities.some((opp) => {
           const cityName = opp.location?.city || opp.branch?.location?.city?.name;
@@ -154,6 +155,7 @@ export default async function JobsPage({ params, searchParams }) {
       const roleData = await roleResponse.json();
       if (roleData.success) {
         opportunities = roleData.data || [];
+        paginationData = roleData.pagination || { current: 1, total: 1, totalRecords: opportunities.length }; // Store pagination data
         isRole = opportunities.some((opp) => opp.workTypeSlug === city);
       }
     }
@@ -246,7 +248,7 @@ export default async function JobsPage({ params, searchParams }) {
   } : null;
 
   // Generate JobPosting schemas for ItemList
-  const jobSchemas = opportunities.slice(0, 20).map((opp) => generateJobPostingSchema(opp));
+  const jobSchemas = opportunities.slice(0, 12).map((opp) => generateJobPostingSchema(opp));
 
   const itemListSchema = opportunities.length > 0 ? {
     "@context": "https://schema.org",
@@ -295,8 +297,7 @@ export default async function JobsPage({ params, searchParams }) {
             isAuthenticated={isAuthenticated}
             pageTitle={title}
             initialFilters={initialFilters}
-            currentPage={parseInt(page)}
-            totalPages={opportunities.pagination?.total || 1}
+            initialPagination={paginationData} // Pass the pagination data
             basePath={city && role ? `/jobs/${city}/${role}` : city ? `/jobs/${city}` : '/jobs'}
           />
         </Providers>

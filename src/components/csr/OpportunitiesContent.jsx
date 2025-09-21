@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Search, Award, Briefcase, ChevronDown } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Search } from "lucide-react";
 import { useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
 import FilterSidebar from "../opportunity/FilterSidebar";
@@ -13,18 +13,27 @@ export default function OpportunitiesContent({
   initialOpportunities,
   initialAppliedOpportunities,
   isAuthenticated: initialIsAuthenticated,
-  pageTitle,
   initialFilters,
-  currentPage = 1,
-  totalPages = 1,
+  initialPagination,
   basePath = "/jobs",
 }) {
   const { token } = useSelector((state) => state.auth);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
   const [opportunities, setOpportunities] = useState(initialOpportunities || []);
-  const [filteredOpportunities, setFilteredOpportunities] = useState(initialOpportunities || []);
+  const [pagination, setPagination] = useState(initialPagination || { 
+    current: 1, 
+    total: 1, 
+    totalRecords: 0 
+  });
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(initialPagination?.current < initialPagination?.total);
+  const [currentPage, setCurrentPage] = useState(initialPagination?.current || 1);
   const [appliedOpportunities, setAppliedOpportunities] = useState(new Set(initialAppliedOpportunities || []));
   const [appliedLoading, setAppliedLoading] = useState(false);
+  
   const [filters, setFilters] = useState({
     opportunityType: "",
     location: "",
@@ -34,9 +43,23 @@ export default function OpportunitiesContent({
     baseWorkTypeSlug: "", // From slug (role)
     ...initialFilters,
   });
+  
   const [showFilters, setShowFilters] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(initialIsAuthenticated);
-  const router = useRouter();
+  
+  const observer = useRef();
+  const lastOpportunityRef = useCallback((node) => {
+    if (loadingMore) return;
+    if (observer.current) observer.current.disconnect();
+    
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+        loadMoreOpportunities();
+      }
+    });
+    
+    if (node) observer.current.observe(node);
+  }, [loading, loadingMore, hasMore]);
 
   useEffect(() => {
     if (isAuthenticated && !initialAppliedOpportunities.length) {
@@ -45,64 +68,95 @@ export default function OpportunitiesContent({
   }, [isAuthenticated, initialAppliedOpportunities]);
 
   useEffect(() => {
-    if (!loading) {
-      fetchOpportunities();
-    }
+    // Reset to first page when filters change
+    setCurrentPage(1);
+    setHasMore(true);
+    fetchOpportunities(true);
   }, [
     filters.opportunityType,
     filters.minStipend,
     filters.search,
     filters.location,
-    currentPage,
     filters.baseSearch,
     filters.baseWorkTypeSlug,
   ]);
 
-  useEffect(() => {
-    filterOpportunities();
-  }, [opportunities]);
-
-  const fetchOpportunities = async () => {
-    try {
+const fetchOpportunities = async (reset = false) => {
+  try {
+    if (reset) {
       setLoading(true);
-      const { opportunityType, minStipend, search, location, baseSearch, baseWorkTypeSlug } = filters;
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=20&page=${currentPage}`;
+    } else {
+      setLoadingMore(true);
+    }
+    
+    const { opportunityType, minStipend, search, location, baseSearch, baseWorkTypeSlug } = filters;
+    const pageToFetch = reset ? 1 : currentPage + 1;
+    
+    let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=12&page=${pageToFetch}`;
 
-      const params = new URLSearchParams();
-      if (opportunityType) params.append("opportunityType", opportunityType);
-      if (minStipend) params.append("minStipend", minStipend);
+    const params = new URLSearchParams();
+    
+    // Add all filter parameters to the request
+    if (opportunityType) params.append("opportunityType", opportunityType);
+    if (minStipend) params.append("minStipend", minStipend);
+    
+    // Use location for search if provided (city/area search)
+    if (location && location !== baseSearch) {
+      params.append("search", location.trim());
+    }
+    
+    // Use search term for role/skills if provided
+    if (search && search !== baseWorkTypeSlug) {
+      params.append("search", search.trim());
+    }
+    
+    // If both location and search are provided, combine them
+    if (location && location !== baseSearch && search && search !== baseWorkTypeSlug) {
+      params.set("search", `${location} ${search}`.trim());
+    }
+    
+    // Use base filters from URL if available
+    if (baseSearch && !location) {
+      params.append("search", baseSearch);
+    }
+    
+    if (baseWorkTypeSlug) {
+      params.append("workTypeSlug", baseWorkTypeSlug);
+    }
 
-      // Combine search sources to avoid duplicates
-      let effectiveSearch = '';
-      if (baseSearch) effectiveSearch += baseSearch;
-      if (location && location !== baseSearch) {
-        effectiveSearch += (effectiveSearch ? ' ' : '') + location;
-      }
-      if (search && search !== baseWorkTypeSlug) {
-        effectiveSearch += (effectiveSearch ? ' ' : '') + search;
-      }
-      if (effectiveSearch) {
-        params.append("search", effectiveSearch.trim());
-      }
+    if (params.toString()) url += `&${params.toString()}`;
 
-      if (baseWorkTypeSlug) params.append("workTypeSlug", baseWorkTypeSlug);
+    console.log('Fetching opportunities from:', url); // Debug log
 
-      if (params.toString()) url += `&${params.toString()}`;
-
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.success) {
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.success) {
+      if (reset) {
         setOpportunities(data.data);
-        setFilteredOpportunities(data.data);
+        setPagination(data.pagination);
       } else {
-        console.error("Failed to fetch opportunities:", data.message);
-        toast.error(data.message || "Failed to fetch opportunities");
+        setOpportunities(prev => [...prev, ...data.data]);
       }
-    } catch (error) {
-      console.error("Error fetching opportunities:", error);
-      toast.error("Error fetching opportunities. Please try again.");
-    } finally {
-      setLoading(false);
+      
+      setCurrentPage(pageToFetch);
+      setHasMore(pageToFetch < data.pagination.total);
+    } else {
+      console.error("Failed to fetch opportunities:", data.message);
+      toast.error(data.message || "Failed to fetch opportunities");
+    }
+  } catch (error) {
+    console.error("Error fetching opportunities:", error);
+    toast.error("Error fetching opportunities. Please try again.");
+  } finally {
+    setLoading(false);
+    setLoadingMore(false);
+  }
+};
+
+  const loadMoreOpportunities = () => {
+    if (!loading && !loadingMore && hasMore) {
+      fetchOpportunities(false);
     }
   };
 
@@ -113,9 +167,11 @@ export default function OpportunitiesContent({
         setIsAuthenticated(false);
         return;
       }
+      
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/applications`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
       if (response.status === 401) {
         localStorage.removeItem("token");
         setIsAuthenticated(false);
@@ -123,6 +179,7 @@ export default function OpportunitiesContent({
         router.push("/login");
         return;
       }
+      
       const data = await response.json();
       if (data.success) {
         const appliedIds = data.data.map((app) => app.opportunity._id);
@@ -136,54 +193,37 @@ export default function OpportunitiesContent({
     }
   };
 
-  const filterOpportunities = () => {
-    let results = [...opportunities];
-
-    if (filters.opportunityType) {
-      results = results.filter((opportunity) => opportunity.opportunityType === parseInt(filters.opportunityType));
-    }
-
-    if (filters.minStipend) {
-      results = results.filter((opportunity) =>
-        (opportunity.opportunityType === 1 && opportunity.compensation?.stipendAmount >= parseInt(filters.minStipend)) ||
-        (opportunity.opportunityType === 0 && opportunity.compensation?.minAmount >= parseInt(filters.minStipend))
-      );
-    }
-
-    if (filters.search && !filters.baseWorkTypeSlug) {
-      const searchTerm = filters.search.toLowerCase();
-      results = results.filter(
-        (opportunity) =>
-          opportunity.title.toLowerCase().includes(searchTerm) ||
-          opportunity.description.toLowerCase().includes(searchTerm) ||
-          opportunity.branch?.name.toLowerCase().includes(searchTerm) ||
-          opportunity.tags?.some((tag) => tag.toLowerCase().includes(searchTerm))
-      );
-    }
-
-    if (filters.location && !filters.baseSearch) {
-      const locationTerm = filters.location.toLowerCase();
-      results = results.filter(
-        (opportunity) =>
-          opportunity.branch?.address?.toLowerCase().includes(locationTerm) ||
-          opportunity.branch?.location?.city?.name.toLowerCase().includes(locationTerm) ||
-          opportunity.branch?.location?.state?.toLowerCase().includes(locationTerm)
-      );
-    }
-
-    setFilteredOpportunities(results);
-  };
-
   const clearFilters = () => {
     setFilters({
       opportunityType: "",
-      location: filters.baseSearch || "",
+      location: "",
       minStipend: "",
-      search: filters.baseWorkTypeSlug || "",
-      baseSearch: filters.baseSearch || "",
-      baseWorkTypeSlug: filters.baseWorkTypeSlug || "",
+      search: "",
+      baseSearch: "",
+      baseWorkTypeSlug: "",
     });
-    router.push("/jobs");
+    // Update URL without page reload
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.delete('page');
+    router.push(`/jobs`, { scroll: false });
+  };
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }));
+    
+    // Update URL params for shareable links
+    const newSearchParams = new URLSearchParams(searchParams);
+    
+    if (value) {
+      newSearchParams.set(key, value);
+    } else {
+      newSearchParams.delete(key);
+    }
+    
+    // Remove page param when filters change
+    newSearchParams.delete('page');
+    
+    router.push(`${basePath}?${newSearchParams.toString()}`, { scroll: false });
   };
 
   return (
@@ -193,7 +233,7 @@ export default function OpportunitiesContent({
           {/* Filter Sidebar */}
           <FilterSidebar
             filters={filters}
-            setFilters={setFilters} // Pass setFilters instead of handleFilterChange
+            handleFilterChange={handleFilterChange} // Pass the handler
             clearFilters={clearFilters}
             showFilters={showFilters}
             setShowFilters={setShowFilters}
@@ -203,39 +243,50 @@ export default function OpportunitiesContent({
           <div className="w-full lg:flex-1">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6">
               <h2 className="!text-xl font-semibold text-gray-900 mb-2 sm:mb-0">
-                {filteredOpportunities.length} Opportunities Available
+                {pagination.totalRecords > 0 
+                  ? `${pagination.totalRecords} Opportunities Available` 
+                  : 'No Opportunities Found'
+                }
               </h2>
             </div>
-            {loading || appliedLoading ? (
+            
+            {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {[1, 2, 3, 4].map((i) => (
                  <JobCardSkeleton key={i} />
                 ))}
               </div>
-            ) : filteredOpportunities.length > 0 ? (
+            ) : opportunities.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {filteredOpportunities.map((opportunity) => (
-                    <JobCard
-                      key={opportunity._id}
-                      opportunity={opportunity}
-                      appliedOpportunities={appliedOpportunities}
-                    />
+                  {opportunities.map((opportunity, index) => (
+                    <div 
+                      key={opportunity._id} 
+                      ref={index === opportunities.length - 1 ? lastOpportunityRef : null}
+                    >
+                      <JobCard
+                        opportunity={opportunity}
+                        appliedOpportunities={appliedOpportunities}
+                      />
+                    </div>
                   ))}
                 </div>
-                {totalPages > 1 && (
-                  <div className="mt-6 flex justify-center gap-2">
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <a
-                        key={i + 1}
-                        href={`${basePath}?page=${i + 1}`}
-                        className={`px-4 py-2 rounded ${currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
-                      >
-                        {i + 1}
-                      </a>
+                
+                {/* Loading more indicator */}
+                {loadingMore && (
+                  <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    {[1, 2].map((i) => (
+                      <JobCardSkeleton key={i} />
                     ))}
                   </div>
                 )}
+                
+                {/* No more results */}
+                {/* {!hasMore && opportunities.length > 0 && (
+                  <div className="mt-8 text-center text-gray-500">
+                    You've reached the end of the list
+                  </div>
+                )} */}
               </>
             ) : (
               <div className="bg-white rounded-xl p-8 text-center border border-gray-100">

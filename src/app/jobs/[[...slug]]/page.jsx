@@ -109,7 +109,7 @@ export default async function JobsPage({ params, searchParams }) {
   let isAuthenticated = false;
   let isCity = false;
   let isRole = false;
-
+  let paginationData = { current: 1, total: 1, totalRecords: 0 }; // Initialize pagination data
   
   const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public`;
   
@@ -128,6 +128,7 @@ export default async function JobsPage({ params, searchParams }) {
     const data = await response.json();
     if (data.success) {
       opportunities = data.data || [];
+      paginationData = data.pagination || { current: 1, total: 1, totalRecords: opportunities.length }; // Store pagination data
       if (city) {
         isCity = opportunities.some((opp) => {
           const cityName = opp.location?.city || opp.branch?.location?.city?.name;
@@ -154,6 +155,7 @@ export default async function JobsPage({ params, searchParams }) {
       const roleData = await roleResponse.json();
       if (roleData.success) {
         opportunities = roleData.data || [];
+        paginationData = roleData.pagination || { current: 1, total: 1, totalRecords: opportunities.length }; // Store pagination data
         isRole = opportunities.some((opp) => opp.workTypeSlug === city);
       }
     }
@@ -295,8 +297,7 @@ export default async function JobsPage({ params, searchParams }) {
             isAuthenticated={isAuthenticated}
             pageTitle={title}
             initialFilters={initialFilters}
-            currentPage={parseInt(page)}
-            totalPages={opportunities.pagination?.total || 1}
+            initialPagination={paginationData} // Pass the pagination data
             basePath={city && role ? `/jobs/${city}/${role}` : city ? `/jobs/${city}` : '/jobs'}
           />
         </Providers>

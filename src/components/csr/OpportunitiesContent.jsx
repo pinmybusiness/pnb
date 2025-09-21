@@ -13,7 +13,6 @@ export default function OpportunitiesContent({
   initialOpportunities,
   initialAppliedOpportunities,
   isAuthenticated: initialIsAuthenticated,
-  pageTitle,
   initialFilters,
   initialPagination,
   basePath = "/jobs",
@@ -82,65 +81,78 @@ export default function OpportunitiesContent({
     filters.baseWorkTypeSlug,
   ]);
 
-  const fetchOpportunities = async (reset = false) => {
-    try {
-      if (reset) {
-        setLoading(true);
-      } else {
-        setLoadingMore(true);
-      }
-      
-      const { opportunityType, minStipend, search, location, baseSearch, baseWorkTypeSlug } = filters;
-      const pageToFetch = reset ? 1 : currentPage + 1;
-      
-      let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=12&page=${pageToFetch}`;
-
-      const params = new URLSearchParams();
-      if (opportunityType) params.append("opportunityType", opportunityType);
-      if (minStipend) params.append("minStipend", minStipend);
-
-      // Combine search sources to avoid duplicates
-      let effectiveSearch = '';
-      if (baseSearch) effectiveSearch += baseSearch;
-      if (location && location !== baseSearch) {
-        effectiveSearch += (effectiveSearch ? ' ' : '') + location;
-      }
-      if (search && search !== baseWorkTypeSlug) {
-        effectiveSearch += (effectiveSearch ? ' ' : '') + search;
-      }
-      if (effectiveSearch) {
-        params.append("search", effectiveSearch.trim());
-      }
-
-      if (baseWorkTypeSlug) params.append("workTypeSlug", baseWorkTypeSlug);
-
-      if (params.toString()) url += `&${params.toString()}`;
-
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (data.success) {
-        if (reset) {
-          setOpportunities(data.data);
-          setPagination(data.pagination);
-        } else {
-          setOpportunities(prev => [...prev, ...data.data]);
-        }
-        
-        setCurrentPage(pageToFetch);
-        setHasMore(pageToFetch < data.pagination.total);
-      } else {
-        console.error("Failed to fetch opportunities:", data.message);
-        toast.error(data.message || "Failed to fetch opportunities");
-      }
-    } catch (error) {
-      console.error("Error fetching opportunities:", error);
-      toast.error("Error fetching opportunities. Please try again.");
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
+const fetchOpportunities = async (reset = false) => {
+  try {
+    if (reset) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
     }
-  };
+    
+    const { opportunityType, minStipend, search, location, baseSearch, baseWorkTypeSlug } = filters;
+    const pageToFetch = reset ? 1 : currentPage + 1;
+    
+    let url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public?limit=12&page=${pageToFetch}`;
+
+    const params = new URLSearchParams();
+    
+    // Add all filter parameters to the request
+    if (opportunityType) params.append("opportunityType", opportunityType);
+    if (minStipend) params.append("minStipend", minStipend);
+    
+    // Use location for search if provided (city/area search)
+    if (location && location !== baseSearch) {
+      params.append("search", location.trim());
+    }
+    
+    // Use search term for role/skills if provided
+    if (search && search !== baseWorkTypeSlug) {
+      params.append("search", search.trim());
+    }
+    
+    // If both location and search are provided, combine them
+    if (location && location !== baseSearch && search && search !== baseWorkTypeSlug) {
+      params.set("search", `${location} ${search}`.trim());
+    }
+    
+    // Use base filters from URL if available
+    if (baseSearch && !location) {
+      params.append("search", baseSearch);
+    }
+    
+    if (baseWorkTypeSlug) {
+      params.append("workTypeSlug", baseWorkTypeSlug);
+    }
+
+    if (params.toString()) url += `&${params.toString()}`;
+
+    console.log('Fetching opportunities from:', url); // Debug log
+
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.success) {
+      if (reset) {
+        setOpportunities(data.data);
+        setPagination(data.pagination);
+      } else {
+        setOpportunities(prev => [...prev, ...data.data]);
+      }
+      
+      setCurrentPage(pageToFetch);
+      setHasMore(pageToFetch < data.pagination.total);
+    } else {
+      console.error("Failed to fetch opportunities:", data.message);
+      toast.error(data.message || "Failed to fetch opportunities");
+    }
+  } catch (error) {
+    console.error("Error fetching opportunities:", error);
+    toast.error("Error fetching opportunities. Please try again.");
+  } finally {
+    setLoading(false);
+    setLoadingMore(false);
+  }
+};
 
   const loadMoreOpportunities = () => {
     if (!loading && !loadingMore && hasMore) {
@@ -193,7 +205,7 @@ export default function OpportunitiesContent({
     // Update URL without page reload
     const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.delete('page');
-    router.push(`${basePath}?${newSearchParams.toString()}`, { scroll: false });
+    router.push(`/jobs`, { scroll: false });
   };
 
   const handleFilterChange = (key, value) => {

@@ -70,7 +70,7 @@ export async function generateMetadata({ params }) {
 
   if (city && !role) {
     const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public`;
-    const response = await fetch(`${baseUrl}?page=1&limit=20&workTypeSlug=${encodeURIComponent(city)}`, {
+    const response = await fetch(`${baseUrl}?page=1&limit=12&workTypeSlug=${encodeURIComponent(city)}`, {
       headers: { 'Cache-Control': 'no-store' },
       next: { revalidate: 300 },
     });
@@ -99,7 +99,7 @@ export async function generateMetadata({ params }) {
 
 export default async function JobsPage({ params, searchParams }) {
   const { slug = [] } = params || {};
-  const { page = 1, limit = 20 } = searchParams || {};
+  const { page = 1, limit = 12 } = searchParams || {};
 
   const city = slug[0];
   const role = slug[1];
@@ -114,7 +114,7 @@ export default async function JobsPage({ params, searchParams }) {
   const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/public`;
   
   try {
-    let url = `${baseUrl}?page=${page}&limit=${limit}`;
+    let url = `${baseUrl}?page=1&limit=${limit}`;
     if (city && role) {
       url += `&search=${encodeURIComponent(city)}&workTypeSlug=${encodeURIComponent(role)}`;
     } else if (city) {
@@ -246,7 +246,7 @@ export default async function JobsPage({ params, searchParams }) {
   } : null;
 
   // Generate JobPosting schemas for ItemList
-  const jobSchemas = opportunities.slice(0, 20).map((opp) => generateJobPostingSchema(opp));
+  const jobSchemas = opportunities.slice(0, 12).map((opp) => generateJobPostingSchema(opp));
 
   const itemListSchema = opportunities.length > 0 ? {
     "@context": "https://schema.org",

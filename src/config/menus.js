@@ -3,7 +3,8 @@ import {
   Store, Users, BarChart3, MapPin, Settings, 
   FileBarChart, LayoutDashboard, GraduationCap, 
   ClipboardList,
-  FileCheck
+  FileCheck,
+  PhoneCall
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
@@ -32,6 +33,15 @@ export const allMenus = [
       { name: "Entry", href: "/dashboard/entry", roles: [6,7,8] },
       { name: "Waiting List", href: "/dashboard/waiting-list", roles: [6,7,8] },
       { name: "Analytics", href: "/dashboard/analytics", roles: [6,7] },
+    ]
+  },
+  { 
+    name: "Trackly", 
+    icon: PhoneCall, 
+    roles: [6,7,8], 
+    children: [
+      { name: "MissedCalls", href: "/dashboard/tracking/missed-calls", roles: [6,7,8] },
+      { name: "PhoneCalls", href: "/dashboard/tracking", roles: [6,7,8] },
     ]
   },
   { 

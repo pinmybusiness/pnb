@@ -9,7 +9,28 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, Button, Input, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
 
-// StatusBadge component
+// Custom CallStatusIcon component
+const CallStatusIcon = ({ status, direction }) => {
+  const getIconProps = () => {
+    if (status === "missed") {
+      return direction === "incoming" ? { icon: <PhoneIncoming className="h-5 w-5 text-red-600" />, label: "Incoming Missed" } 
+                                     : { icon: <PhoneOutgoing className="h-5 w-5 text-blue-600" />, label: "Outgoing Missed" };
+    } else { // Assuming "answered" as the other status for simplicity
+      return direction === "incoming" ? { icon: <PhoneIncoming className="h-5 w-5 text-green-600" />, label: "Incoming Answered" } 
+                                     : { icon: <PhoneOutgoing className="h-5 w-5 text-green-600" />, label: "Outgoing Answered" };
+    }
+  };
+
+  const { icon, label } = getIconProps();
+
+  return (
+    <div className="flex items-center gap-2" title={label}>
+      {icon}
+    </div>
+  );
+};
+
+// StatusBadge component (unchanged but kept for consistency)
 const StatusBadge = ({ status }) => {
   const getStatusStyles = (status) => {
     switch (status) {
@@ -54,7 +75,6 @@ const MissedCalls = () => {
         name: call.receiver?.name || "Unknown",
         avatar: "",
       },
-      duration: call.duration || "0:00",
       status: statusMap[call.status] || "missed",
       direction: directionMap[call.direction] || "incoming",
       timestamp: new Date(call.timestamp).toLocaleString("en-IN", {
@@ -92,7 +112,6 @@ const MissedCalls = () => {
     return calls
       .filter((call) => {
         const matchesSearch =
-          call.caller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           call.caller.phone.includes(searchTerm) ||
           call.notes.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch;
@@ -100,10 +119,6 @@ const MissedCalls = () => {
       .sort((a, b) => {
         let aValue, bValue;
         switch (sortBy) {
-          case "caller":
-            aValue = a.caller.name || "";
-            bValue = b.caller.name || "";
-            break;
           case "timestamp":
             aValue = new Date(a.timestamp).getTime();
             bValue = new Date(b.timestamp).getTime();
@@ -127,7 +142,7 @@ const MissedCalls = () => {
         { status: statusMap[status] },
         { withCredentials: true }
       );
-      setCalls(calls.filter((call) => call.id !== callId)); // Remove from list if status changes
+      setCalls(calls.filter((call) => call.id !== callId));
       toast.success("Call status updated successfully");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to update status");
@@ -199,30 +214,29 @@ const MissedCalls = () => {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in p-4 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col justify-between items-start gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Missed Calls Dashboard</h1>
-          <p className="text-gray-500">Monitor and manage missed restaurant calls</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Missed Calls Dashboard</h1>
+          <p className="text-sm sm:text-base text-gray-500">Monitor and manage missed restaurant calls</p>
         </div>
       </div>
-
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard title="Missed Calls" value={kpiData.missedCalls} icon={PhoneMissed} />
+        <KPICard title="Missed Calls" value={kpiData.missedCalls} icon={PhoneIncoming} />
       </div>
 
       {/* Filters */}
       <Card className="p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="flex flex-col gap-4">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
               placeholder="Search calls, numbers, notes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              className="pl-10 text-sm sm:text-base"
             />
           </div>
         </div>
@@ -230,129 +244,147 @@ const MissedCalls = () => {
 
       {/* Calls Table */}
       <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead onClick={() => handleSort("caller")} className="cursor-pointer">
-                <div className="flex items-center gap-2">
-                  Caller
-                  <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
-              <TableHead>Receiver</TableHead>
-              <TableHead>Duration</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Direction</TableHead>
-              <TableHead onClick={() => handleSort("timestamp")} className="cursor-pointer">
-                <div className="flex items-center gap-2">
-                  Time
-                  <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
-              <TableHead>Notes</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredAndSortedCalls.map((call) => (
-              <TableRow key={call.id} className="hover:bg-gray-50">
-                <TableCell>
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
-                      {call.caller.avatar ? (
-                        <Image
-                          src={call.caller.avatar}
-                          alt={call.caller.name}
-                          width={40}
-                          height={40}
-                          className="object-cover"
-                        />
-                      ) : (
-                        <User className="h-5 w-5 text-gray-400" />
-                      )}
-                    </div>
-                    <div className="ml-4">
-                      {/* <div className="text-sm font-medium text-gray-900">{call.caller.name}</div> */}
+        {/* Desktop Table */}
+        <div className="hidden sm:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead onClick={() => handleSort("caller")} className="cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    Caller
+                    <ArrowUpDown className="h-4 w-4" />
+                  </div>
+                </TableHead>
+                <TableHead>Receiver</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead onClick={() => handleSort("timestamp")} className="cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    Time
+                    <ArrowUpDown className="h-4 w-4" />
+                  </div>
+                </TableHead>
+                <TableHead>Notes</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredAndSortedCalls.map((call) => (
+                <TableRow key={call.id} className="hover:bg-gray-50">
+                  <TableCell>
+                    <div className="flex items-center">
                       <div className="text-sm text-gray-500">{call.caller.phone}</div>
                     </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-shrink-0 h-8 w-8 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
-                      {call.receiver.avatar ? (
-                        <Image
-                          src={call.receiver.avatar}
-                          alt={call.receiver.name}
-                          width={32}
-                          height={32}
-                          className="object-cover"
-                        />
-                      ) : (
-                        <User className="h-4 w-4 text-gray-400" />
-                      )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-shrink-0 h-8 w-8 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                        {call.receiver.avatar ? (
+                          <Image
+                            src={call.receiver.avatar}
+                            alt={call.receiver.name}
+                            width={32}
+                            height={32}
+                            className="object-cover"
+                          />
+                        ) : (
+                          <User className="h-4 w-4 text-gray-400" />
+                        )}
+                      </div>
+                      <span className="text-sm font-medium text-gray-900">{call.receiver.name}</span>
                     </div>
-                    <span className="text-sm font-medium text-gray-900">{call.receiver.name}</span>
+                  </TableCell>
+                  <TableCell>
+                    <CallStatusIcon status={call.status} direction={call.direction} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div>{call.timestamp.split(", ")[1]}</div>
+                      <div className="text-xs text-gray-500">{call.timestamp.split(", ")[0]}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm text-gray-500 truncate max-w-[200px]">
+                      {call.notes || "No notes"}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => addNote(call.id, prompt("Enter note:") || "New note")}
+                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md"
+                        title="Add Note"
+                      >
+                        <Edit3 className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => markPriority(call.id, call.priority === "high" ? "normal" : "high")}
+                        className="p-2 text-gray-600 hover:text-yellow-600 hover:bg-gray-100 rounded-md"
+                        title="Toggle Priority"
+                      >
+                        <Star className={`h-5 w-5 ${call.priority === "high" ? "fill-yellow-600 text-yellow-600" : ""}`} />
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Mobile Card Layout */}
+        <div className="block sm:hidden space-y-4 p-4">
+          {filteredAndSortedCalls.map((call) => (
+            <Card key={call.id} className="p-4 shadow-sm">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-medium text-gray-900">{call.caller.phone}</div>
+                    <CallStatusIcon status={call.status} direction={call.direction} />
                   </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm font-mono text-gray-900">{call.duration}</div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    <StatusBadge status={call.status} />
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-1">
-                    {call.direction === "incoming" ? (
-                      <PhoneIncoming className="h-4 w-4 text-green-600" />
-                    ) : (
-                      <PhoneOutgoing className="h-4 w-4 text-blue-600" />
-                    )}
-                    <span className="text-sm capitalize">{call.direction}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm">
-                    <div>{call.timestamp.split(", ")[1]}</div>
-                    <div className="text-xs text-gray-500">{call.timestamp.split(", ")[0]}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="text-sm text-gray-500 truncate max-w-[200px]">
-                    {call.notes || "No notes"}
-                  </div>
-                </TableCell>
-                <TableCell>
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => handleUpdateStatus(call.id, "resolved")}
-                      className="p-2 text-green-600 hover:text-green-800 hover:bg-gray-100 rounded-md"
-                      title="Resolve"
-                    >
-                      <CheckCircle className="h-4 w-4" />
-                    </button>
                     <button
                       onClick={() => addNote(call.id, prompt("Enter note:") || "New note")}
                       className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md"
                       title="Add Note"
                     >
-                      <Edit3 className="h-4 w-4" />
+                      <Edit3 className="h-5 w-5" />
                     </button>
                     <button
                       onClick={() => markPriority(call.id, call.priority === "high" ? "normal" : "high")}
                       className="p-2 text-gray-600 hover:text-yellow-600 hover:bg-gray-100 rounded-md"
                       title="Toggle Priority"
                     >
-                      <Star className={`h-4 w-4 ${call.priority === "high" ? "fill-yellow-600 text-yellow-600" : ""}`} />
+                      <Star className={`h-5 w-5 ${call.priority === "high" ? "fill-yellow-600 text-yellow-600" : ""}`} />
                     </button>
                   </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex-shrink-0 h-8 w-8 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                    {call.receiver.avatar ? (
+                      <Image
+                        src={call.receiver.avatar}
+                        alt={call.receiver.name}
+                        width={32}
+                        height={32}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <User className="h-4 w-4 text-gray-400" />
+                    )}
+                  </div>
+                  <span className="text-sm font-medium text-gray-900">{call.receiver.name}</span>
+                </div>
+                <div className="text-sm">
+                  <div>{call.timestamp.split(", ")[1]}</div>
+                  <div className="text-xs text-gray-500">{call.timestamp.split(", ")[0]}</div>
+                </div>
+                <div className="text-sm text-gray-500">
+                  <span className="font-medium">Notes:</span> {call.notes || "No notes"}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
 
         {filteredAndSortedCalls.length === 0 && (
           <div className="p-12 text-center">
@@ -364,6 +396,28 @@ const MissedCalls = () => {
           </div>
         )}
       </Card>
+
+      {/* Custom CSS for Mobile Responsiveness */}
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .animate-fade-in {
+            padding: 1rem;
+          }
+          .text-xl {
+            font-size: 1.25rem;
+          }
+          .text-sm {
+            font-size: 0.875rem;
+          }
+          .p-4 {
+            padding: 1rem;
+          }
+          .h-5 {
+            height: 1.5rem;
+            width: 1.5rem;
+          }
+        }
+      `}</style>
     </div>
   );
 };

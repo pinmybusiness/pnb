@@ -11,12 +11,29 @@ export const metadata = {
   icons: {
     icon: "/favicon.png",
   },
+  manifest: '/manifest.json',
+  themeColor: '#FF5211',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'FasterQ',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${yesteryear.variable}`}>
       <head>
+        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="theme-color" content="#FF5211" />
         <link rel="icon" type="image/png" href="/favicon.png" />
       </head>
       <body>

@@ -23,7 +23,7 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
     try {
       await dispatch(logoutUser()).unwrap();
       toast.success("Logged out successfully!");
-      router.push("/");
+      router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
       toast.error(error.message || "Logout failed. Please try again.");

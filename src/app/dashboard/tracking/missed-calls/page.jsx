@@ -13,11 +13,13 @@ import { Card, Button, Input, Badge, Table, TableHeader, TableBody, TableRow, Ta
 const CallStatusIcon = ({ status, direction }) => {
   const getIconProps = () => {
     if (status === "missed") {
-      return direction === "incoming" ? { icon: <PhoneIncoming className="h-5 w-5 text-red-600" />, label: "Incoming Missed" } 
-                                     : { icon: <PhoneOutgoing className="h-5 w-5 text-blue-600" />, label: "Outgoing Missed" };
-    } else { // Assuming "answered" as the other status for simplicity
-      return direction === "incoming" ? { icon: <PhoneIncoming className="h-5 w-5 text-green-600" />, label: "Incoming Answered" } 
-                                     : { icon: <PhoneOutgoing className="h-5 w-5 text-green-600" />, label: "Outgoing Answered" };
+      return direction === "incoming"
+        ? { icon: <PhoneIncoming className="h-5 w-5 text-red-600" />, label: "Incoming Missed" }
+        : { icon: <PhoneOutgoing className="h-5 w-5 text-blue-600" />, label: "Outgoing Missed" };
+    } else {
+      return direction === "incoming"
+        ? { icon: <PhoneIncoming className="h-5 w-5 text-green-600" />, label: "Incoming Answered" }
+        : { icon: <PhoneOutgoing className="h-5 w-5 text-green-600" />, label: "Outgoing Answered" };
     }
   };
 
@@ -30,7 +32,7 @@ const CallStatusIcon = ({ status, direction }) => {
   );
 };
 
-// StatusBadge component (unchanged but kept for consistency)
+// StatusBadge component
 const StatusBadge = ({ status }) => {
   const getStatusStyles = (status) => {
     switch (status) {
@@ -83,10 +85,11 @@ const MissedCalls = () => {
       }),
       notes: call.notes || "",
       priority: priorityMap[call.priority] || "normal",
+      outgoingAttempts: call.outgoingAttempts || 0, // 👈 Added here
     };
   };
 
-  // Fetch missed calls from backend
+  // Fetch missed calls
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -107,7 +110,7 @@ const MissedCalls = () => {
     fetchData();
   }, []);
 
-  // Filter and sort calls
+  // Filter and sort
   const filteredAndSortedCalls = useMemo(() => {
     return calls
       .filter((call) => {
@@ -133,7 +136,7 @@ const MissedCalls = () => {
       });
   }, [calls, searchTerm, sortBy, sortOrder]);
 
-  // Handle status update
+  // Handle actions
   const handleUpdateStatus = async (callId, status) => {
     try {
       const statusMap = { missed: 0, answered: 1, resolved: 2, ended: 3 };
@@ -149,7 +152,6 @@ const MissedCalls = () => {
     }
   };
 
-  // Handle adding a note
   const addNote = async (callId, note) => {
     try {
       await axios.patch(
@@ -157,18 +159,13 @@ const MissedCalls = () => {
         { notes: note },
         { withCredentials: true }
       );
-      setCalls(
-        calls.map((call) =>
-          call.id === callId ? { ...call, notes: note } : call
-        )
-      );
+      setCalls(calls.map((call) => (call.id === callId ? { ...call, notes: note } : call)));
       toast.success("Note added successfully");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to add note");
     }
   };
 
-  // Handle marking priority
   const markPriority = async (callId, priority) => {
     try {
       const priorityMap = { normal: 0, high: 1 };
@@ -177,18 +174,13 @@ const MissedCalls = () => {
         { priority: priorityMap[priority] },
         { withCredentials: true }
       );
-      setCalls(
-        calls.map((call) =>
-          call.id === callId ? { ...call, priority } : call
-        )
-      );
+      setCalls(calls.map((call) => (call.id === callId ? { ...call, priority } : call)));
       toast.success("Priority updated successfully");
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to update priority");
     }
   };
 
-  // Handle sorting
   const handleSort = (key) => {
     if (sortBy === key) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -198,11 +190,7 @@ const MissedCalls = () => {
     }
   };
 
-  // Calculate KPI stats
-  const calculateKPIs = () => {
-    return { missedCalls: calls.length };
-  };
-
+  const calculateKPIs = () => ({ missedCalls: calls.length });
   const kpiData = calculateKPIs();
 
   if (loading) {
@@ -222,6 +210,7 @@ const MissedCalls = () => {
           <p className="text-sm sm:text-base text-gray-500">Monitor and manage missed restaurant calls</p>
         </div>
       </div>
+
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard title="Missed Calls" value={kpiData.missedCalls} icon={PhoneIncoming} />
@@ -249,12 +238,7 @@ const MissedCalls = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead onClick={() => handleSort("caller")} className="cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    Caller
-                    <ArrowUpDown className="h-4 w-4" />
-                  </div>
-                </TableHead>
+                <TableHead>Caller</TableHead>
                 <TableHead>Receiver</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead onClick={() => handleSort("timestamp")} className="cursor-pointer">
@@ -264,6 +248,7 @@ const MissedCalls = () => {
                   </div>
                 </TableHead>
                 <TableHead>Notes</TableHead>
+                <TableHead>Outgoing Attempts</TableHead> {/* 👈 Added */}
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -306,6 +291,11 @@ const MissedCalls = () => {
                     <div className="text-sm text-gray-500 truncate max-w-[200px]">
                       {call.notes || "No notes"}
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                      {call.outgoingAttempts}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
@@ -381,6 +371,12 @@ const MissedCalls = () => {
                 <div className="text-sm text-gray-500">
                   <span className="font-medium">Notes:</span> {call.notes || "No notes"}
                 </div>
+                <div className="text-sm text-gray-500">
+                  <span className="font-medium">Outgoing Attempts:</span>{" "}
+                  <Badge className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                    {call.outgoingAttempts}
+                  </Badge>
+                </div>
               </div>
             </Card>
           ))}
@@ -396,28 +392,6 @@ const MissedCalls = () => {
           </div>
         )}
       </Card>
-
-      {/* Custom CSS for Mobile Responsiveness */}
-      <style jsx>{`
-        @media (max-width: 640px) {
-          .animate-fade-in {
-            padding: 1rem;
-          }
-          .text-xl {
-            font-size: 1.25rem;
-          }
-          .text-sm {
-            font-size: 0.875rem;
-          }
-          .p-4 {
-            padding: 1rem;
-          }
-          .h-5 {
-            height: 1.5rem;
-            width: 1.5rem;
-          }
-        }
-      `}</style>
     </div>
   );
 };

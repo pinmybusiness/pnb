@@ -22,11 +22,18 @@ export default function Header({ activeLink = "" }) {
   const router = useRouter();
   const { user } = useSelector((state) => state.auth);
 
-  const links = [
-    { name: "Home", path: "/" },
-    { name: "Jobs", path: "/jobs" },
-    { name: "About", path: "/about" },
-  ];
+const links = [
+  { name: "Home", path: "/" },
+  { 
+    name: "Products", 
+    submenu: [
+      { name: "Trackly", path: "/products/missed-call-tracker" },
+    ],
+  },
+  { name: "Jobs", path: "/jobs" },
+  { name: "About", path: "/about" },
+];
+
 
   const openModal = (tab) => {
     setActiveTab(tab);
@@ -78,26 +85,60 @@ export default function Header({ activeLink = "" }) {
             </a>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center space-x-10">
-              {links.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.path}
-                  className={`text-sm md:text-lg font-medium transition-colors duration-300 flex items-center relative ${
-                    activeLink === link.path
-                      ? "text-orange-600 border-b-2 font-bold border-orange-600"
-                      : "text-gray-700 hover:text-orange-600"
-                  }`}
-                >
-                  {link.name}
-                  {link.name === "Jobs" && (
-                    <span className="ml-1 text-[10px] font-bold uppercase text-white bg-orange-600 rounded-full px-1.5 py-0.5 shadow-sm">
-                      Free
-                    </span>
-                  )}
-                </Link>
-              ))}
-            </nav>
+<nav className="hidden md:flex items-center space-x-10">
+  {links.map((link) => (
+    <div key={link.name} className="relative group">
+      {!link.submenu ? (
+        <Link
+          href={link.path}
+          className={`text-sm md:text-lg font-medium transition-colors duration-300 ${
+            activeLink === link.path
+              ? "text-orange-600 border-b-2 font-bold border-orange-600"
+              : "text-gray-700 hover:text-orange-600"
+          }`}
+        >
+          {link.name}
+          {link.name === "Jobs" && (
+            <span className="ml-1 text-[10px] font-bold uppercase text-white bg-orange-600 rounded-full px-1.5 py-0.5 shadow-sm">
+              Free
+            </span>
+          )}
+        </Link>
+      ) : (
+        <>
+          <button
+            className={`text-sm md:text-lg font-medium transition-colors duration-300 text-gray-700 hover:text-orange-600 flex items-center space-x-1`}
+          >
+            <span>{link.name}</span>
+            <svg
+              className="w-3 h-3 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Submenu */}
+          <div className="absolute left-0 top-full mt-2 w-48 bg-white border border-orange-100 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-200 z-50">
+            {link.submenu.map((sublink) => (
+              <Link
+                key={sublink.name}
+                href={sublink.path}
+                className="block px-4 py-3 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-colors text-sm"
+              >
+                {sublink.name}
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  ))}
+</nav>
+
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-3">
@@ -235,25 +276,51 @@ export default function Header({ activeLink = "" }) {
         {mobileOpen && (
           <div className="md:hidden bg-white border-t border-orange-100 shadow-lg">
             <nav className="flex flex-col p-4 space-y-3">
-              {links.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.path}
-                  onClick={() => setMobileOpen(false)}
-                  className={`text-sm font-medium py-2 px-3 rounded-lg transition-colors flex items-center ${
-                    activeLink === link.path
-                      ? "text-orange-600 bg-orange-50"
-                      : "text-gray-700 hover:text-orange-600 hover:bg-orange-50"
-                  }`}
-                >
-                  {link.name}
-                  {link.name === "Jobs" && (
-                    <span className="ml-2 text-[10px] font-bold uppercase text-white bg-orange-600 rounded-full px-1.5 py-0.5 shadow-sm">
-                      Free
-                    </span>
-                  )}
-                </a>
-              ))}
+{links.map((link) => (
+  <div key={link.name} className="flex flex-col">
+    {!link.submenu ? (
+      <a
+        href={link.path}
+        onClick={() => setMobileOpen(false)}
+        className={`text-sm font-medium py-2 px-3 rounded-lg transition-colors flex items-center ${
+          activeLink === link.path
+            ? "text-orange-600 bg-orange-50"
+            : "text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+        }`}
+      >
+        {link.name}
+      </a>
+    ) : (
+      <details className="group">
+        <summary className="cursor-pointer flex items-center justify-between py-2 px-3 rounded-lg text-gray-700 hover:text-orange-600 hover:bg-orange-50">
+          {link.name}
+          <svg
+            className="w-3 h-3 ml-2 transition-transform group-open:rotate-180"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <div className="flex flex-col pl-5 mt-2 space-y-1">
+          {link.submenu.map((sublink) => (
+            <a
+              key={sublink.name}
+              href={sublink.path}
+              onClick={() => setMobileOpen(false)}
+              className="text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg py-2 px-3 transition-colors text-sm"
+            >
+              {sublink.name}
+            </a>
+          ))}
+        </div>
+      </details>
+    )}
+  </div>
+))}
+
               <div className="pt-2 border-t border-orange-100 flex flex-col gap-2">
                 {user ? (
                   <>

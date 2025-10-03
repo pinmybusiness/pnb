@@ -32,12 +32,6 @@ export default function PromptBuilder() {
     { url: "", preferred_anchors: [""], context_hint: "conversion-focused link" },
   ]);
 
-  // External resources: array of { name, url }
-  const [externalResources, setExternalResources] = useState([
-    { name: "Google Search Central", url: "https://developers.google.com/search/docs" },
-    { name: "FTC Privacy & Security Guide", url: "https://consumer.ftc.gov/articles/online-privacy-and-security" },
-  ]);
-
   // Requirements (pre-filled; editable toggles for common bits)
   const [includeProsCons, setIncludeProsCons] = useState(true);
   const [minWordCount, setMinWordCount] = useState(1000);
@@ -86,17 +80,6 @@ export default function PromptBuilder() {
     setInternalLinks(next);
   };
 
-  // External resource handlers
-  const updateExternal = (idx, field, val) => {
-    const next = [...externalResources];
-    next[idx][field] = val;
-    setExternalResources(next);
-  };
-  const addExternal = () => setExternalResources([...externalResources, { name: "", url: "" }]);
-  const removeExternal = (idx) => {
-    const next = externalResources.filter((_, i) => i !== idx);
-    setExternalResources(next.length ? next : [{ name: "", url: "" }]);
-  };
 
   // ---- Build the payload ----
   const payload = useMemo(() => {
@@ -119,7 +102,7 @@ export default function PromptBuilder() {
           preferred_anchors: l.preferred_anchors.filter(Boolean),
           context_hint: l.context_hint,
         })),
-        external_resources_to_cite: externalResources.filter(r => r.name || r.url),
+        // external_resources_to_cite: externalResources.filter(r => r.name || r.url),
         competing_intents: competingIntents.filter(Boolean),
         target_user_persona: {
           name: personaName,
@@ -142,8 +125,6 @@ export default function PromptBuilder() {
           include_pros_cons: includeProsCons,
           min_word_count: minWordCount,
           target_word_count: targetWordCount,
-          primary_keyword_density_range: [0.8, 1.2],
-          secondary_keyword_density_range: [0.3, 0.7],
           use_h2_h3_h4: true,
           avoid_unverifiable_claims: true,
           disclosure_if_third_party: true,
@@ -195,7 +176,7 @@ export default function PromptBuilder() {
         "H. CTAs (including suggested placement)",
         "I. Schema (JSON-LD)",
         "J. Quality Checklist (detailed points covering all requirements, readability, AI Overview readiness)",
-        "K. Metrics (word count, title chars, meta chars, H1 chars, primary keyword density %, secondary keyword density %, avg sentence words, avg paragraph words, readability score)",
+        "K. Metrics (word count, title chars, meta chars, H1 chars, primary keyword, secondary keyword, avg sentence words, avg paragraph words, readability score)",
       ],
       notes: [
         "**Crucial:** Content must be genuinely helpful, human-first, and AI Overview–friendly.",
@@ -208,11 +189,13 @@ export default function PromptBuilder() {
         "Add disclosures if comparing competitors or linking to commercial resources.",
         "Ensure content meets both SEO best practices and readability targets for web publishing.",
         "Always deliver a strong opening hook and a conclusive summary with a final CTA.",
+        "Use Tables to compare features, pros/cons, pricing, etc. where relevant.",
+        "Ensure all internal links use preferred anchors and fit contextually.",
       ],
     };
   }, [
     brandName, topic, primaryKeyword, url, pageType, audienceLocale, currentSummary,
-    secondaryKeywords, longtailKeywords, internalLinks, externalResources,
+    secondaryKeywords, longtailKeywords, internalLinks,
     competingIntents, personaName, painPoints, goals, usp, tone,
     includeProsCons, minWordCount, targetWordCount, faq, tlDr, facts,
   ]);
@@ -327,21 +310,6 @@ export default function PromptBuilder() {
             </div>
           </section>
 
-          <section className="bg-white rounded-2xl shadow p-5">
-            <h2 className="text-xl font-semibold mb-4">External Resources to Cite</h2>
-            <div className="space-y-4">
-              {externalResources.map((r, i) => (
-                <div key={i} className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <Input label={`Name #${i + 1}`} value={r.name} setValue={(v) => updateExternal(i, "name", v)} placeholder="Google Search Central" />
-                  <Input label="URL" value={r.url} setValue={(v) => updateExternal(i, "url", v)} placeholder="https://…" />
-                  <div className="md:col-span-2">
-                    <button className="text-sm text-red-600" onClick={() => removeExternal(i)}>Remove</button>
-                  </div>
-                </div>
-              ))}
-              <button className="px-4 py-2 rounded-2xl bg-gray-100" onClick={addExternal}>+ Add External Resource</button>
-            </div>
-          </section>
 
           <section className="bg-white rounded-2xl shadow p-5">
             <h2 className="text-xl font-semibold mb-4">Content Requirements (common settings)</h2>

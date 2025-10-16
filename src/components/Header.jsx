@@ -24,16 +24,16 @@ export default function Header({ activeLink = "" }) {
 
 const links = [
   { name: "Home", path: "/" },
-  { 
-    name: "Products", 
-    submenu: [
-      { name: "Trackly", path: "/products/missed-call-tracker" },
-    ],
-  },
+  // { 
+  //   name: "Products", 
+  //   submenu: [
+  //     { name: "Trackly", path: "/products/missed-call-tracker" },
+  //   ],
+  // },
+  { name: "Trackly", path: "/products/missed-call-tracker" },
   { name: "Jobs", path: "/jobs" },
   { name: "About", path: "/about" },
 ];
-
 
   const openModal = (tab) => {
     setActiveTab(tab);

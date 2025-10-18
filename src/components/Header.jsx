@@ -30,7 +30,8 @@ const links = [
   //     { name: "Trackly", path: "/products/missed-call-tracker" },
   //   ],
   // },
-  { name: "Trackly", path: "/products/missed-call-tracker" },
+  { name: "Trackly", path: "/products/trackly" },
+  { name: "Pricing", path: "/pricing" },
   { name: "Jobs", path: "/jobs" },
   { name: "About", path: "/about" },
 ];
@@ -70,7 +71,7 @@ const links = [
 
   return (
     <>
-      <header className="w-full z-50 bg-[#FFF5EC]">
+      <header className="w-full !z-50 bg-[#FFF5EC]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}

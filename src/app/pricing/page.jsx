@@ -192,7 +192,7 @@ export default function PricingPage() {
             </span>
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Simple pricing for Android-based call tracking. No setup fees, cancel anytime.
+            Simple pricing for Android SIM call tracking with WhatsApp team reports. No setup fees, cancel anytime.
           </p>
         </div>
 
@@ -232,18 +232,18 @@ export default function PricingPage() {
         </div>
 
         {/* Plans */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-16 md:mb-20">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16 md:mb-20">
           {/* Essential Plan with updated yearly display */}
           <PlanCard
             title="Essential"
             monthlyPrice={{ promoPrice: 99, regularPrice: 299, promoDuration: 4 }}
             annualPrice="₹99/mo for 4 months → ₹299/mo after"
-            description="Track SIM & WhatsApp calls to your analytics dashboard."
+            description="Track SIM calls to your analytics dashboard with WhatsApp reports."
             features={[
-              "Auto-tracking for SIM & WhatsApp calls",
-              "Analytics dashboard with trends",
+              "Auto-tracking for SIM calls",
+              "Analytics dashboard with trends", 
               "Individual rep performance",
-              "Custom reports & exports",
+              "Daily WhatsApp reports for managers",
               "Unlimited call logging",
               "Android app only",
             ]}
@@ -251,7 +251,7 @@ export default function PricingPage() {
             popular={true}
           />
 
-          <PlanCard
+          {/* <PlanCard
             title="Call Recording"
             monthlyPrice={148}
             annualPrice={105}
@@ -265,7 +265,7 @@ export default function PricingPage() {
             ]}
             cta="Add to Plan"
             addOn={true}
-          />
+          /> */}
 
           <PlanCard
             title="CRM Integration"
@@ -287,13 +287,13 @@ export default function PricingPage() {
             title="Enterprise"
             monthlyPrice="Custom"
             annualPrice="Custom"
-            description="Tailored solution for large teams (30+ licenses minimum)."
+            description="Custom solution for large teams (30+ users)."
             features={[
-              "All Essential + Add-ons features",
+              "All Essential features",
+              "Daily WhatsApp call reports",
               "Custom onboarding & training",
               "Dedicated support & SLA",
-              "Advanced analytics & reporting",
-              "On-premise options available",
+              "Advanced analytics & insights",
             ]}
             cta="Get a Quote"
           />

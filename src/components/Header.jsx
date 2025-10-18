@@ -31,7 +31,7 @@ const links = [
   //   ],
   // },
   { name: "Trackly", path: "/products/trackly" },
-  { name: "Pricing", path: "/pricing" },
+  // { name: "Pricing", path: "/pricing" },
   { name: "Jobs", path: "/jobs" },
   { name: "About", path: "/about" },
 ];

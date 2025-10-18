@@ -58,7 +58,7 @@ export default function TracklyLanding() {
     bullets: [
       "Works silently in the background", 
       "Tracks all SIM calls",
-      "WhatsApp analytics for team monitoring",
+      "Daily performance reports",
       "No disruptions to daily workflow"
     ],
     icon: Download,
@@ -69,17 +69,17 @@ export default function TracklyLanding() {
       bullets: ["Higher pickup rates", "Builds customer trust", "Zero setup hassle"],
       icon: Phone,
     },
-   {
-    title: "SIM & WhatsApp in One Dashboard", 
-    description: "Unified call logs across channels with WhatsApp reporting.",
-    bullets: [
-      "Compare call type performance",
-      "Identify conversion sources", 
-      "WhatsApp reports for managers",
-      "All-in-one analytics"
-    ],
-    icon: MessageSquare,
-  },
+    {
+      title: "SIM Calls in One Dashboard",
+      description: "Unified call logs across channels with easy reporting.",
+      bullets: [
+        "Compare call type performance",
+        "Identify conversion sources",
+        "Manager-friendly reports",
+        "All-in-one analytics"
+      ],
+      icon: MessageSquare,
+    },
     {
       title: "Crystal Clear Calls",
       description: "Mobile network quality ensures no spam flags or lag.",
@@ -138,13 +138,13 @@ export default function TracklyLanding() {
 const features = [
   {
     title: "100% Accurate Call Tracking",
-    description: "Automatically tracks all your phone and WhatsApp calls.",
+    description: "Automatically tracks all your phone calls.",
     bullets: [
       "Works with SIM card calls",
-      "Tracks WhatsApp calls",
-      "Keeps your current phone number",
+      "Keeps your current phone number", 
       "Logs all incoming, outgoing and missed calls",
-      "Records exact call timings"
+      "Precise call timings",
+      "Real-time call logging"
     ],
     icon: Check,
   },
@@ -216,12 +216,13 @@ const testimonials = [
     role: "Freelance Marketer",
     company: "Self-employed",
   },
-  {
-    quote: "The WhatsApp analytics feature is a game-changer! I get daily call reports of my entire sales team directly on my phone without logging into any dashboard.",
-    author: "Rajesh Kumar", 
-    role: "Sales Manager",
-    company: "Tech Solutions Pvt Ltd"
-  }
+{
+  quote: "Trackly sends daily analytics of my entire sales team's calls directly on WhatsApp, so I stay updated without opening any dashboard.",
+  author: "Rajesh Kumar",
+  role: "Sales Manager",
+  company: "Tech Solutions Pvt Ltd"
+}
+
 ];
 
   const industries = [
@@ -326,9 +327,7 @@ const testimonials = [
       </h1>
 
 <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-  Trackly logs <span className="font-bold text-gray-900">all calls—missed or received</span> directly into your CRM or web dashboard. 
-  <span className="text-orange-600 font-bold"> Get daily call analytics on WhatsApp for team monitoring</span>, 
-  ideal for <span className="text-orange-600 font-bold">Sales, Real Estate, Clinics & Service Teams</span>.
+  Trackly logs <span className="font-bold text-gray-900">all SIM calls</span> to your CRM/dashboard and sends <span className="text-orange-600 font-bold">daily WhatsApp reports</span>—perfect for <span className="text-orange-600 font-bold">Sales, Real Estate, Clinics & Service Teams</span>.
 </p>
 
       <div className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start">
@@ -358,7 +357,7 @@ const testimonials = [
           </button>
         </div>
         
-        <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-600 justify-center lg:justify-start">
+        {/* <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-600 justify-center lg:justify-start">
           <div className="flex items-center gap-2">
             <svg className="w-3 h-3 sm:w-4 sm:h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
@@ -371,7 +370,7 @@ const testimonials = [
             </svg>
             <span className="font-medium">Cancel anytime</span>
           </div>
-        </div>
+        </div> */}
       </div>
 
       <div className="flex items-center gap-4 pt-4 justify-center lg:justify-start">
@@ -381,7 +380,7 @@ const testimonials = [
           ))}
         </div>
         <div className="text-left">
-          <p className="text-xs sm:text-sm font-bold text-gray-900">1000+ sales teams</p>
+          <p className="text-xs sm:text-sm font-bold text-gray-900">200+ sales teams</p>
           <p className="text-xs text-gray-600">Already tracking smarter</p>
         </div>
       </div>
@@ -512,7 +511,7 @@ const testimonials = [
                 <div className="w-8 h-8 bg-gradient-to-br from-orange-300 to-orange-500 rounded-full border-2 border-white"></div>
               </div>
               <div className="text-left">
-                <p className="text-sm font-semibold text-gray-900">Join 1000+ sales teams</p>
+                <p className="text-sm font-semibold text-gray-900">Join 200+ sales teams</p>
                 <p className="text-xs text-gray-500">Already tracking smarter with Trackly</p>
               </div>
             </div>
@@ -520,97 +519,109 @@ const testimonials = [
         </div>
       </section>
 
-{/* Integrations */}
-      <section className="py-20 px-6 bg-gradient-to-br from-[#FFF5EC] via-white to-orange-50/30 relative overflow-hidden">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-[#FF5211]/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl animate-pulse delay-700"></div>
+      {/* Industries */}
+      <section className="py-20 px-6 bg-gradient-to-br from-gray-50 via-white to-orange-50/20 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-20 right-20 w-96 h-96 bg-[#FF5211] rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 left-20 w-80 h-80 bg-orange-400 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1.5s'}}></div>
         </div>
 
-        <div className="max-w-7xl mx-auto relative z-10">
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle, #FF5211 1px, transparent 1px)',
+            backgroundSize: '40px 40px'
+          }}></div>
+        </div>
+
+        <div className="max-w-6xl mx-auto relative z-10">
           {/* Header */}
           <div className="text-center mb-16">
-            <span className="inline-block px-4 py-2 bg-gradient-to-r from-[#FF5211]/10 to-orange-100 text-[#FF5211] rounded-full text-sm font-semibold mb-4 border border-[#FF5211]/20">
-              🔗 Powerful Integrations
+            <span className="inline-block px-5 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-bold mb-4 border border-[#FF5211]/20 shadow-sm">
+              🏢 Universal Solution
             </span>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
-              Seamless CRM <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">Integrations</span>
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Built for <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">Every Industry</span>
             </h2>
-            <p className="text-gray-600 text-lg mb-6 max-w-2xl mx-auto leading-relaxed">
-              Connect Trackly effortlessly with your favorite CRM platforms — from
-              Salesforce to LeadSquared. No setup headaches, just smooth syncing.
+            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
+              Trusted by professionals across diverse sectors to streamline their workflows
             </p>
-            <div className="hidden md:flex items-center justify-center gap-6 text-sm text-gray-500">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Live Sync</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span>Auto Updates</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                <span>Secure Connection</span>
-              </div>
-            </div>
           </div>
 
-          {/* Integration Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
-            {integrations.map((int, i) => (
-              <div
-                key={i}
-                className="group relative bg-white p-6 rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#FF5211]/30 hover:-translate-y-2"
+          {/* Industries Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {industries.map(({ name, icon: Icon }, i) => (
+              <div 
+                key={i} 
+                className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#FF5211]/30 hover:-translate-y-2 cursor-pointer"
                 style={{
-                  animationDelay: `${i * 100}ms`
+                  animationDelay: `${i * 50}ms`
                 }}
               >
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/0 to-orange-500/0 group-hover:from-[#FF5211]/5 group-hover:to-orange-500/5 rounded-3xl transition-all duration-500"></div>
+                {/* Gradient glow on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/0 to-orange-500/0 group-hover:from-[#FF5211]/10 group-hover:to-orange-500/5 rounded-2xl transition-all duration-500"></div>
                 
-                {/* Connected badge */}
-                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-[#FF5211] to-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
-                  Ready
-                </div>
+                {/* Icon container */}
+                <div className="relative flex flex-col items-center">
+                  <div className="relative mb-4">
+                    <div className="absolute inset-0 bg-[#FF5211]/20 rounded-xl blur-lg group-hover:blur-xl transition-all"></div>
+                    <div className="relative bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 w-16 h-16 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm">
+                      <Icon className="h-8 w-8 text-[#FF5211] group-hover:scale-110 transition-transform" />
+                    </div>
+                  </div>
 
-                {/* Logo container */}
-                <div className="relative w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative bg-gradient-to-br from-gray-50 to-white p-3 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
-                    <img
-                      src={`/images/trackly/integrations/${int.name
-                        .toLowerCase()
-                        .replace(/\s/g, "-")}.png`}
-                      alt={`${int.name} logo`}
-                      className="w-full h-full object-contain"
-                    />
+                  {/* Name */}
+                  <p className="font-bold text-gray-900 text-center group-hover:text-[#FF5211] transition-colors duration-300">
+                    {name}
+                  </p>
+
+                  {/* Hover arrow */}
+                  <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <svg className="w-4 h-4 text-[#FF5211] animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
                 </div>
 
-                {/* Name */}
-                <h3 className="font-bold text-gray-800 text-base text-center group-hover:text-[#FF5211] transition-colors duration-300">
-                  {int.name}
-                </h3>
-
                 {/* Bottom accent bar */}
-                <div className="mt-4 h-1 w-0 bg-gradient-to-r from-[#FF5211] to-orange-400 rounded-full mx-auto group-hover:w-12 transition-all duration-500"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#FF5211] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-b-2xl"></div>
+
+                {/* Corner decoration */}
+                <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-[#FF5211]/10 to-transparent rounded-tr-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
               </div>
             ))}
           </div>
 
+          {/* Bottom Stats */}
+          <div className="mt-16 bg-white rounded-3xl p-8 shadow-xl border border-gray-100 max-w-4xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+              {[
+                { icon: "🏢", stat: "100+", label: "Businesses Onboarded" },
+                { icon: "📞", stat: "50K+", label: "Calls Tracked Monthly" },
+                { icon: "🤝", stat: "98%", label: "Customer Satisfaction" }
+              ].map((item, i) => (
+                <div key={i} className="text-center pt-6 md:pt-0 first:pt-0">
+                  <div className="text-3xl mb-2">{item.icon}</div>
+                  <p className="text-3xl font-bold bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent mb-1">
+                    {item.stat}
+                  </p>
+                  <p className="text-sm text-gray-600 font-medium">{item.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Bottom CTA */}
-          <div className="mt-16 text-center">
-            <p className="text-gray-600 mb-6">Don't see your CRM? We're adding more integrations every month.</p>
-            <button onClick={handleContactClick} className="bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center gap-2 group">
-              <span>Request Integration</span>
+          <div className="mt-12 text-center">
+            <p className="text-gray-600 mb-4">Don't see your industry? We've got you covered!</p>
+            <button onClick={handleContactClick} className="bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-4 rounded-full font-bold hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center gap-2 group">
+              <span>Talk to Our Team</span>
               <span className="group-hover:translate-x-1 transition-transform">→</span>
             </button>
           </div>
         </div>
       </section>
-
 
 {/* How It Works */}
       <section className="py-20 bg-gradient-to-br from-gray-50 to-orange-50/30 px-6 relative overflow-hidden">
@@ -641,7 +652,7 @@ const testimonials = [
               {[
                 { icon: Users, title: "Create Account", desc: "Sign up in seconds, no setup cost.", num: "01" },
                 { icon: Phone, title: "Install App", desc: "Works silently in the background.", num: "02" },
-                { icon: Zap, title: "Auto Log Calls", desc: "Every SIM & WhatsApp call tracked automatically.", num: "03" },
+                { icon: Zap, title: "Auto Log Calls", desc: "Every SIM call tracked automatically with real-time sync.", num: "03" },
                 { icon: BarChart3, title: "View Insights", desc: "Receive WhatsApp updates for your team.", num: "04" },
               ].map((step, i) => (
                 <div key={i} className="relative group">
@@ -820,6 +831,97 @@ const testimonials = [
         `}</style>
       </section>
 
+      {/* Integrations */}
+      <section className="py-20 px-6 bg-gradient-to-br from-[#FFF5EC] via-white to-orange-50/30 relative overflow-hidden">
+        {/* Animated background elements */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-20 left-10 w-72 h-72 bg-[#FF5211]/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl animate-pulse delay-700"></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Header */}
+          <div className="text-center mb-16">
+            <span className="inline-block px-4 py-2 bg-gradient-to-r from-[#FF5211]/10 to-orange-100 text-[#FF5211] rounded-full text-sm font-semibold mb-4 border border-[#FF5211]/20">
+              🔗 Powerful Integrations
+            </span>
+            <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+              Seamless CRM <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">Integrations</span>
+            </h2>
+            <p className="text-gray-600 text-lg mb-6 max-w-2xl mx-auto leading-relaxed">
+              Connect Trackly effortlessly with your favorite CRM platforms — from
+              Salesforce to LeadSquared. No setup headaches, just smooth syncing.
+            </p>
+            <div className="hidden md:flex items-center justify-center gap-6 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Live Sync</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span>Auto Updates</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                <span>Secure Connection</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Integration Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+            {integrations.map((int, i) => (
+              <div
+                key={i}
+                className="group relative bg-white p-6 rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#FF5211]/30 hover:-translate-y-2"
+                style={{
+                  animationDelay: `${i * 100}ms`
+                }}
+              >
+                {/* Glow effect on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/0 to-orange-500/0 group-hover:from-[#FF5211]/5 group-hover:to-orange-500/5 rounded-3xl transition-all duration-500"></div>
+                
+                {/* Connected badge */}
+                <div className="absolute -top-2 -right-2 bg-gradient-to-r from-[#FF5211] to-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
+                  Ready
+                </div>
+
+                {/* Logo container */}
+                <div className="relative w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div className="relative bg-gradient-to-br from-gray-50 to-white p-3 rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                    <img
+                      src={`/images/trackly/integrations/${int.name
+                        .toLowerCase()
+                        .replace(/\s/g, "-")}.png`}
+                      alt={`${int.name} logo`}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                </div>
+
+                {/* Name */}
+                <h3 className="font-bold text-gray-800 text-base text-center group-hover:text-[#FF5211] transition-colors duration-300">
+                  {int.name}
+                </h3>
+
+                {/* Bottom accent bar */}
+                <div className="mt-4 h-1 w-0 bg-gradient-to-r from-[#FF5211] to-orange-400 rounded-full mx-auto group-hover:w-12 transition-all duration-500"></div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="mt-16 text-center">
+            <p className="text-gray-600 mb-6">Don't see your CRM? We're adding more integrations every month.</p>
+            <button onClick={handleContactClick} className="bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center gap-2 group">
+              <span>Request Integration</span>
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
 {/* Testimonials */}
       <section className="py-20 px-4 bg-gradient-to-br from-white via-gray-50 to-orange-50/20 relative overflow-hidden">
         {/* Background decorative elements */}
@@ -923,7 +1025,7 @@ const testimonials = [
           {/* Stats Section */}
           <div className="mt-16 hidden md:grid grid-cols-3 gap-8 max-w-4xl mx-auto">
             {[
-              { number: "1000+", label: "Active Users" },
+              { number: "200+", label: "Active Users" },
               { number: "4.9/5", label: "Average Rating" },
               { number: "98%", label: "Would Recommend" }
             ].map((stat, i) => (
@@ -943,110 +1045,6 @@ const testimonials = [
             <p className="text-gray-600 mb-4">Join thousands of satisfied customers</p>
             <button onClick={handleContactClick} className="bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-4 rounded-full font-bold hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center gap-2 group">
               <span>Start for ₹99/month</span>
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-{/* Industries */}
-      <section className="py-20 px-6 bg-gradient-to-br from-gray-50 via-white to-orange-50/20 relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 right-20 w-96 h-96 bg-[#FF5211] rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 left-20 w-80 h-80 bg-orange-400 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1.5s'}}></div>
-        </div>
-
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle, #FF5211 1px, transparent 1px)',
-            backgroundSize: '40px 40px'
-          }}></div>
-        </div>
-
-        <div className="max-w-6xl mx-auto relative z-10">
-          {/* Header */}
-          <div className="text-center mb-16">
-            <span className="inline-block px-5 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-bold mb-4 border border-[#FF5211]/20 shadow-sm">
-              🏢 Universal Solution
-            </span>
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Built for <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">Every Industry</span>
-            </h2>
-            <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-              Trusted by professionals across diverse sectors to streamline their workflows
-            </p>
-          </div>
-
-          {/* Industries Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {industries.map(({ name, icon: Icon }, i) => (
-              <div 
-                key={i} 
-                className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#FF5211]/30 hover:-translate-y-2 cursor-pointer"
-                style={{
-                  animationDelay: `${i * 50}ms`
-                }}
-              >
-                {/* Gradient glow on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/0 to-orange-500/0 group-hover:from-[#FF5211]/10 group-hover:to-orange-500/5 rounded-2xl transition-all duration-500"></div>
-                
-                {/* Icon container */}
-                <div className="relative flex flex-col items-center">
-                  <div className="relative mb-4">
-                    <div className="absolute inset-0 bg-[#FF5211]/20 rounded-xl blur-lg group-hover:blur-xl transition-all"></div>
-                    <div className="relative bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 w-16 h-16 rounded-xl flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-sm">
-                      <Icon className="h-8 w-8 text-[#FF5211] group-hover:scale-110 transition-transform" />
-                    </div>
-                  </div>
-
-                  {/* Name */}
-                  <p className="font-bold text-gray-900 text-center group-hover:text-[#FF5211] transition-colors duration-300">
-                    {name}
-                  </p>
-
-                  {/* Hover arrow */}
-                  <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <svg className="w-4 h-4 text-[#FF5211] animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Bottom accent bar */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#FF5211] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-b-2xl"></div>
-
-                {/* Corner decoration */}
-                <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-[#FF5211]/10 to-transparent rounded-tr-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              </div>
-            ))}
-          </div>
-
-          {/* Bottom Stats */}
-          <div className="mt-16 bg-white rounded-3xl p-8 shadow-xl border border-gray-100 max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-200">
-              {[
-                { icon: "🏢", stat: "100+", label: "Businesses Onboarded" },
-                { icon: "📞", stat: "50K+", label: "Calls Tracked Monthly" },
-                { icon: "🤝", stat: "98%", label: "Customer Satisfaction" }
-              ].map((item, i) => (
-                <div key={i} className="text-center pt-6 md:pt-0 first:pt-0">
-                  <div className="text-3xl mb-2">{item.icon}</div>
-                  <p className="text-3xl font-bold bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent mb-1">
-                    {item.stat}
-                  </p>
-                  <p className="text-sm text-gray-600 font-medium">{item.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Bottom CTA */}
-          <div className="mt-12 text-center">
-            <p className="text-gray-600 mb-4">Don't see your industry? We've got you covered!</p>
-            <button onClick={handleContactClick} className="bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-4 rounded-full font-bold hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center gap-2 group">
-              <span>Talk to Our Team</span>
               <span className="group-hover:translate-x-1 transition-transform">→</span>
             </button>
           </div>
@@ -1125,11 +1123,11 @@ const testimonials = [
                   "Unlimited Call Tracking",
                   "Real-Time Alerts",
                   "Analytics Dashboard",
-                  "CRM Integration",
-                  "Call Recording",
-                  "Secure Data Storage",
-                  "Multi-Channel Support",
-                  "Priority Support",
+                  "Team Call Reports on WhatsApp",
+                  "CRM & Web Dashboard",
+                  // "Call Recording",
+                  "Secure Storage & Support"
+                  // "Multi-Channel Support",
                 ].map((p, i) => (
                   <div 
                     key={i} 
@@ -1270,7 +1268,7 @@ const testimonials = [
     <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
       <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-5 py-2 rounded-full text-sm font-bold border border-white/30 min-w-0 flex-1">
         <span className="flex-shrink-0">⚡</span>
-        <span className="truncate">Join 1000+ professionals</span>
+        <span className="truncate">Join 200+ professionals</span>
       </div>
       <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-5 py-2 rounded-full text-sm font-bold border border-white/30 min-w-0 flex-1">
         <span className="flex-shrink-0">🇮🇳</span>
@@ -1283,7 +1281,7 @@ const testimonials = [
       Never Miss a Lead Again
     </h2>
     <p className="text-xl md:text-2xl mb-4 text-white/90 font-medium">
-      Start tracking every call, get WhatsApp analytics for your team, and never miss a lead again
+      Track every call, get team call reports on WhatsApp, and never miss a lead
     </p>
     <p className="text-lg mb-10 text-white/80">Start free—no credit card required.</p>
 

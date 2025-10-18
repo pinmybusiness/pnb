@@ -24,12 +24,13 @@ const testimonials = [
     role: "Freelance Marketer",
     company: "Self-employed",
   },
-  {
-    quote: "The WhatsApp analytics feature is a game-changer! I get daily call reports of my entire sales team directly on my phone without logging into any dashboard.",
-    author: "Rajesh Kumar", 
+    {
+    quote: "Trackly sends daily analytics of my entire sales team's calls directly on WhatsApp, so I stay updated without opening any dashboard.",
+    author: "Rajesh Kumar",
     role: "Sales Manager",
     company: "Tech Solutions Pvt Ltd"
-  }
+    }
+
 ];
 
   return (

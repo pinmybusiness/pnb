@@ -8,7 +8,8 @@ import QuickStats from '@/components/home/QuickStats';
 
 export const metadata = {
   title: "Find Restaurant Jobs & Hire Staff Fast | FasterQ.in",
-  description: "Discover chef, waiter, and steward jobs or hire staff quickly. FasterQ.in connects restaurants and job seekers—free and fast.",
+  description:
+    "Discover chef, waiter, and steward jobs or hire staff quickly. FasterQ.in connects restaurants and job seekers—free and fast.",
   alternates: {
     canonical: "https://www.fasterq.in",
   },

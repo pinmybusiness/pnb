@@ -11,7 +11,9 @@
   "dependencies": {
     "@react-oauth/google": "^0.12.2",
     "@reduxjs/toolkit": "^2.8.2",
-    "axios": "^1.11.0",
+    "@tanstack/react-query": "^5.90.5",
+    "axios": "^1.12.2",
+    "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.539.0",
     "next": "15.4.6",
@@ -26,6 +28,7 @@
     "redux-persist": "^6.0.0",
     "sanitize-html": "^2.17.0",
     "slugify": "^1.6.6",
+    "tailwind-merge": "^3.3.1",
     "use-debounce": "^10.0.6"
   },
   "devDependencies": {

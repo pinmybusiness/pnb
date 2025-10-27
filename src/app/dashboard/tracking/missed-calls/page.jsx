@@ -256,7 +256,8 @@ const MissedCalls = () => {
               {filteredAndSortedCalls.map((call) => (
                 <TableRow key={call.id} className="hover:bg-gray-50">
                   <TableCell>
-                    <div className="flex items-center">
+                    <div className="flex flex-col items-start">
+                       <div className="text-sm font-medium text-gray-900">{call.caller.name}</div>
                       <div className="text-sm text-gray-500">{call.caller.phone}</div>
                     </div>
                   </TableCell>

@@ -1,18 +1,19 @@
 "use client";
+import CombinedDashboard from "@/components/dashboard/CombinedDashboard";
+import StatsDashboard from "@/components/dashboard/StatsDashboard";
+import TeamPerformance from "@/components/dashboard/TeamPerformance";
 import React from "react";
 import { useSelector } from "react-redux";
 
 function DashboardPage() {
   // Get user from Redux state (auth slice)
   const { user } = useSelector((state) => state.auth);
-  // const panel = roleNames[user?.role]; 
+  // const panel = roleNames[user?.role];
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold">
-        {user ? `Welcome, ${user?.name}!` : "Welcome to Dashboard"}
-      </h1>
-    </div>
+    <>
+       <CombinedDashboard />
+    </>
   );
 }
 

@@ -1,18 +1,15 @@
 "use client"
-import React, { useMemo, useState } from "react";
-
-// Dynamic Prompt Builder — SEO Content Spec Form
-// Single-file React component. Uses Tailwind classes for a clean UI.
-// Exports: JSON payload (inputs + requirements + notes) and a ready-to-paste prompt block.
+import React, { useMemo, useState, useEffect } from "react";
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function PromptBuilder() {
   // ---- Basic fields ----
-  const [brandName, setBrandName] = useState("");
+  const [brandName, setBrandName] = useState("ChatUSA.club");
   const [topic, setTopic] = useState("");
   const [primaryKeyword, setPrimaryKeyword] = useState("");
   const [url, setUrl] = useState("");
-  const [pageType, setPageType] = useState("");
-  const [audienceLocale, setAudienceLocale] = useState("");
+  const [pageType, setPageType] = useState("Blog");
+  const [audienceLocale, setAudienceLocale] = useState("United States");
   const [currentSummary, setCurrentSummary] = useState("");
   const [usp, setUsp] = useState("");
   const [tone, setTone] = useState("Informative, Authoritative, Actionable, Slightly Conversational");
@@ -32,7 +29,7 @@ export default function PromptBuilder() {
     { url: "", preferred_anchors: [""], context_hint: "conversion-focused link" },
   ]);
 
-  // Requirements (pre-filled; editable toggles for common bits)
+  // Requirements
   const [includeProsCons, setIncludeProsCons] = useState(true);
   const [minWordCount, setMinWordCount] = useState(1000);
   const [targetWordCount, setTargetWordCount] = useState(1500);
@@ -40,17 +37,32 @@ export default function PromptBuilder() {
   const [tlDr, setTlDr] = useState(true);
   const [facts, setFacts] = useState(true);
 
-  // ---- Helpers for dynamic lists ----
-  const updateList = (list, setList, idx, val) => {
-    const next = [...list];
-    next[idx] = val;
-    setList(next);
-  };
-  const addListItem = (list, setList) => setList([...list, ""]);
-  const removeListItem = (list, setList, idx) => {
-    const next = list.filter((_, i) => i !== idx);
-    setList(next.length ? next : [""]);
-  };
+  // Page Type Options
+  const pageTypeOptions = [
+    "Landing Page",
+    "Blog", 
+    "FAQ",
+    "Alternatives Hub",
+    "State Page",
+    "City Page",
+    "Roundup"
+  ];
+
+  // Auto-generate Canonical URL when topic changes
+  useEffect(() => {
+    if (topic.trim()) {
+      const baseUrl = "https://www.chatusa.club";
+      const slug = topic
+        .toLowerCase()
+        .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters
+        .trim()
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-'); // Remove consecutive hyphens
+      
+      const generatedUrl = `${baseUrl}/${slug}`;
+      setUrl(generatedUrl);
+    }
+  }, [topic]);
 
   // Internal link handlers
   const updateInternalLink = (idx, field, val) => {
@@ -58,21 +70,26 @@ export default function PromptBuilder() {
     next[idx][field] = val;
     setInternalLinks(next);
   };
+  
   const addInternalLink = () => setInternalLinks([...internalLinks, { url: "", preferred_anchors: [""], context_hint: "educational/SEO-related link" }]);
+  
   const removeInternalLink = (idx) => {
     const next = internalLinks.filter((_, i) => i !== idx);
     setInternalLinks(next.length ? next : [{ url: "", preferred_anchors: [""], context_hint: "related feature or support content" }]);
   };
+  
   const updateAnchor = (linkIdx, anchorIdx, val) => {
     const next = [...internalLinks];
     next[linkIdx].preferred_anchors[anchorIdx] = val;
     setInternalLinks(next);
   };
+  
   const addAnchor = (linkIdx) => {
     const next = [...internalLinks];
     next[linkIdx].preferred_anchors.push("");
     setInternalLinks(next);
   };
+  
   const removeAnchor = (linkIdx, anchorIdx) => {
     const next = [...internalLinks];
     next[linkIdx].preferred_anchors = next[linkIdx].preferred_anchors.filter((_, i) => i !== anchorIdx);
@@ -80,13 +97,11 @@ export default function PromptBuilder() {
     setInternalLinks(next);
   };
 
-
   // ---- Build the payload ----
   const payload = useMemo(() => {
     return {
       role: "system",
-      instruction:
-        "You are an expert SEO Head and Senior Content Writer for a leading digital marketing agency. Your job is to create a single, highly optimized web page that strictly follows Google Search Essentials, Helpful Content Guidelines, Spam Policies, and E-E-A-T principles. The content must be optimized both for traditional search engines and for large language models (LLMs)/AI Overviews. It should be structured, genuinely helpful, concise yet comprehensive, and directly usable for publication. The final result must demonstrate clear topical authority, improve organic visibility, and provide tangible value to the target audience.",
+      instruction: "You are an expert SEO Head and Senior Content Writer for a leading digital marketing agency. Your job is to create a single, highly optimized web page that strictly follows Google Search Essentials, Helpful Content Guidelines, Spam Policies, and E-E-A-T principles. The content must be optimized both for traditional search engines and for large language models (LLMs)/AI Overviews. It should be structured, genuinely helpful, concise yet comprehensive, and directly usable for publication. The final result must demonstrate clear topical authority, improve organic visibility, and provide tangible value to the target audience.",
       inputs: {
         brand_name: brandName,
         topic,
@@ -102,7 +117,6 @@ export default function PromptBuilder() {
           preferred_anchors: l.preferred_anchors.filter(Boolean),
           context_hint: l.context_hint,
         })),
-        // external_resources_to_cite: externalResources.filter(r => r.name || r.url),
         competing_intents: competingIntents.filter(Boolean),
         target_user_persona: {
           name: personaName,
@@ -138,9 +152,7 @@ export default function PromptBuilder() {
           internal_links_max: 8,
           use_existing_phrases_only: true,
           unique_anchors: true,
-          external_links_min: 2,
-          external_links_max: 4,
-          external_link_dofollow_attribute: "rel='nofollow' for competitive/affiliate, otherwise dofollow",
+          placement_note: "Place internal links naturally within the main content body, NOT in FAQ sections. Ensure anchors appear organically in sentences.",
         },
         ctas: {
           count: 3,
@@ -159,38 +171,40 @@ export default function PromptBuilder() {
           paragraph_words_max: 70,
           active_voice: true,
           plain_language: true,
-          readability_score_target: "Flesch-Kincaid Grade Level 7-9 (score 65–75)",
+          readability_score_target: "Flesch-Kincaid Grade Level 7-9 (score 65-75)",
           avoid_jargon_unless_explained: true,
           question_based_headings: true,
           bulleted_lists_for_skimmability: true,
+          avoid_ai_indicators: "STRICTLY avoid AI-written symbols like '—', '–', '•', '→', etc. Use regular punctuation only.",
         },
       },
       deliverables_format: [
         "A. Meta Title",
-        "B. Meta Description",
+        "B. Meta Description", 
         "C. H1",
         "D. Updated Outline (H2/H3/H4, including some in question format)",
-        "E. Final Content (plain text, 1000–1500+ words, includes TL;DR, fact blocks, headings, lists, disclosures, FAQs, pros/cons, CTAs)",
-        "F. Internal Link Placements (sentence + anchor → URL)",
-        "G. External Link Placements (sentence + anchor → URL + rel attribute)",
-        "H. CTAs (including suggested placement)",
-        "I. Schema (JSON-LD)",
-        "J. Quality Checklist (detailed points covering all requirements, readability, AI Overview readiness)",
-        "K. Metrics (word count, title chars, meta chars, H1 chars, primary keyword, secondary keyword, avg sentence words, avg paragraph words, readability score)",
+        "E. Final Content (plain text, 1000-1500+ words, includes TL;DR, fact blocks, headings, lists, disclosures, FAQs, pros/cons, CTAs)",
+        "F. Internal Link Placements (sentence + anchor - URL) - PLACE IN MAIN CONTENT ONLY",
+        "G. CTAs (including suggested placement)",
+        "H. Schema (JSON-LD)",
+        "I. Quality Checklist (detailed points covering all requirements, readability, AI Overview readiness)",
+        "J. Metrics (word count, title chars, meta chars, H1 chars, primary keyword, secondary keyword, avg sentence words, avg paragraph words, readability score)",
       ],
       notes: [
-        "**Crucial:** Content must be genuinely helpful, human-first, and AI Overview–friendly.",
-        "Always add a TL;DR style answer card near the top (50–90 words, 1 citation).",
-        "Include 1–2 fact blocks with outbound authoritative citations (FTC, Google, industry).",
+        "CRITICAL: All internal links must be placed within the main content body, NOT in FAQ sections.",
+        "STRICTLY avoid AI-written symbols like em dashes (—), en dashes (–), arrows (→) etc. Use regular punctuation only.",
+        "Content must be genuinely helpful, human-first, and AI Overview-friendly.",
+        "Always add a TL;DR style answer card near the top (50-90 words, 1 citation).",
+        "Include 1-2 fact blocks with outbound authoritative citations (FTC, Google, industry).",
         "Use clear question-based H2/H3 headings to match search queries and LLM extraction.",
         "Break down long paragraphs with bulleted lists or shorter sentences.",
-        "No keyword stuffing—use keywords naturally.",
+        "No keyword stuffing-use keywords naturally.",
         "Provide transparent pros/cons and note limitations honestly.",
         "Add disclosures if comparing competitors or linking to commercial resources.",
         "Ensure content meets both SEO best practices and readability targets for web publishing.",
         "Always deliver a strong opening hook and a conclusive summary with a final CTA.",
         "Use Tables to compare features, pros/cons, pricing, etc. where relevant.",
-        "Ensure all internal links use preferred anchors and fit contextually.",
+        "Ensure all internal links use preferred anchors and fit contextually within main content.",
       ],
     };
   }, [
@@ -207,12 +221,12 @@ export default function PromptBuilder() {
   }, [payload]);
 
   // ---- Clipboard & Download helpers ----
-  const copyToClipboard = async (text) => {
+  const copyToClipboard = async (text, message) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert("Copied to clipboard.");
+      toast.success(message);
     } catch (e) {
-      alert("Copy failed.");
+      toast.error("Copy failed");
     }
   };
 
@@ -224,22 +238,49 @@ export default function PromptBuilder() {
     a.download = filename;
     a.click();
     URL.revokeObjectURL(url);
+    toast.success("File downloaded successfully!");
   };
 
   // ---- UI ----
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 py-10">
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+        }}
+      />
+      
       <div className="mx-auto max-w-6xl px-4">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold">Dynamic Prompt Builder — SEO Content Spec</h1>
+          <h1 className="text-3xl font-bold">Dynamic Prompt Builder - SEO Content Spec</h1>
           <p className="text-sm text-gray-600 mt-2">Fill the form, then copy or download the generated JSON or the ready-to-paste prompt block.</p>
         </header>
 
         {/* Actions */}
         <div className="flex flex-wrap gap-3 mb-6">
-          <button className="px-4 py-2 rounded-2xl shadow bg-black text-white" onClick={() => copyToClipboard(payloadJSON)}>Copy JSON</button>
-          <button className="px-4 py-2 rounded-2xl shadow bg-white border" onClick={() => download("seo-content-spec.json", payloadJSON)}>Download JSON</button>
-          <button className="px-4 py-2 rounded-2xl shadow bg-indigo-600 text-white" onClick={() => copyToClipboard(promptBlock)}>Copy Prompt Block</button>
+          <button 
+            className="px-4 py-2 rounded-2xl shadow bg-black text-white" 
+            onClick={() => copyToClipboard(payloadJSON, "JSON copied to clipboard!")}
+          >
+            Copy JSON
+          </button>
+          <button 
+            className="px-4 py-2 rounded-2xl shadow bg-white border" 
+            onClick={() => download("seo-content-spec.json", payloadJSON)}
+          >
+            Download JSON
+          </button>
+          <button 
+            className="px-4 py-2 rounded-2xl shadow bg-indigo-600 text-white" 
+            onClick={() => copyToClipboard(promptBlock, "Prompt block copied to clipboard!")}
+          >
+            Copy Prompt Block
+          </button>
         </div>
 
         {/* Grid */}
@@ -248,10 +289,17 @@ export default function PromptBuilder() {
             <h2 className="text-xl font-semibold mb-4">Basics</h2>
             <div className="space-y-3">
               <Input label="Brand Name" value={brandName} setValue={setBrandName} placeholder="ChatUSA.club" />
-              <Input label="Topic" value={topic} setValue={setTopic} placeholder="Tinychat Guide & Alternatives" />
+              <Input label="Topic" value={topic} setValue={setTopic} placeholder="Free Chat in Texas" />
               <Input label="Primary Keyword" value={primaryKeyword} setValue={setPrimaryKeyword} placeholder="tinychat" />
-              <Input label="Canonical URL" value={url} setValue={setUrl} placeholder="https://www.example.com/your-page" />
-              <Input label="Page Type" value={pageType} setValue={setPageType} placeholder="Landing / Informational Comparison" />
+              <Input label="Canonical URL" value={url} setValue={setUrl} placeholder="https://www.chatusa.club/free-chat-in-texas" />
+              
+              <SelectInput 
+                label="Page Type" 
+                value={pageType} 
+                setValue={setPageType} 
+                options={pageTypeOptions}
+              />
+              
               <Input label="Audience Locale" value={audienceLocale} setValue={setAudienceLocale} placeholder="United States" />
               <TextArea label="Current Content Summary (optional)" value={currentSummary} setValue={setCurrentSummary} placeholder="Summarize existing content for context." />
               <TextArea label="Unique Selling Proposition (USP)" value={usp} setValue={setUsp} placeholder="What makes your brand unique on this topic?" />
@@ -281,6 +329,7 @@ export default function PromptBuilder() {
 
           <section className="bg-white rounded-2xl shadow p-5 lg:col-span-2">
             <h2 className="text-xl font-semibold mb-4">Internal Link Map</h2>
+            <p className="text-sm text-gray-600 mb-4">Internal links will be placed in main content only, NOT in FAQ sections.</p>
             <div className="space-y-6">
               {internalLinks.map((l, i) => (
                 <div key={i} className="border rounded-xl p-4">
@@ -310,9 +359,8 @@ export default function PromptBuilder() {
             </div>
           </section>
 
-
           <section className="bg-white rounded-2xl shadow p-5">
-            <h2 className="text-xl font-semibold mb-4">Content Requirements (common settings)</h2>
+            <h2 className="text-xl font-semibold mb-4">Content Requirements</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <Toggle label="Include Pros & Cons" checked={includeProsCons} setChecked={setIncludeProsCons} />
               <Toggle label="Include FAQs" checked={faq} setChecked={setFaq} />
@@ -335,7 +383,7 @@ export default function PromptBuilder() {
         </div>
 
         <footer className="mt-10 text-xs text-gray-500">
-          <p>Tip: Use unique anchors for internal links and ensure the phrases appear in the final copy to meet the “use existing phrases only” requirement.</p>
+          <p>Tip: Use unique anchors for internal links and ensure the phrases appear in the final copy to meet the "use existing phrases only" requirement.</p>
         </footer>
       </div>
     </div>
@@ -353,6 +401,25 @@ function Input({ label, value, setValue, placeholder }) {
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
       />
+    </label>
+  );
+}
+
+function SelectInput({ label, value, setValue, options }) {
+  return (
+    <label className="block">
+      <span className="text-sm text-gray-700">{label}</span>
+      <select
+        className="mt-1 w-full border rounded-lg px-3 py-2"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
     </label>
   );
 }

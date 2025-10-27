@@ -379,7 +379,7 @@ const CallTracking = () => {
                         )}
                       </div>
                       <div>
-                        {/* <div className="text-sm font-medium text-gray-900">{call.caller.name}</div> */}
+                        <div className="text-sm font-medium text-gray-900">{call.caller.name}</div>
                         <div className="text-xs sm:text-sm text-gray-500">{call.caller.phone}</div>
                       </div>
                     </div>

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Phone, PhoneCall, PhoneMissed, PhoneIncoming, PhoneOutgoing, Search, Plus, CheckCircle, Star, Edit3, ArrowUpDown, User } from "lucide-react";
 import KPICard from "@/components/ui/KPICard";
 import { toast } from "react-hot-toast";
@@ -45,6 +45,10 @@ const CallTracking = () => {
   const [sortBy, setSortBy] = useState("timestamp");
   const [sortOrder, setSortOrder] = useState("desc");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCalls, setTotalCalls] = useState(0);
 
   // Map numeric backend values to strings
   const mapCallData = (call) => {
@@ -75,68 +79,78 @@ const CallTracking = () => {
     };
   };
 
-  // Fetch calls from backend
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
+  // Fetch calls from backend with pagination
+  const fetchCalls = async (pageNum = 1, shouldAppend = false) => {
+    try {
+      if (pageNum === 1) {
         setLoading(true);
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/calls`, {
-          withCredentials: true, // For JWT cookie
-        });
-        const mappedCalls = response.data.data.map(mapCallData);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const params = {
+        page: pageNum,
+        limit: 20, // Adjust limit as needed
+        search: searchTerm,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        direction: directionFilter !== "all" ? directionFilter : undefined,
+        agent: agentFilter !== "all" ? agentFilter : undefined,
+        sortBy,
+        sortOrder,
+      };
+
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/calls`, {
+        params,
+        withCredentials: true,
+      });
+
+      const { data: callsData, total, currentPage, totalPages } = response.data;
+      
+      const mappedCalls = callsData.map(mapCallData);
+
+      if (shouldAppend) {
+        setCalls(prev => [...prev, ...mappedCalls]);
+      } else {
         setCalls(mappedCalls);
-      } catch (error) {
-        toast.error(error.response?.data?.message || "Failed to fetch call data");
-        console.error("Fetch error:", error);
-      } finally {
-        setLoading(false);
+      }
+
+      setTotalCalls(total);
+      setHasMore(currentPage < totalPages);
+      setPage(currentPage);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to fetch call data");
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  // Initial load and when filters change
+  useEffect(() => {
+    setPage(1);
+    fetchCalls(1, false);
+  }, [searchTerm, statusFilter, directionFilter, agentFilter, sortBy, sortOrder]);
+
+  // Load more function
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      fetchCalls(page + 1, true);
+    }
+  }, [loadingMore, hasMore, page]);
+
+  // Infinite scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop 
+          >= document.documentElement.offsetHeight - 100) {
+        loadMore();
       }
     };
 
-    fetchData();
-  }, []);
-
-  // Filter and sort calls
-  const filteredAndSortedCalls = useMemo(() => {
-    return calls
-      .filter((call) => {
-        const matchesSearch =
-          call.caller.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          call.caller.phone.includes(searchTerm) ||
-          call.notes.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === "all" || call.status === statusFilter;
-        const matchesDirection = directionFilter === "all" || call.direction === directionFilter;
-        const matchesAgent = agentFilter === "all" || call.receiver.name === agentFilter;
-        return matchesSearch && matchesStatus && matchesDirection && matchesAgent;
-      })
-      .sort((a, b) => {
-        let aValue, bValue;
-        switch (sortBy) {
-          case "caller":
-            aValue = a.caller.name || "";
-            bValue = b.caller.name || "";
-            break;
-          case "duration":
-            aValue = parseDuration(a.duration);
-            bValue = parseDuration(b.duration);
-            break;
-          case "timestamp":
-            aValue = new Date(a.timestamp).getTime();
-            bValue = new Date(b.timestamp).getTime();
-            break;
-          case "status":
-            aValue = a.status || "";
-            bValue = b.status || "";
-            break;
-          default:
-            return 0;
-        }
-        if (typeof aValue === "string") {
-          return sortOrder === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-        }
-        return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-      });
-  }, [calls, searchTerm, statusFilter, directionFilter, agentFilter, sortBy, sortOrder]);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadMore]);
 
   // Helper to parse duration to seconds for sorting
   const parseDuration = (duration) => {
@@ -249,7 +263,7 @@ const CallTracking = () => {
 
   const kpiData = calculateKPIs();
 
-  if (loading) {
+  if (loading && page === 1) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -269,7 +283,7 @@ const CallTracking = () => {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 sm:gap-4">
-        <KPICard title="Total Calls" value={kpiData.totalCalls} icon={PhoneCall} />
+        <KPICard title="Total Calls" value={totalCalls} icon={PhoneCall} />
         <KPICard title="Missed Calls" value={kpiData.missedCalls} icon={PhoneMissed} />
         <KPICard title="Answered Calls" value={kpiData.answeredCalls} icon={Phone} />
         <KPICard title="Resolved Calls" value={kpiData.resolvedCalls} icon={CheckCircle} />
@@ -361,8 +375,8 @@ const CallTracking = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAndSortedCalls.map((call) => (
-                <TableRow key={call.id} className="hover:bg-gray-50">
+              {calls.map((call, index) => (
+                <TableRow key={index} className="hover:bg-gray-50">
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
@@ -464,13 +478,12 @@ const CallTracking = () => {
 
         {/* Mobile Card Layout - Compact and Clean */}
         <div className="block sm:hidden space-y-2 p-2">
-          {filteredAndSortedCalls.map((call) => (
-            <Card key={call.id} className="p-3 shadow-sm">
+          {calls.map((call, index) => (
+            <Card key={index} className="p-3 shadow-sm">
               <div className="space-y-1">
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                      {/* <div className="text-sm font-medium text-gray-900 truncate max-w-[150px]">{call.caller.name}</div> */}
                       <StatusBadge status={call.status} />
                     </div>
                     <div className="text-xs text-gray-500">{call.caller.phone}</div>
@@ -527,7 +540,15 @@ const CallTracking = () => {
           ))}
         </div>
 
-        {filteredAndSortedCalls.length === 0 && (
+        {/* Loading More Indicator */}
+        {loadingMore && (
+          <div className="flex justify-center items-center p-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
+            <span className="ml-2 text-sm text-gray-500">Loading more calls...</span>
+          </div>
+        )}
+
+        {calls.length === 0 && !loading && (
           <div className="p-6 sm:p-12 text-center">
             <PhoneCall className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
             <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2">No calls found</h3>

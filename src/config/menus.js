@@ -31,7 +31,7 @@ export const allMenus = [
     roles: [6,7,8], 
     children: [
       { name: "MissedCalls", href: "/dashboard/tracking/missed-calls", roles: [6,7,8] },
-      { name: "PhoneCalls", href: "/dashboard/tracking", roles: [6,7,8] },
+      { name: "Calls History", href: "/dashboard/tracking", roles: [6,7,8] },
     ]
   },
   { 

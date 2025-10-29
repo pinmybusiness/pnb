@@ -20,9 +20,8 @@ import {
   BarChart3,
   UserCheck,
   AlertCircle,
-  CheckCircle,
-  Calendar,
-  ArrowLeft
+  ArrowLeft,
+  Ban
 } from "lucide-react";
 import KPICard from "@/components/ui/KPICard";
 import Card from "@/components/ui/Card";
@@ -40,10 +39,9 @@ import {
   Line,
   Legend
 } from "recharts";
+import Link from "next/link";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
-
-// Helper functions
+// ---------- helpers ----------
 const getRankIcon = (index) => {
   switch (index) {
     case 0:
@@ -57,199 +55,248 @@ const getRankIcon = (index) => {
   }
 };
 
-const getPerformanceBadge = (score) => {
-  if (score >= 80) return { color: "text-green-600", bg: "bg-green-100", label: "Excellent" };
-  if (score >= 60) return { color: "text-yellow-600", bg: "bg-yellow-100", label: "Good" };
-  if (score >= 40) return { color: "text-orange-600", bg: "bg-orange-100", label: "Average" };
-  return { color: "text-red-600", bg: "bg-red-100", label: "Needs Improvement" };
+const formatHour12 = (h) => {
+  const hour = Number(h);
+  const suffix = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${hour12} ${suffix}`;
+};
+// put near the top (helpers)
+const WEEK_LABELS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const TODAY_LABELS = Array.from({length: 24}, (_,h)=> `${h}:00`);
+const monthDayLabels = (d = new Date()) => {
+  const y = d.getFullYear(), m = d.getMonth();
+  const days = new Date(y, m + 1, 0).getDate();
+  return Array.from({length: days}, (_,i)=> `Day ${i+1}`);
 };
 
-const formatTrendsData = (trends) => {
-  if (!trends || !Array.isArray(trends)) return [];
-  return trends.map(item => ({
-    ...item,
-    name: item._id?.toString() || '0',
-    total: item.totalCalls || 0,
-    answered: item.answeredCalls || 0,
-    missed: item.missedCalls || 0
-  }));
-};
+// Option B (you added "outgoing" line): keep total = all calls
+// and derive outgoing = total - (answered + missed)
+// Call Trends: robust to labels for today/week/month
+const formatTrendsData = (trends = [], period = "today") => {
+  const byKey = new Map();
 
-const formatHourlyData = (distribution) => {
-  if (!distribution || !Array.isArray(distribution)) return [];
-  return distribution.map(item => ({
-    hour: item.hour,
-    calls: item.calls || 0
-  }));
-};
+  for (const item of trends || []) {
+    const total = Number(item.totalCalls || 0);
+    const answered = Number(item.answeredCalls || 0);
+    const missed = Number(item.missedCalls || 0);
+    const outgoing = Math.max(total - answered - missed, 0);
 
-// Format date to "17 Jul 2025 02:45 PM"
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = date.toLocaleString('en', { month: 'short' });
-  const year = date.getFullYear();
-  const time = date.toLocaleString('en', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: true 
+    let key;
+
+    if (period === "today") {
+      const hour = Number(item._id);
+      if (isNaN(hour) || hour < 0 || hour > 23) continue;
+      key = hour;
+      byKey.set(key, { name: formatHour12(hour), total, answered, missed, outgoing });
+    }
+
+    else if (period === "week") {
+      const idx = Number(item._id);
+      if (isNaN(idx) || idx < 0 || idx > 6) continue;
+      const label = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][idx];
+      key = label;
+      byKey.set(key, { name: label, total, answered, missed, outgoing });
+    }
+
+    else if (period === "month") {
+      const day = Number(item._id);
+      if (isNaN(day) || day < 1 || day > 31) continue;
+      key = day;
+      byKey.set(key, { name: `Day ${day}`, total, answered, missed, outgoing });
+    }
+  }
+
+  // Return ordered + zero-filled
+  if (period === "today") {
+    return Array.from({ length: 24 }, (_, h) => {
+      const row = byKey.get(h) || { name: formatHour12(h), total: 0, answered: 0, missed: 0, outgoing: 0 };
+      return { name: row.name, total: row.total, answered: row.answered, missed: row.missed, outgoing: row.outgoing };
+    });
+  }
+
+  if (period === "week") {
+    const labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    return labels.map(label => {
+      const row = byKey.get(label) || { name: label, total: 0, answered: 0, missed: 0, outgoing: 0 };
+      return { name: label, total: row.total, answered: row.answered, missed: row.missed, outgoing: row.outgoing };
+    });
+  }
+
+  // Month
+  const now = new Date();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  return Array.from({ length: daysInMonth }, (_, i) => {
+    const day = i + 1;
+    const row = byKey.get(day) || { name: `Day ${day}`, total: 0, answered: 0, missed: 0, outgoing: 0 };
+    return { name: `Day ${day}`, total: row.total, answered: row.answered, missed: row.missed, outgoing: row.outgoing };
   });
-  return `${day} ${month} ${year} ${time}`;
 };
 
+// Hourly Distribution -> 12-hour clock labels (AM/PM)
+const formatHourlyData = (distribution) => {
+  if (!Array.isArray(distribution)) return [];
+
+  // Expect items like: { hour: "13:00" } or { hour: 13 }
+  return distribution.map((item) => {
+    const raw = item?.hour;
+    const hour = typeof raw === "number"
+      ? raw
+      : Number(String(raw ?? "0:00").split(":")[0].trim());
+    const calls = Number(item?.calls || 0);
+
+    return {
+      hourLabel: formatHour12(Number.isFinite(hour) ? hour : 0),
+      calls
+    };
+  });
+};
+
+// Format to IST: "17 Jul 2025 02:45 PM"
+const formatDateIST = (dateString) => {
+  try {
+    const d = new Date(dateString);
+    const day = new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit"
+    }).format(d);
+    const mon = new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      month: "short"
+    }).format(d);
+    const year = new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric"
+    }).format(d);
+    const time = new Intl.DateTimeFormat("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    }).format(d);
+    return `${day} ${mon} ${year} ${time}`;
+  } catch {
+    return "-";
+  }
+};
+
+// ---------- component ----------
 const CombinedDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [period, setPeriod] = useState("today");
   const [selectedTeamMember, setSelectedTeamMember] = useState(null);
 
-  // Fetch dashboard stats
-  const { data: stats, isLoading: statsLoading, error: statsError } = useQuery({
-    queryKey: ['dashboard-stats', period],
+  // Dashboard stats (matches backend: IST window + answered=incoming)
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError
+  } = useQuery({
+    queryKey: ["dashboard-stats", period],
     queryFn: async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/calls/stats?period=${period}`,
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
+      const token = localStorage.getItem("token");
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/stats?period=${period}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
           }
-        );
-        return response.data.data;
-      } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
-        throw error;
-      }
+        }
+      );
+      return data.data;
     },
     retry: 2
   });
 
-  // Fetch team performance
-  const { data: teamData, isLoading: teamLoading, error: teamError } = useQuery({
-    queryKey: ['team-performance', period],
-    queryFn: async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/calls/team/performance?period=${period}`,
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-        return response.data.data;
-      } catch (error) {
-        console.error('Error fetching team performance:', error);
-        throw error;
+  // Team performance (answered=incoming only per backend)
+const {
+  data: teamData,
+  isLoading: teamLoading,
+  error: teamError
+} = useQuery({
+  queryKey: ["team-performance", period],
+  queryFn: async () => {
+    const token = localStorage.getItem("token");
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/calls/team/performance?period=${period}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       }
-    },
-    retry: 2
-  });
+    );
+    return data.data;
+  },
+  // ensure refetch when period changes and avoid stale cache
+  staleTime: 0,                 // always stale
+  gcTime: 0,                    // don’t keep cache
+  refetchOnMount: "always",     // v5: always refetch on mount
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: true,
+  retry: 1
+});
 
-  // Fetch team member detailed stats
-  const { data: teamMemberStats, isLoading: memberStatsLoading } = useQuery({
-    queryKey: ['team-member-stats', period],
-    queryFn: async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/calls/team/member-stats?period=${period}`,
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-        return response.data.data;
-      } catch (error) {
-        console.error('Error fetching team member stats:', error);
-        throw error;
-      }
-    },
-    retry: 2
-  });
 
-  // Fetch missed calls (pending follow-ups)
+  // Detailed team stats + pending missed (backend returns both)
+const { data: teamMemberStats, isLoading: memberStatsLoading } = useQuery({
+  queryKey: ["team-member-stats", period],
+  queryFn: async () => {
+    const token = localStorage.getItem("token");
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/calls/team/member-stats?period=${period}`,
+      { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+    );
+    return data.data; // { teamStats, pendingMissedCalls, totalPendingMissed }
+  },
+  staleTime: 0,
+  gcTime: 0,                 // (v4 ho to cacheTime: 0)
+  refetchOnMount: "always",
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: true,
+  retry: 1
+});
+
+  // Pending missed calls list (parity with backend getMissedCalls)
   const { data: missedCallsData, isLoading: missedCallsLoading } = useQuery({
-    queryKey: ['missed-calls', period],
+    queryKey: ["missed-calls", period], // refetch when period changes (UI stays reactive)
     queryFn: async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/calls/missed`,
-          {
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
+      const token = localStorage.getItem("token");
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/missed`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
           }
-        );
-        return response.data.data;
-      } catch (error) {
-        console.error('Error fetching missed calls:', error);
-        throw error;
-      }
+        }
+      );
+      return data.data;
     },
     retry: 2
   });
 
-  const periodButtons = [
-    { key: "today", label: "Today" },
-    { key: "week", label: "This Week" },
-    { key: "month", label: "This Month" },
-  ];
-
-  const tabButtons = [
-    { key: "overview", label: "Overview", icon: BarChart3 },
-    { key: "team", label: "Team Performance", icon: Users },
-  ];
-
-  // Calculate real team stats from actual data
-  const teamSummary = teamData && teamData.length > 0 ? {
-    totalMembers: teamData.length,
-    totalCalls: teamData.reduce((sum, member) => sum + (member.totalCalls || 0), 0),
-    topPerformer: teamData[0]?.userName || 'N/A',
-    avgAnswerRate: teamData.length > 0 ? Math.round(teamData.reduce((sum, member) => sum + (member.answerRate || 0), 0) / teamData.length) : 0
-  } : null;
-
-  // Calculate pending follow-ups count for each team member from missedCallsData
+  // Build a quick pending-followups map by receiver id
   const memberPendingFollowups = useMemo(() => {
-    if (!missedCallsData || !Array.isArray(missedCallsData)) return {};
-    
-    const pendingCounts = {};
-    
-    missedCallsData.forEach(call => {
-      if (call.receiver && call.receiver._id) {
-        const receiverId = call.receiver._id;
-        pendingCounts[receiverId] = (pendingCounts[receiverId] || 0) + 1;
-      }
-    });
-    
-    return pendingCounts;
+    if (!Array.isArray(missedCallsData)) return {};
+    const map = {};
+    for (const call of missedCallsData) {
+      const id = call?.receiver?._id;
+      if (id) map[id] = (map[id] || 0) + 1;
+    }
+    return map;
   }, [missedCallsData]);
 
-  // Get pending follow-ups count for a specific member
-  const getMemberPendingFollowups = (userId) => {
-    return memberPendingFollowups[userId] || 0;
-  };
+  const getMemberPendingFollowups = (userId) => memberPendingFollowups[userId] || 0;
 
-  // Handle team member click
   const handleTeamMemberClick = (member) => {
     setSelectedTeamMember(member);
     setActiveTab("overview");
   };
 
-  // Handle back to team view
-  const handleBackToTeam = () => {
-    setSelectedTeamMember(null);
-  };
+  const handleBackToTeam = () => setSelectedTeamMember(null);
 
-  // Show errors if any
   if (statsError || teamError) {
     return (
       <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -279,24 +326,28 @@ const CombinedDashboard = () => {
           )}
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              {selectedTeamMember ? `${selectedTeamMember.userName}'s Performance` : "Call Center Dashboard"}
+              {selectedTeamMember
+                ? `${selectedTeamMember.userName}'s Performance`
+                : "Call Center Dashboard"}
             </h1>
             <p className="text-sm sm:text-base text-gray-500">
-              {selectedTeamMember 
-                ? "Individual performance analytics and insights" 
-                : activeTab === "overview" 
-                  ? "Complete call analytics and insights" 
-                  : "Team performance and rankings"
-              }
+              {selectedTeamMember
+                ? "Individual performance analytics and insights"
+                : activeTab === "overview"
+                ? "Complete call analytics and insights"
+                : "Team performance and rankings"}
             </p>
           </div>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* Tab Switcher - Only show when no team member is selected */}
+          {/* Tab Switcher */}
           {!selectedTeamMember && (
             <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-              {tabButtons.map(({ key, label, icon: Icon }) => (
+              {[
+                { key: "overview", label: "Overview", icon: BarChart3 },
+                { key: "team", label: "Team Performance", icon: Users }
+              ].map(({ key, label, icon: Icon }) => (
                 <Button
                   key={key}
                   variant={activeTab === key ? "primary" : "outline"}
@@ -314,7 +365,11 @@ const CombinedDashboard = () => {
 
           {/* Period Selector */}
           <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-            {periodButtons.map(({ key, label }) => (
+            {[
+              { key: "today", label: "Today" },
+              { key: "week", label: "This Week" },
+              { key: "month", label: "This Month" }
+            ].map(({ key, label }) => (
               <Button
                 key={key}
                 variant={period === key ? "primary" : "outline"}
@@ -333,15 +388,18 @@ const CombinedDashboard = () => {
       {/* INDIVIDUAL TEAM MEMBER VIEW */}
       {selectedTeamMember && (
         <IndividualMemberView
+          key={`${selectedTeamMember.userId}-${period}`}   // <- remount on period
           member={selectedTeamMember}
-          stats={teamMemberStats?.teamStats?.find(m => m.userId === selectedTeamMember.userId)}
+          stats={teamMemberStats?.teamStats?.find(
+            (m) => m.userId === selectedTeamMember.userId
+          )}
           loading={memberStatsLoading}
-          period={period}
+          period={period}                                  // <- already passing, keep it
           pendingFollowups={getMemberPendingFollowups(selectedTeamMember.userId)}
         />
       )}
 
-      {/* OVERVIEW TAB - Only show when no team member is selected */}
+      {/* OVERVIEW TAB */}
       {!selectedTeamMember && activeTab === "overview" && (
         <OverviewTab
           stats={stats}
@@ -359,7 +417,7 @@ const CombinedDashboard = () => {
         />
       )}
 
-      {/* TEAM PERFORMANCE TAB - Only show when no team member is selected */}
+      {/* TEAM TAB */}
       {!selectedTeamMember && activeTab === "team" && (
         <TeamPerformanceTab
           teamData={teamData}
@@ -372,142 +430,107 @@ const CombinedDashboard = () => {
   );
 };
 
-// Individual Team Member View Component
-const IndividualMemberView = ({ member, stats, loading, period, pendingFollowups }) => {
-  const performance = getPerformanceBadge(member.performanceScore || 0);
+// ---------- Individual Member ----------
+const IndividualMemberView = ({ member, stats, loading, pendingFollowups, period }) => {
+  // prefer fresh stats row from query; fallback to clicked snapshot
+  const data = stats ?? member;
+
+  // unique fields
+  const totalCalls = Number(data?.totalCalls || 0);                // all calls (incoming + outgoing)
+  const answered = Number(data?.answeredCalls || 0);
+  const missed = Number(data?.missedCalls || 0);
+  const answerRate = Number(data?.answerRate || 0);
+  const outgoing = Number(data?.outgoingCalls || 0);
+  const incomingTotal = answered + missed;                         // incoming-only total
 
   return (
     <>
-      {/* Member Header Card */}
       <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-              {member.userName?.charAt(0)?.toUpperCase() || 'U'}
+              {(data?.userName || member?.userName || "U").charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{member.userName}</h2>
-              <p className="text-gray-600">{member.userRole || 'Team Member'} • {member.userMobile || 'No mobile'}</p>
-              <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mt-2 ${performance.bg} ${performance.color}`}>
-                {performance.label} • {Math.round(member.performanceScore || 0)}% Performance
-              </div>
+              <h2 className="text-2xl font-bold text-gray-900">{data?.userName || member?.userName || "User"}</h2>
+              {/* <p className="text-gray-600">
+                {(data?.userRole || member?.userRole || "Team Member")} • {(data?.userMobile || member?.userMobile || "No mobile")}
+              </p> */}
             </div>
           </div>
-          
+
+          {/* Top tiles (keep these) */}
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-gray-900">{member.totalCalls || 0}</div>
-              <div className="text-sm text-gray-500">Total Calls</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-green-600">{member.answeredCalls || 0}</div>
-              <div className="text-sm text-gray-500">Answered</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-red-600">{member.missedCalls || 0}</div>
-              <div className="text-sm text-gray-500">Missed</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-blue-600">{member.answerRate || 0}%</div>
-              <div className="text-sm text-gray-500">Answer Rate</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-orange-600">{pendingFollowups || 0}</div>
-              <div className="text-sm text-gray-500">Pending Follow-ups</div>
-            </div>
+            <Metric label="Total Calls" value={totalCalls} />
+            <Metric label="Answered" value={answered} color="text-green-600" />
+            <Metric label="Missed" value={missed} color="text-red-600" />
+            <Metric label="Answer Rate" value={`${answerRate}%`} color="text-blue-600" />
+            <Metric label="Pending Follow-ups" value={Number(pendingFollowups || 0)} color="text-orange-600" />
           </div>
         </div>
       </Card>
 
-      {/* Member Detailed Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Performance Metrics */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
           {loading ? (
-            <div className="space-y-4">
-              {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-4 w-full" />)}
-            </div>
+            <SkeletonList count={4} />
           ) : (
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Average Call Duration</span>
-                <span className="font-semibold">{stats?.averageDuration || member.averageDuration || '0:00'}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Outgoing Calls</span>
-                <span className="font-semibold">{member.outgoingCalls || 0}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Last Activity</span>
-                <span className="font-semibold">
-                  {member.lastActivity ? formatDate(member.lastActivity) : 'No activity'}
-                </span>
-              </div>
-              <div className="pt-4 border-t border-gray-200">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-gray-600">Overall Performance Score</span>
-                  <span className="font-semibold">{Math.round(member.performanceScore || 0)}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-3">
-                  <div 
-                    className="h-3 rounded-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-500" 
-                    style={{ width: `${Math.min(member.performanceScore || 0, 100)}%` }}
-                  />
-                </div>
-              </div>
+              <Row
+                label="Average Call Duration"
+                value={
+                  (data?.averageDuration) ??
+                  (member?.averageDuration) ??
+                  "0:00"
+                }
+              />
+              <Row label="Outgoing Calls" value={outgoing} />
+              <Row
+                label="Last Activity"
+                value={
+                  data?.lastActivity
+                    ? formatDateIST(data.lastActivity)
+                    : member?.lastActivity
+                    ? formatDateIST(member.lastActivity)
+                    : "No activity"
+                }
+              />
             </div>
           )}
         </Card>
 
-        {/* Recent Activity & Trends */}
+        {/* Activity Summary (ONLY unique stats now) */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity Summary</h3>
           {loading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map(i => <Skeleton key={i} className="h-4 w-full" />)}
-            </div>
+            <SkeletonList count={3} />
           ) : (
             <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <PhoneIncoming className="h-4 w-4 text-green-600" />
-                  <span className="text-sm">Successful Calls</span>
-                </div>
-                <span className="font-semibold text-green-600">{member.answeredCalls || 0}</span>
-              </div>
-              
-              <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <PhoneMissed className="h-4 w-4 text-red-600" />
-                  <span className="text-sm">Missed Calls</span>
-                </div>
-                <span className="font-semibold text-red-600">{member.missedCalls || 0}</span>
-              </div>
-              
-              <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <PhoneOutgoing className="h-4 w-4 text-orange-600" />
-                  <span className="text-sm">Outgoing Calls</span>
-                </div>
-                <span className="font-semibold text-orange-600">{member.outgoingCalls || 0}</span>
-              </div>
-
-              <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm">Pending Follow-ups</span>
-                </div>
-                <span className="font-semibold text-yellow-600">{pendingFollowups || 0}</span>
-              </div>
-              
-              <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-purple-600" />
-                  <span className="text-sm">Answer Rate</span>
-                </div>
-                <span className="font-semibold text-purple-600">{member.answerRate || 0}%</span>
-              </div>
+              <BadgeRow
+                icon={<Phone className="h-4 w-4 text-indigo-600" />}
+                label="Incoming Total (Answered + Missed)"
+                value={incomingTotal}
+                valueClass="text-indigo-600"
+              />
+              <BadgeRow
+                icon={<PhoneOutgoing className="h-4 w-4 text-orange-600" />}
+                label="Outgoing Calls"
+                value={outgoing}
+                valueClass="text-orange-600"
+              />
+              <BadgeRow
+                icon={<TrendingUp className="h-4 w-4 text-blue-600" />}
+                label="Answer Rate"
+                value={`${answerRate}%`}
+                valueClass="text-blue-600"
+              />
+              <BadgeRow
+                icon={<AlertCircle className="h-4 w-4 text-yellow-600" />}
+                label="Pending Follow-ups"
+                value={Number(pendingFollowups || 0)}
+                valueClass="text-yellow-600"
+              />
             </div>
           )}
         </Card>
@@ -516,134 +539,64 @@ const IndividualMemberView = ({ member, stats, loading, period, pendingFollowups
   );
 };
 
-// Overview Tab Component
-const OverviewTab = ({ 
-  stats, 
-  statsLoading, 
-  teamData, 
-  teamLoading, 
-  teamMemberStats, 
-  memberStatsLoading, 
+
+// ---------- Overview Tab ----------
+const OverviewTab = ({
+  stats,
+  statsLoading,
+  teamData,
+  teamLoading,
+  teamMemberStats,
+  memberStatsLoading,
   missedCallsData,
   missedCallsLoading,
-  period, 
   onTeamMemberClick,
   getMemberPendingFollowups,
-  setActiveTab
+  setActiveTab,
+  period
 }) => {
-  const teamSummary = teamData && teamData.length > 0 ? {
-    totalMembers: teamData.length,
-    totalCalls: teamData.reduce((sum, member) => sum + (member.totalCalls || 0), 0),
-    topPerformer: teamData[0]?.userName || 'N/A',
-    avgAnswerRate: teamData.length > 0 ? Math.round(teamData.reduce((sum, member) => sum + (member.answerRate || 0), 0) / teamData.length) : 0
-  } : null;
+  const teamSummary =
+    Array.isArray(teamData) && teamData.length > 0
+      ? {
+          totalMembers: teamData.length,
+          totalCalls: teamData.reduce((sum, m) => sum + (m.totalCalls || 0), 0),
+          topPerformer: teamData[0]?.userName || "N/A",
+          avgAnswerRate:
+            Math.round(
+              teamData.reduce((sum, m) => sum + (m.answerRate || 0), 0) / teamData.length
+            ) || 0
+        }
+      : null;
 
   return (
     <>
-      {/* Main KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard
-          title="Total Calls"
-          value={stats?.overview?.totalCalls || 0}
-          icon={Phone}
-          loading={statsLoading}
-        />
-        <KPICard
-          title="Answered"
-          value={stats?.overview?.answeredCalls || 0}
-          icon={PhoneIncoming}
-          loading={statsLoading}
-        />
-        <KPICard
-          title="Unanswered Incoming Calls"
-          value={stats?.overview?.missedCalls || 0}
-          icon={PhoneMissed}
-          loading={statsLoading}
-        />
-        <KPICard
-          title="Pending Follow-ups"
-          value={missedCallsData?.length || 0}
-          icon={AlertCircle}
-          loading={missedCallsLoading}
-        />
-      </div>
+      {/* KPIs */}
+       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <Link href="/dashboard/tracking">
+         <KPICard title="Total Calls" value={stats?.overview?.totalCalls || 0} icon={Phone} loading={statsLoading} />
+        </Link>
+         <KPICard title="Answered" value={stats?.overview?.answeredCalls || 0} icon={PhoneIncoming} loading={statsLoading} />
+         <KPICard title="Unanswered Incoming Calls" value={stats?.overview?.missedCalls || 0} icon={PhoneMissed} loading={statsLoading} />
+        <KPICard title="Spam Calls" value={stats?.overview?.spamCalls || 0} icon={Ban} loading={statsLoading} />
+        <Link href="/dashboard/tracking/missed-calls">
+         <KPICard title="Pending Follow-ups" value={missedCallsData?.length || 0} icon={AlertCircle} loading={missedCallsLoading} />
+        </Link>
+       </div>
 
-      {/* Performance Metrics & Team Summary */}
+      {/* Metrics + Team Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Performance Metrics */}
         <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-          <Card className="p-4 text-center">
-            {statsLoading ? (
-              <Skeleton className="h-8 w-8 mx-auto mb-2 rounded-full" />
-            ) : (
-              <Clock className="h-8 w-8 text-blue-600 mx-auto mb-2" />
-            )}
-            <h3 className="text-sm font-medium text-gray-500">Avg Duration</h3>
-            {statsLoading ? (
-              <Skeleton className="h-6 w-16 mx-auto mt-1" />
-            ) : (
-              <p className="text-xl font-bold text-gray-900">
-                {stats?.duration?.average || '0:00'}
-              </p>
-            )}
-          </Card>
-          
-          <Card className="p-4 text-center">
-            {statsLoading ? (
-              <Skeleton className="h-8 w-8 mx-auto mb-2 rounded-full" />
-            ) : (
-              <TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            )}
-            <h3 className="text-sm font-medium text-gray-500">Answer Rate</h3>
-            {statsLoading ? (
-              <Skeleton className="h-6 w-16 mx-auto mt-1" />
-            ) : (
-              <p className="text-xl font-bold text-gray-900">
-                {stats?.overview?.answerRate || 0}%
-              </p>
-            )}
-          </Card>
-          
-          <Card className="p-4 text-center">
-            {statsLoading ? (
-              <Skeleton className="h-8 w-8 mx-auto mb-2 rounded-full" />
-            ) : (
-              <UserCheck className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-            )}
-            <h3 className="text-sm font-medium text-gray-500">Outgoing Calls</h3>
-            {statsLoading ? (
-              <Skeleton className="h-6 w-16 mx-auto mt-1" />
-            ) : (
-              <p className="text-xl font-bold text-gray-900">
-                {stats?.overview?.outgoingCalls || 0}
-              </p>
-            )}
-          </Card>
-          
-          <Card className="p-4 text-center">
-            {statsLoading ? (
-              <Skeleton className="h-8 w-8 mx-auto mb-2 rounded-full" />
-            ) : (
-              <TrendingDown className="h-8 w-8 text-red-600 mx-auto mb-2" />
-            )}
-            <h3 className="text-sm font-medium text-gray-500">Missed Rate</h3>
-            {statsLoading ? (
-              <Skeleton className="h-6 w-16 mx-auto mt-1" />
-            ) : (
-              <p className="text-xl font-bold text-gray-900">
-                {stats?.overview?.missedRate || 0}%
-              </p>
-            )}
-          </Card>
+          <SimpleKPI icon={<Clock className="h-8 w-8 text-blue-600 mx-auto mb-2" />} label="Avg Duration" value={stats?.duration?.average || "0:00"} loading={statsLoading} />
+          <SimpleKPI icon={<TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />} label="Answer Rate" value={`${stats?.overview?.answerRate || 0}%`} loading={statsLoading} />
+          <SimpleKPI icon={<UserCheck className="h-8 w-8 text-orange-600 mx-auto mb-2" />} label="Outgoing Calls" value={stats?.overview?.outgoingCalls || 0} loading={statsLoading} />
+          <SimpleKPI icon={<TrendingDown className="h-8 w-8 text-red-600 mx-auto mb-2" />} label="Missed Rate" value={`${stats?.overview?.missedRate || 0}%`} loading={statsLoading} />
         </div>
 
-        {/* Team Quick Summary */}
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-4">
             <Users className="h-5 w-5 text-gray-600" />
             <h3 className="font-semibold text-gray-900">Team Summary</h3>
           </div>
-          
           {teamLoading ? (
             <div className="space-y-3">
               <Skeleton className="h-4 w-full" />
@@ -652,30 +605,17 @@ const OverviewTab = ({
             </div>
           ) : teamSummary ? (
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Team Members</span>
-                <span className="font-semibold">{teamSummary.totalMembers}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Total Calls</span>
-                <span className="font-semibold">{teamSummary.totalCalls}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Avg Answer Rate</span>
-                <span className="font-semibold text-green-600">{teamSummary.avgAnswerRate}%</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Top Performer</span>
-                <span className="font-semibold text-orange-600">{teamSummary.topPerformer}</span>
-              </div>
+              <KeyVal label="Team Members" value={teamSummary.totalMembers} />
+              <KeyVal label="Total Calls" value={teamSummary.totalCalls} />
+              <KeyVal label="Avg Answer Rate" value={<span className="text-green-600">{teamSummary.avgAnswerRate}%</span>} />
+              <KeyVal label="Top Performer" value={<span className="text-orange-600">{teamSummary.topPerformer}</span>} />
             </div>
           ) : (
             <p className="text-sm text-gray-500 text-center py-4">No team data available</p>
           )}
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="w-full mt-4"
             onClick={() => setActiveTab("team")}
             disabled={teamLoading}
@@ -685,135 +625,93 @@ const OverviewTab = ({
         </Card>
       </div>
 
-      {/* Team Member Performance - ROW STYLE */}
+      {/* Team Member rows */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-gray-900">Team Member Performance</h3>
           <div className="flex gap-2">
-            <span className="text-sm text-gray-500">
-              {missedCallsData?.length || 0} pending follow-ups
-            </span>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setActiveTab("team")}
-            >
+            {/* <span className="text-sm text-gray-500">{missedCallsData?.length || 0} pending follow-ups</span> */}
+            <Button variant="outline" size="sm" onClick={() => setActiveTab("team")}>
               View All Team
             </Button>
           </div>
         </div>
 
         {memberStatsLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map(i => (
-              <Skeleton key={i} className="h-12 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : teamMemberStats?.teamStats && teamMemberStats.teamStats.length > 0 ? (
+          <SkeletonList count={5} height="h-12" />
+        ) : teamMemberStats?.teamStats?.length ? (
           <div className="space-y-3">
             {teamMemberStats.teamStats.map((member, index) => {
-              const performance = getPerformanceBadge(member.performanceScore);
-              const pendingFollowups = getMemberPendingFollowups(member.userId);
-              
+              const pending = getMemberPendingFollowups(member.userId);
+
               return (
-                <div 
-                  key={member.userId} 
+                <div
+                  key={member.userId}
                   className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                   onClick={() => onTeamMemberClick(member)}
                 >
-                  <div className="flex-shrink-0 w-6 text-center">
-                    {getRankIcon(index)}
-                  </div>
-                  
+                  <div className="flex-shrink-0 w-6 text-center">{getRankIcon(index)}</div>
                   <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    {member.userName?.charAt(0)?.toUpperCase() || 'U'}
+                    {member.userName?.charAt(0)?.toUpperCase() || "U"}
                   </div>
-                  
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-gray-900 text-sm">{member.userName}</h4>
-                    <p className="text-xs text-gray-500">{member.userRole || 'Team Member'}</p>
+                    {/* <p className="text-xs text-gray-500">{member.userRole || "Team Member"}</p> */}
                   </div>
-                  
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${performance.bg} ${performance.color}`}>
-                    {performance.label}
-                  </div>
-                  
                   <div className="flex gap-6 text-right">
-                    <div>
-                      <div className="font-semibold text-gray-900">{member.totalCalls}</div>
-                      <div className="text-xs text-gray-500">Total</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-green-600">{member.answeredCalls}</div>
-                      <div className="text-xs text-gray-500">Answered</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-red-600">{member.missedCalls}</div>
-                      <div className="text-xs text-gray-500">Missed</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-blue-600">{member.answerRate}%</div>
-                      <div className="text-xs text-gray-500">Rate</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-orange-600">{pendingFollowups}</div>
-                      <div className="text-xs text-gray-500">Pending</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-purple-600">{Math.round(member.performanceScore)}%</div>
-                      <div className="text-xs text-gray-500">Score</div>
-                    </div>
+                    <KV number value={member.totalCalls} label="Total" />
+                    <KV number value={member.answeredCalls} label="Answered" className="text-green-600" />
+                    <KV number value={member.missedCalls} label="Missed" className="text-red-600" />
+                    <KV value={`${member.answerRate}%`} label="Rate" className="text-blue-600" />
+                    <KV number value={pending} label="Pending" className="text-orange-600" />
                   </div>
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
-            <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-            <p>No team member data available</p>
-          </div>
+          <EmptyTeam />
         )}
       </Card>
 
-      {/* Charts Section */}
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Call Trends Chart */}
         <Card className="p-4">
           <h3 className="font-semibold text-gray-900 mb-4">Call Trends</h3>
           {statsLoading ? (
             <Skeleton className="h-64 w-full rounded-lg" />
           ) : (
             <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={formatTrendsData(stats?.trends)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="total" stroke="#0088FE" strokeWidth={2} name="Total Calls" />
-                <Line type="monotone" dataKey="answered" stroke="#00C49F" strokeWidth={2} name="Answered" />
-                <Line type="monotone" dataKey="missed" stroke="#FF8042" strokeWidth={2} name="Missed" />
-              </LineChart>
-            </ResponsiveContainer>
+            <LineChart data={formatTrendsData(stats?.trends, period)}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="outgoing" stroke="#8884D8" strokeWidth={2} name="Outgoing" connectNulls dot={false} />
+              <Line type="monotone" dataKey="total" stroke="#0088FE" strokeWidth={2} name="Total Calls" connectNulls dot={false} />
+              <Line type="monotone" dataKey="answered" stroke="#00C49F" strokeWidth={2} name="Answered" connectNulls dot={false} />
+              <Line type="monotone" dataKey="missed" stroke="#FF8042" strokeWidth={2} name="Missed" connectNulls dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
           )}
         </Card>
 
-        {/* Hourly Distribution */}
         <Card className="p-4">
           <h3 className="font-semibold text-gray-900 mb-4">Hourly Distribution</h3>
           {statsLoading ? (
             <Skeleton className="h-64 w-full rounded-lg" />
           ) : (
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={formatHourlyData(stats?.distribution)}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="hour" tick={{ fontSize: 10 }} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="calls" fill="#8884d8" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+<ResponsiveContainer width="100%" height={250}>
+  <BarChart data={formatHourlyData(stats?.distribution)}>
+    <CartesianGrid strokeDasharray="3 3" />
+    <XAxis dataKey="hourLabel" tick={{ fontSize: 10 }} />  {/* <-- changed */}
+    <YAxis />
+    <Tooltip />
+    <Bar dataKey="calls" fill="#8884d8" radius={[4, 4, 0, 0]} />
+  </BarChart>
+</ResponsiveContainer>
+
           )}
         </Card>
       </div>
@@ -821,113 +719,132 @@ const OverviewTab = ({
   );
 };
 
-// Team Performance Tab Component - SIMPLIFIED WITHOUT CARDS
-const TeamPerformanceTab = ({ 
-  teamData, 
-  teamLoading, 
-  onTeamMemberClick,
-  getMemberPendingFollowups
-}) => {
+// ---------- Team Tab ----------
+const TeamPerformanceTab = ({ teamData, teamLoading, onTeamMemberClick, getMemberPendingFollowups }) => {
   return (
     <>
-      {/* Team Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard
-          title="Team Members"
-          value={teamData?.length || 0}
-          icon={Users}
-          loading={teamLoading}
-        />
+        <KPICard title="Team Members" value={teamData?.length || 0} icon={Users} loading={teamLoading} />
         <KPICard
           title="Total Calls"
-          value={teamData?.reduce((sum, member) => sum + (member.totalCalls || 0), 0) || 0}
+          value={teamData?.reduce((sum, m) => sum + (m.totalCalls || 0), 0) || 0}
           icon={Phone}
           loading={teamLoading}
         />
         <KPICard
           title="Avg Answer Rate"
-          value={`${teamData?.length > 0 ? Math.round(teamData.reduce((sum, member) => sum + (member.answerRate || 0), 0) / teamData.length) : 0}%`}
+          value={`${
+            teamData?.length
+              ? Math.round(teamData.reduce((s, m) => s + (m.answerRate || 0), 0) / teamData.length)
+              : 0
+          }%`}
           icon={TrendingUp}
           loading={teamLoading}
         />
-        <KPICard
-          title="Best Performer"
-          value={teamData?.[0]?.userName || 'N/A'}
-          icon={Trophy}
-          loading={teamLoading}
-        />
+        <KPICard title="Best Performer" value={teamData?.[0]?.userName || "N/A"} icon={Trophy} loading={teamLoading} />
       </div>
 
-      {/* Team Leaderboard - CLEAN ROW STYLE */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Team Leaderboard</h3>
-        
         {teamLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map(i => (
-              <Skeleton key={i} className="h-12 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : teamData && teamData.length > 0 ? (
+          <SkeletonList count={5} height="h-12" />
+        ) : teamData?.length ? (
           <div className="space-y-3">
             {teamData.map((member, index) => {
-              const pendingFollowups = getMemberPendingFollowups(member.userId);
-              const performance = getPerformanceBadge(member.performanceScore);
-              
+              const pending = getMemberPendingFollowups(member.userId);
               return (
-                <div 
-                  key={member.userId} 
+                <div
+                  key={member.userId}
                   className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                   onClick={() => onTeamMemberClick(member)}
                 >
-                  <div className="flex-shrink-0 w-6 text-center">
-                    {getRankIcon(index)}
-                  </div>
-                  
+                  <div className="flex-shrink-0 w-6 text-center">{getRankIcon(index)}</div>
                   <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    {member.userName?.charAt(0)?.toUpperCase() || 'U'}
+                    {member.userName?.charAt(0)?.toUpperCase() || "U"}
                   </div>
-                  
                   <div className="flex-1 min-w-0">
                     <h4 className="font-semibold text-gray-900">{member.userName}</h4>
-                    <p className="text-sm text-gray-500">{member.userMobile || 'No mobile'}</p>
+                    <p className="text-sm text-gray-500">{member.userMobile || "No mobile"}</p>
                   </div>
-
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${performance.bg} ${performance.color}`}>
-                    {performance.label}
-                  </div>
-                  
+                  {/* <div className={`px-3 py-1 rounded-full text-xs font-medium ${performance.bg} ${performance.color}`}>{performance.label}</div> */}
                   <div className="flex gap-6 text-right">
-                    <div>
-                      <div className="font-semibold text-gray-900">{member.totalCalls}</div>
-                      <div className="text-xs text-gray-500">Total</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-green-600">{member.answeredCalls}</div>
-                      <div className="text-xs text-gray-500">Answered</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-orange-600">{Math.round(member.answerRate || 0)}%</div>
-                      <div className="text-xs text-gray-500">Rate</div>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-yellow-600">{pendingFollowups}</div>
-                      <div className="text-xs text-gray-500">Pending</div>
-                    </div>
+                    <KV number value={member.totalCalls} label="Total" />
+                    <KV number value={member.answeredCalls} label="Answered" className="text-green-600" />
+                    <KV value={`${Math.round(member.answerRate || 0)}%`} label="Rate" className="text-orange-600" />
+                    <KV number value={pending} label="Pending" className="text-yellow-600" />
                   </div>
                 </div>
               );
             })}
           </div>
         ) : (
-          <div className="text-center py-8 text-gray-500">
-            <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-            <p>No team data available</p>
-          </div>
+          <EmptyTeam />
         )}
       </Card>
     </>
   );
 };
 
-export default CombinedDashboard; 
+// ---------- small UI helpers ----------
+const Metric = ({ label, value, color }) => (
+  <div>
+    <div className={`text-2xl font-bold ${color || "text-gray-900"}`}>{value}</div>
+    <div className="text-sm text-gray-500">{label}</div>
+  </div>
+);
+
+const Row = ({ label, value }) => (
+  <div className="flex justify-between items-center">
+    <span className="text-gray-600">{label}</span>
+    <span className="font-semibold">{value}</span>
+  </div>
+);
+
+const BadgeRow = ({ icon, label, value, valueClass }) => (
+  <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: "rgba(0,0,0,0.03)" }}>
+    <div className="flex items-center gap-2">
+      {icon}
+      <span className="text-sm">{label}</span>
+    </div>
+    <span className={`font-semibold ${valueClass || ""}`}>{value}</span>
+  </div>
+);
+
+const SimpleKPI = ({ icon, label, value, loading }) => (
+  <Card className="p-4 text-center">
+    {loading ? <Skeleton className="h-8 w-8 mx-auto mb-2 rounded-full" /> : icon}
+    <h3 className="text-sm font-medium text-gray-500">{label}</h3>
+    {loading ? <Skeleton className="h-6 w-16 mx-auto mt-1" /> : <p className="text-xl font-bold text-gray-900">{value}</p>}
+  </Card>
+);
+
+const KeyVal = ({ label, value }) => (
+  <div className="flex justify-between">
+    <span className="text-sm text-gray-600">{label}</span>
+    <span className="font-semibold">{value}</span>
+  </div>
+);
+
+const KV = ({ value, label, className = "", number = false }) => (
+  <div>
+    <div className={`font-semibold ${className}`}>{number ? Number(value || 0) : value}</div>
+    <div className="text-xs text-gray-500">{label}</div>
+  </div>
+);
+
+const SkeletonList = ({ count = 4, height = "h-4" }) => (
+  <div className="space-y-3">
+    {Array.from({ length: count }).map((_, i) => (
+      <Skeleton key={i} className={`${height} w-full rounded-lg`} />
+    ))}
+  </div>
+);
+
+const EmptyTeam = () => (
+  <div className="text-center py-8 text-gray-500">
+    <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+    <p>No team data available</p>
+  </div>
+);
+
+export default CombinedDashboard;

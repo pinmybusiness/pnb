@@ -21,7 +21,9 @@ import {
   UserCheck,
   AlertCircle,
   ArrowLeft,
-  Ban
+  Ban,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import KPICard from "@/components/ui/KPICard";
 import Card from "@/components/ui/Card";
@@ -61,6 +63,7 @@ const formatHour12 = (h) => {
   const hour12 = hour % 12 === 0 ? 12 : hour % 12;
   return `${hour12} ${suffix}`;
 };
+
 // put near the top (helpers)
 const WEEK_LABELS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 const TODAY_LABELS = Array.from({length: 24}, (_,h)=> `${h}:00`);
@@ -185,6 +188,7 @@ const CombinedDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [period, setPeriod] = useState("today");
   const [selectedTeamMember, setSelectedTeamMember] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Dashboard stats (matches backend: IST window + answered=incoming)
   const {
@@ -231,7 +235,7 @@ const {
   },
   // ensure refetch when period changes and avoid stale cache
   staleTime: 0,                 // always stale
-  gcTime: 0,                    // don’t keep cache
+  gcTime: 0,                    // don't keep cache
   refetchOnMount: "always",     // v5: always refetch on mount
   refetchOnWindowFocus: false,
   refetchOnReconnect: true,
@@ -299,8 +303,8 @@ const { data: teamMemberStats, isLoading: memberStatsLoading } = useQuery({
 
   if (statsError || teamError) {
     return (
-      <div className="flex flex-col items-center justify-center h-64 space-y-4">
-        <p className="text-red-500 text-lg">Error loading dashboard data</p>
+      <div className="flex flex-col items-center justify-center h-64 space-y-4 p-4">
+        <p className="text-red-500 text-lg text-center">Error loading dashboard data</p>
         <Button onClick={() => window.location.reload()} variant="outline">
           Reload Page
         </Button>
@@ -309,7 +313,7 @@ const { data: teamMemberStats, isLoading: memberStatsLoading } = useQuery({
   }
 
   return (
-    <div className="space-y-6 animate-fade-in p-4 sm:p-6">
+    <div className="space-y-6 animate-fade-in p-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -321,7 +325,7 @@ const { data: teamMemberStats, isLoading: memberStatsLoading } = useQuery({
               className="flex items-center gap-2"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Team
+              <span className="hidden sm:inline">Back to Team</span>
             </Button>
           )}
           <div>
@@ -341,9 +345,21 @@ const { data: teamMemberStats, isLoading: memberStatsLoading } = useQuery({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
+          {/* Mobile Menu Toggle */}
+          <div className="sm:hidden">
+            <Button
+              variant="outline"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="w-full flex items-center justify-between"
+            >
+              <span>Menu</span>
+              {isMobileMenuOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
+          </div>
+
           {/* Tab Switcher */}
           {!selectedTeamMember && (
-            <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+            <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} sm:flex gap-1 bg-gray-100 p-1 rounded-lg flex-col sm:flex-row`}>
               {[
                 { key: "overview", label: "Overview", icon: BarChart3 },
                 { key: "team", label: "Team Performance", icon: Users }
@@ -351,9 +367,12 @@ const { data: teamMemberStats, isLoading: memberStatsLoading } = useQuery({
                 <Button
                   key={key}
                   variant={activeTab === key ? "primary" : "outline"}
-                  onClick={() => setActiveTab(key)}
+                  onClick={() => {
+                    setActiveTab(key);
+                    setIsMobileMenuOpen(false);
+                  }}
                   size="sm"
-                  className="text-xs"
+                  className="text-xs justify-center sm:justify-start"
                   disabled={statsLoading || teamLoading}
                 >
                   <Icon className="h-3 w-3 mr-1" />
@@ -364,7 +383,7 @@ const { data: teamMemberStats, isLoading: memberStatsLoading } = useQuery({
           )}
 
           {/* Period Selector */}
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+          <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} sm:flex gap-1 bg-gray-100 p-1 rounded-lg flex-col sm:flex-row`}>
             {[
               { key: "today", label: "Today" },
               { key: "week", label: "This Week" },
@@ -373,9 +392,12 @@ const { data: teamMemberStats, isLoading: memberStatsLoading } = useQuery({
               <Button
                 key={key}
                 variant={period === key ? "primary" : "outline"}
-                onClick={() => setPeriod(key)}
+                onClick={() => {
+                  setPeriod(key);
+                  setIsMobileMenuOpen(false);
+                }}
                 size="sm"
-                className="text-xs"
+                className="text-xs justify-center sm:justify-start"
                 disabled={statsLoading || teamLoading}
               >
                 {label}
@@ -445,33 +467,30 @@ const IndividualMemberView = ({ member, stats, loading, pendingFollowups, period
 
   return (
     <>
-      <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+      <Card className="p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-lg sm:text-xl font-bold">
               {(data?.userName || member?.userName || "U").charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{data?.userName || member?.userName || "User"}</h2>
-              {/* <p className="text-gray-600">
-                {(data?.userRole || member?.userRole || "Team Member")} • {(data?.userMobile || member?.userMobile || "No mobile")}
-              </p> */}
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">{data?.userName || member?.userName || "User"}</h2>
             </div>
           </div>
 
-          {/* Top tiles (keep these) */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+          {/* Top tiles - responsive grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 text-center">
             <Metric label="Total Calls" value={totalCalls} />
             <Metric label="Answered" value={answered} color="text-green-600" />
             <Metric label="Missed" value={missed} color="text-red-600" />
             <Metric label="Answer Rate" value={`${answerRate}%`} color="text-blue-600" />
-            <Metric label="Pending Follow-ups" value={Number(pendingFollowups || 0)} color="text-orange-600" />
+            <Metric label="Pending" value={Number(pendingFollowups || 0)} color="text-orange-600" />
           </div>
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        <Card className="p-4 sm:p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
           {loading ? (
             <SkeletonList count={4} />
@@ -501,7 +520,7 @@ const IndividualMemberView = ({ member, stats, loading, pendingFollowups, period
         </Card>
 
         {/* Activity Summary (ONLY unique stats now) */}
-        <Card className="p-6">
+        <Card className="p-4 sm:p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity Summary</h3>
           {loading ? (
             <SkeletonList count={3} />
@@ -509,7 +528,7 @@ const IndividualMemberView = ({ member, stats, loading, pendingFollowups, period
             <div className="space-y-3">
               <BadgeRow
                 icon={<Phone className="h-4 w-4 text-indigo-600" />}
-                label="Incoming Total (Answered + Missed)"
+                label="Incoming Total"
                 value={incomingTotal}
                 valueClass="text-indigo-600"
               />
@@ -538,7 +557,6 @@ const IndividualMemberView = ({ member, stats, loading, pendingFollowups, period
     </>
   );
 };
-
 
 // ---------- Overview Tab ----------
 const OverviewTab = ({
@@ -570,26 +588,55 @@ const OverviewTab = ({
 
   return (
     <>
-      {/* KPIs */}
-       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <Link href="/dashboard/tracking">
-         <KPICard title="Total Calls" value={stats?.overview?.totalCalls || 0} icon={Phone} loading={statsLoading} />
+     {/* KPIs - Responsive grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 sm:gap-4">
+        <Link href="/dashboard/tracking" className="lg:col-span-1">
+          <KPICard
+            title="Total Calls"
+            value={stats?.overview?.totalCalls || 0}
+            icon={Phone}
+            loading={statsLoading}
+          />
         </Link>
-         <KPICard title="Answered" value={stats?.overview?.answeredCalls || 0} icon={PhoneIncoming} loading={statsLoading} />
-         <KPICard title="Unanswered Incoming Calls" value={stats?.overview?.missedCalls || 0} icon={PhoneMissed} loading={statsLoading} />
-        <KPICard title="Spam Calls" value={stats?.overview?.spamCalls || 0} icon={Ban} loading={statsLoading} />
-        <Link href="/dashboard/tracking/missed-calls">
-         <KPICard title="Pending Follow-ups" value={missedCallsData?.length || 0} icon={AlertCircle} loading={missedCallsLoading} />
+
+        <KPICard
+          title="Answered"
+          value={stats?.overview?.answeredCalls || 0}
+          icon={PhoneIncoming}
+          loading={statsLoading}
+        />
+
+        <KPICard
+          title="Unanswered"
+          value={stats?.overview?.missedCalls || 0}
+          icon={PhoneMissed}
+          loading={statsLoading}
+        />
+
+        <KPICard
+          title="Spam Calls"
+          value={stats?.overview?.spamCalls || 0}
+          icon={Ban}
+          loading={statsLoading}
+        />
+
+        <Link href="/dashboard/tracking/missed-calls" className="lg:col-span-1">
+          <KPICard
+            title="Pending Follow-ups"
+            value={missedCallsData?.length || 0}
+            icon={AlertCircle}
+            loading={missedCallsLoading}
+          />
         </Link>
-       </div>
+      </div>
 
       {/* Metrics + Team Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-          <SimpleKPI icon={<Clock className="h-8 w-8 text-blue-600 mx-auto mb-2" />} label="Avg Duration" value={stats?.duration?.average || "0:00"} loading={statsLoading} />
-          <SimpleKPI icon={<TrendingUp className="h-8 w-8 text-green-600 mx-auto mb-2" />} label="Answer Rate" value={`${stats?.overview?.answerRate || 0}%`} loading={statsLoading} />
-          <SimpleKPI icon={<UserCheck className="h-8 w-8 text-orange-600 mx-auto mb-2" />} label="Outgoing Calls" value={stats?.overview?.outgoingCalls || 0} loading={statsLoading} />
-          <SimpleKPI icon={<TrendingDown className="h-8 w-8 text-red-600 mx-auto mb-2" />} label="Missed Rate" value={`${stats?.overview?.missedRate || 0}%`} loading={statsLoading} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 md:col-span-2 gap-3 sm:gap-4">
+          <SimpleKPI icon={<Clock className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 mx-auto mb-2" />} label="Avg Duration" value={stats?.duration?.average || "0:00"} loading={statsLoading} />
+          <SimpleKPI icon={<TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 mx-auto mb-2" />} label="Answer Rate" value={`${stats?.overview?.answerRate || 0}%`} loading={statsLoading} />
+          <SimpleKPI icon={<UserCheck className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600 mx-auto mb-2" />} label="Outgoing Calls" value={stats?.overview?.outgoingCalls || 0} loading={statsLoading} />
+          <SimpleKPI icon={<TrendingDown className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 mx-auto mb-2" />} label="Missed Rate" value={`${stats?.overview?.missedRate || 0}%`} loading={statsLoading} />
         </div>
 
         <Card className="p-4">
@@ -626,12 +673,11 @@ const OverviewTab = ({
       </div>
 
       {/* Team Member rows */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
+      <Card className="p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h3 className="text-lg font-semibold text-gray-900">Team Member Performance</h3>
           <div className="flex gap-2">
-            {/* <span className="text-sm text-gray-500">{missedCallsData?.length || 0} pending follow-ups</span> */}
-            <Button variant="outline" size="sm" onClick={() => setActiveTab("team")}>
+            <Button variant="outline" size="sm" onClick={() => setActiveTab("team")} className="flex-1 sm:flex-none">
               View All Team
             </Button>
           </div>
@@ -641,24 +687,25 @@ const OverviewTab = ({
           <SkeletonList count={5} height="h-12" />
         ) : teamMemberStats?.teamStats?.length ? (
           <div className="space-y-3">
-            {teamMemberStats.teamStats.map((member, index) => {
+            {teamMemberStats.teamStats.slice(0, 5).map((member, index) => {
               const pending = getMemberPendingFollowups(member.userId);
 
               return (
                 <div
                   key={member.userId}
-                  className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                   onClick={() => onTeamMemberClick(member)}
                 >
-                  <div className="flex-shrink-0 w-6 text-center">{getRankIcon(index)}</div>
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    {member.userName?.charAt(0)?.toUpperCase() || "U"}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-6 text-center">{getRankIcon(index)}</div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold">
+                      {member.userName?.charAt(0)?.toUpperCase() || "U"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 text-sm">{member.userName}</h4>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-gray-900 text-sm">{member.userName}</h4>
-                    {/* <p className="text-xs text-gray-500">{member.userRole || "Team Member"}</p> */}
-                  </div>
-                  <div className="flex gap-6 text-right">
+                  <div className="flex gap-3 sm:gap-6 text-right overflow-x-auto">
                     <KV number value={member.totalCalls} label="Total" />
                     <KV number value={member.answeredCalls} label="Answered" className="text-green-600" />
                     <KV number value={member.missedCalls} label="Missed" className="text-red-600" />
@@ -675,11 +722,11 @@ const OverviewTab = ({
       </Card>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         <Card className="p-4">
           <h3 className="font-semibold text-gray-900 mb-4">Call Trends</h3>
           {statsLoading ? (
-            <Skeleton className="h-64 w-full rounded-lg" />
+            <Skeleton className="h-48 sm:h-64 w-full rounded-lg" />
           ) : (
             <ResponsiveContainer width="100%" height={250}>
             <LineChart data={formatTrendsData(stats?.trends, period)}>
@@ -700,17 +747,17 @@ const OverviewTab = ({
         <Card className="p-4">
           <h3 className="font-semibold text-gray-900 mb-4">Hourly Distribution</h3>
           {statsLoading ? (
-            <Skeleton className="h-64 w-full rounded-lg" />
+            <Skeleton className="h-48 sm:h-64 w-full rounded-lg" />
           ) : (
-<ResponsiveContainer width="100%" height={250}>
-  <BarChart data={formatHourlyData(stats?.distribution)}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="hourLabel" tick={{ fontSize: 10 }} />  {/* <-- changed */}
-    <YAxis />
-    <Tooltip />
-    <Bar dataKey="calls" fill="#8884d8" radius={[4, 4, 0, 0]} />
-  </BarChart>
-</ResponsiveContainer>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={formatHourlyData(stats?.distribution)}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="hourLabel" tick={{ fontSize: 10 }} />  {/* <-- changed */}
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="calls" fill="#8884d8" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
 
           )}
         </Card>
@@ -723,7 +770,7 @@ const OverviewTab = ({
 const TeamPerformanceTab = ({ teamData, teamLoading, onTeamMemberClick, getMemberPendingFollowups }) => {
   return (
     <>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 sm:gap-4">
         <KPICard title="Team Members" value={teamData?.length || 0} icon={Users} loading={teamLoading} />
         <KPICard
           title="Total Calls"
@@ -744,7 +791,7 @@ const TeamPerformanceTab = ({ teamData, teamLoading, onTeamMemberClick, getMembe
         <KPICard title="Best Performer" value={teamData?.[0]?.userName || "N/A"} icon={Trophy} loading={teamLoading} />
       </div>
 
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-6">Team Leaderboard</h3>
         {teamLoading ? (
           <SkeletonList count={5} height="h-12" />
@@ -755,19 +802,20 @@ const TeamPerformanceTab = ({ teamData, teamLoading, onTeamMemberClick, getMembe
               return (
                 <div
                   key={member.userId}
-                  className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
                   onClick={() => onTeamMemberClick(member)}
                 >
-                  <div className="flex-shrink-0 w-6 text-center">{getRankIcon(index)}</div>
-                  <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    {member.userName?.charAt(0)?.toUpperCase() || "U"}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0 w-6 text-center">{getRankIcon(index)}</div>
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full flex items-center justify-center text-white text-xs sm:text-sm font-bold">
+                      {member.userName?.charAt(0)?.toUpperCase() || "U"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 text-sm sm:text-base">{member.userName}</h4>
+                      <p className="text-xs sm:text-sm text-gray-500">{member.userMobile || "No mobile"}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-gray-900">{member.userName}</h4>
-                    <p className="text-sm text-gray-500">{member.userMobile || "No mobile"}</p>
-                  </div>
-                  {/* <div className={`px-3 py-1 rounded-full text-xs font-medium ${performance.bg} ${performance.color}`}>{performance.label}</div> */}
-                  <div className="flex gap-6 text-right">
+                  <div className="flex gap-3 sm:gap-6 text-right overflow-x-auto">
                     <KV number value={member.totalCalls} label="Total" />
                     <KV number value={member.answeredCalls} label="Answered" className="text-green-600" />
                     <KV value={`${Math.round(member.answerRate || 0)}%`} label="Rate" className="text-orange-600" />
@@ -788,46 +836,46 @@ const TeamPerformanceTab = ({ teamData, teamLoading, onTeamMemberClick, getMembe
 // ---------- small UI helpers ----------
 const Metric = ({ label, value, color }) => (
   <div>
-    <div className={`text-2xl font-bold ${color || "text-gray-900"}`}>{value}</div>
-    <div className="text-sm text-gray-500">{label}</div>
+    <div className={`text-lg sm:text-xl md:text-2xl font-bold ${color || "text-gray-900"}`}>{value}</div>
+    <div className="text-xs sm:text-sm text-gray-500">{label}</div>
   </div>
 );
 
 const Row = ({ label, value }) => (
   <div className="flex justify-between items-center">
-    <span className="text-gray-600">{label}</span>
-    <span className="font-semibold">{value}</span>
+    <span className="text-gray-600 text-sm sm:text-base">{label}</span>
+    <span className="font-semibold text-sm sm:text-base">{value}</span>
   </div>
 );
 
 const BadgeRow = ({ icon, label, value, valueClass }) => (
-  <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: "rgba(0,0,0,0.03)" }}>
+  <div className="flex justify-between items-center p-2 sm:p-3 rounded-lg" style={{ backgroundColor: "rgba(0,0,0,0.03)" }}>
     <div className="flex items-center gap-2">
       {icon}
-      <span className="text-sm">{label}</span>
+      <span className="text-xs sm:text-sm">{label}</span>
     </div>
-    <span className={`font-semibold ${valueClass || ""}`}>{value}</span>
+    <span className={`font-semibold text-sm sm:text-base ${valueClass || ""}`}>{value}</span>
   </div>
 );
 
 const SimpleKPI = ({ icon, label, value, loading }) => (
-  <Card className="p-4 text-center">
-    {loading ? <Skeleton className="h-8 w-8 mx-auto mb-2 rounded-full" /> : icon}
-    <h3 className="text-sm font-medium text-gray-500">{label}</h3>
-    {loading ? <Skeleton className="h-6 w-16 mx-auto mt-1" /> : <p className="text-xl font-bold text-gray-900">{value}</p>}
+  <Card className="p-3 sm:p-4 text-center">
+    {loading ? <Skeleton className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 rounded-full" /> : icon}
+    <h3 className="text-xs sm:text-sm font-medium text-gray-500">{label}</h3>
+    {loading ? <Skeleton className="h-4 w-12 sm:h-6 sm:w-16 mx-auto mt-1" /> : <p className="text-lg sm:text-xl font-bold text-gray-900">{value}</p>}
   </Card>
 );
 
 const KeyVal = ({ label, value }) => (
   <div className="flex justify-between">
     <span className="text-sm text-gray-600">{label}</span>
-    <span className="font-semibold">{value}</span>
+    <span className="font-semibold text-sm">{value}</span>
   </div>
 );
 
 const KV = ({ value, label, className = "", number = false }) => (
-  <div>
-    <div className={`font-semibold ${className}`}>{number ? Number(value || 0) : value}</div>
+  <div className="flex-shrink-0">
+    <div className={`font-semibold text-sm sm:text-base ${className}`}>{number ? Number(value || 0) : value}</div>
     <div className="text-xs text-gray-500">{label}</div>
   </div>
 );
@@ -842,8 +890,8 @@ const SkeletonList = ({ count = 4, height = "h-4" }) => (
 
 const EmptyTeam = () => (
   <div className="text-center py-8 text-gray-500">
-    <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-    <p>No team data available</p>
+    <Users className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 text-gray-300" />
+    <p className="text-sm sm:text-base">No team data available</p>
   </div>
 );
 

@@ -1,32 +1,27 @@
 'use client';
-import { useState, useEffect, useMemo, useCallback } from "react";
-import { Phone, PhoneCall, PhoneMissed, PhoneIncoming, PhoneOutgoing, Search, Plus, CheckCircle, Star, Edit3, ArrowUpDown, User } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { 
+  Phone, PhoneCall, PhoneMissed, PhoneIncoming, PhoneOutgoing, 
+  Search, CheckCircle, Star, Edit3, ArrowUpDown, User 
+} from "lucide-react";
 import KPICard from "@/components/ui/KPICard";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import { Card, Button, Input, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
+import { 
+  Card, Input, Badge, Table, TableHeader, TableBody, 
+  TableRow, TableHead, TableCell 
+} from "@/components/ui";
 
-// StatusBadge component to display status with proper styling
+// StatusBadge Component
 const StatusBadge = ({ status }) => {
-  const getStatusStyles = (status) => {
-    switch (status) {
-      case "missed":
-        return { className: "bg-red-100 text-red-800", label: "Missed" };
-      case "answered":
-        return { className: "bg-blue-100 text-blue-800", label: "Answered" };
-      case "resolved":
-        return { className: "bg-green-100 text-green-800", label: "Resolved" };
-      case "ended":
-        return { className: "bg-gray-100 text-gray-800", label: "Ended" };
-      default:
-        return { className: "bg-gray-100 text-gray-800", label: status };
-    }
+  const statusConfig = {
+    missed: { className: "bg-red-100 text-red-800", label: "Missed" },
+    answered: { className: "bg-blue-100 text-blue-800", label: "Answered" },
+    resolved: { className: "bg-green-100 text-green-800", label: "Resolved" },
+    ended: { className: "bg-gray-100 text-gray-800", label: "Ended" }
   };
 
-  const { className, label } = getStatusStyles(status);
+  const { className, label } = statusConfig[status] || statusConfig.ended;
 
   return (
     <Badge className={`px-2 py-1 text-xs font-medium rounded-full ${className}`}>
@@ -35,10 +30,30 @@ const StatusBadge = ({ status }) => {
   );
 };
 
+// CallerDisplay Component to handle duplicate name/phone
+const CallerDisplay = ({ caller }) => {
+  const { name, phone } = caller;
+  
+  const isDuplicate = name === phone || 
+                     name === "Unknown" || 
+                     name?.includes(phone) || 
+                     phone?.includes(name);
+
+  return (
+    <div className="flex flex-col items-start">
+      <div className="text-sm font-medium text-gray-900">{name}</div>
+      {!isDuplicate && (
+        <div className="text-xs sm:text-sm text-gray-500">{phone}</div>
+      )}
+    </div>
+  );
+};
+
 const CallTracking = () => {
-  const router = useRouter();
+  // State Management
   const [calls, setCalls] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [directionFilter, setDirectionFilter] = useState("all");
   const [agentFilter, setAgentFilter] = useState("all");
@@ -48,196 +63,22 @@ const CallTracking = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [totalCalls, setTotalCalls] = useState(0);
+  const [kpiStats, setKpiStats] = useState({
+    totalCalls: 0,
+    missedCalls: 0,
+    answeredCalls: 0,
+    resolvedCalls: 0
+  });
 
-  // Map numeric backend values to strings
-  const mapCallData = (call) => {
-    const statusMap = { 0: "missed", 1: "answered", 2: "resolved", 3: "ended" };
-    const directionMap = { 0: "incoming", 1: "outgoing" };
-    const priorityMap = { 0: "normal", 1: "high" };
+  // Refs
+  const debounceTimerRef = useRef(null);
 
-    return {
-      id: call._id,
-      caller: {
-        name: call.callerName || call.callerPhone || "Unknown",
-        phone: call.callerPhone,
-        avatar: "", // Add avatar logic if available in backend
-      },
-      receiver: {
-        name: call.receiver?.name || "Unknown",
-        avatar: "", // Add avatar logic if available
-      },
-      duration: call.duration || "0:00",
-      status: statusMap[call.status] || "answered",
-      direction: directionMap[call.direction] || "incoming",
-      timestamp: new Date(call.timestamp).toLocaleString("en-IN", {
-        dateStyle: "short",
-        timeStyle: "short",
-      }),
-      notes: call.notes || "",
-      priority: priorityMap[call.priority] || "normal",
-    };
-  };
+  // Constants
+  const STATUS_MAP = { 0: "missed", 1: "answered", 2: "resolved", 3: "ended" };
+  const DIRECTION_MAP = { 0: "incoming", 1: "outgoing" };
+  const PRIORITY_MAP = { 0: "normal", 1: "high" };
 
-  // Fetch calls from backend with pagination
-  const fetchCalls = async (pageNum = 1, shouldAppend = false) => {
-    try {
-      if (pageNum === 1) {
-        setLoading(true);
-      } else {
-        setLoadingMore(true);
-      }
-
-      const params = {
-        page: pageNum,
-        limit: 20, // Adjust limit as needed
-        search: searchTerm,
-        status: statusFilter !== "all" ? statusFilter : undefined,
-        direction: directionFilter !== "all" ? directionFilter : undefined,
-        agent: agentFilter !== "all" ? agentFilter : undefined,
-        sortBy,
-        sortOrder,
-      };
-
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/calls`, {
-        params,
-        withCredentials: true,
-      });
-
-      const { data: callsData, total, currentPage, totalPages } = response.data;
-      
-      const mappedCalls = callsData.map(mapCallData);
-
-      if (shouldAppend) {
-        setCalls(prev => [...prev, ...mappedCalls]);
-      } else {
-        setCalls(mappedCalls);
-      }
-
-      setTotalCalls(total);
-      setHasMore(currentPage < totalPages);
-      setPage(currentPage);
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch call data");
-      console.error("Fetch error:", error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  };
-
-  // Initial load and when filters change
-  useEffect(() => {
-    setPage(1);
-    fetchCalls(1, false);
-  }, [searchTerm, statusFilter, directionFilter, agentFilter, sortBy, sortOrder]);
-
-  // Load more function
-  const loadMore = useCallback(() => {
-    if (!loadingMore && hasMore) {
-      fetchCalls(page + 1, true);
-    }
-  }, [loadingMore, hasMore, page]);
-
-  // Infinite scroll handler
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.innerHeight + document.documentElement.scrollTop 
-          >= document.documentElement.offsetHeight - 100) {
-        loadMore();
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadMore]);
-
-  // Helper to parse duration to seconds for sorting
-  const parseDuration = (duration) => {
-    const [minutes, seconds] = duration.split(":").map(Number);
-    return minutes * 60 + seconds || 0;
-  };
-
-  // Calculate KPI stats
-  const calculateKPIs = () => {
-    if (calls.length === 0) return { totalCalls: 0, missedCalls: 0, answeredCalls: 0, resolvedCalls: 0 };
-    const totalCalls = calls.length;
-    const missedCalls = calls.filter((c) => c.status === "missed").length;
-    const answeredCalls = calls.filter((c) => c.status === "answered").length;
-    const resolvedCalls = calls.filter((c) => c.status === "resolved").length;
-    return { totalCalls, missedCalls, answeredCalls, resolvedCalls };
-  };
-
-  // Handle status update
-  const handleUpdateStatus = async (callId, status) => {
-    try {
-      const statusMap = { missed: 0, answered: 1, resolved: 2, ended: 3 };
-      await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/status`,
-        { status: statusMap[status] },
-        { withCredentials: true }
-      );
-      setCalls(
-        calls.map((call) =>
-          call.id === callId ? { ...call, status } : call
-        )
-      );
-      toast.success("Call status updated successfully");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update status");
-    }
-  };
-
-  // Handle adding a note
-  const addNote = async (callId, note) => {
-    try {
-      await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/notes`,
-        { notes: note },
-        { withCredentials: true }
-      );
-      setCalls(
-        calls.map((call) =>
-          call.id === callId ? { ...call, notes: note } : call
-        )
-      );
-      toast.success("Note added successfully");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to add note");
-    }
-  };
-
-  // Handle marking priority
-  const markPriority = async (callId, priority) => {
-    try {
-      const priorityMap = { normal: 0, high: 1 };
-      await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/priority`,
-        { priority: priorityMap[priority] },
-        { withCredentials: true }
-      );
-      setCalls(
-        calls.map((call) =>
-          call.id === callId ? { ...call, priority } : call
-        )
-      );
-      toast.success("Priority updated successfully");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update priority");
-    }
-  };
-
-  // Handle sorting
-  const handleSort = (key) => {
-    if (sortBy === key) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      setSortBy(key);
-      setSortOrder("desc");
-    }
-  };
-
-  // Status, direction, and agent options
+  // Filter Options
   const statusOptions = [
     { value: "all", label: "All Status" },
     { value: "missed", label: "Missed" },
@@ -252,7 +93,87 @@ const CallTracking = () => {
     { value: "outgoing", label: "Outgoing" },
   ];
 
-  // Fetch unique agents from calls
+  // Data Mapping
+  const mapCallData = useCallback((call) => ({
+    id: call._id,
+    caller: {
+      name: call.callerName || call.callerPhone || "Unknown",
+      phone: call.callerPhone,
+    },
+    receiver: {
+      name: call.receiver?.name || "Unknown",
+    },
+    duration: call.duration || "0:00",
+    status: STATUS_MAP[call.status] || "answered",
+    direction: DIRECTION_MAP[call.direction] || "incoming",
+    timestamp: new Date(call.timestamp).toLocaleString("en-IN", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }),
+    notes: call.notes || "",
+    priority: PRIORITY_MAP[call.priority] || "normal",
+  }), []);
+
+  // Debounced Search
+  const handleSearchChange = useCallback((value) => {
+    setSearchTerm(value);
+    
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(value);
+    }, 1000);
+  }, []);
+
+  // API Calls
+  const fetchCalls = useCallback(async (pageNum = 1, shouldAppend = false) => {
+    try {
+      if (pageNum === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const params = {
+        page: pageNum,
+        limit: 20,
+        search: debouncedSearchTerm,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        direction: directionFilter !== "all" ? directionFilter : undefined,
+        agent: agentFilter !== "all" ? agentFilter : undefined,
+        sortBy,
+        sortOrder,
+      };
+
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/calls`, {
+        params,
+        withCredentials: true,
+      });
+
+      const { data: callsData, stats, total, currentPage, totalPages } = response.data;
+      const mappedCalls = callsData.map(mapCallData);
+
+      if (shouldAppend) {
+        setCalls(prev => [...prev, ...mappedCalls]);
+      } else {
+        setCalls(mappedCalls);
+      }
+
+      setKpiStats(stats);
+      setHasMore(currentPage < totalPages);
+      setPage(currentPage);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to fetch call data");
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [debouncedSearchTerm, statusFilter, directionFilter, agentFilter, sortBy, sortOrder, mapCallData]);
+
+  // Agent Options
   const agentOptions = useMemo(() => {
     const agents = [...new Set(calls.map((call) => call.receiver.name))].filter(Boolean);
     return [
@@ -261,8 +182,101 @@ const CallTracking = () => {
     ];
   }, [calls]);
 
-  const kpiData = calculateKPIs();
+  // Action Handlers
+  const handleUpdateStatus = useCallback(async (callId, status) => {
+    try {
+      const statusMap = { missed: 0, answered: 1, resolved: 2, ended: 3 };
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/status`,
+        { status: statusMap[status] },
+        { withCredentials: true }
+      );
+      setCalls(prev => prev.map(call => 
+        call.id === callId ? { ...call, status } : call
+      ));
+      toast.success("Call status updated successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update status");
+    }
+  }, []);
 
+  const addNote = useCallback(async (callId, note) => {
+    try {
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/notes`,
+        { notes: note },
+        { withCredentials: true }
+      );
+      setCalls(prev => prev.map(call => 
+        call.id === callId ? { ...call, notes: note } : call
+      ));
+      toast.success("Note added successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to add note");
+    }
+  }, []);
+
+  const markPriority = useCallback(async (callId, priority) => {
+    try {
+      const priorityMap = { normal: 0, high: 1 };
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/priority`,
+        { priority: priorityMap[priority] },
+        { withCredentials: true }
+      );
+      setCalls(prev => prev.map(call => 
+        call.id === callId ? { ...call, priority } : call
+      ));
+      toast.success("Priority updated successfully");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update priority");
+    }
+  }, []);
+
+  const handleSort = useCallback((key) => {
+    setSortBy(prev => {
+      if (prev === key) {
+        setSortOrder(order => order === "asc" ? "desc" : "asc");
+      } else {
+        setSortOrder("desc");
+      }
+      return key;
+    });
+  }, []);
+
+  const loadMore = useCallback(() => {
+    if (!loadingMore && hasMore) {
+      fetchCalls(page + 1, true);
+    }
+  }, [loadingMore, hasMore, page, fetchCalls]);
+
+  // Effects
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    setPage(1);
+    fetchCalls(1, false);
+  }, [debouncedSearchTerm, statusFilter, directionFilter, agentFilter, sortBy, sortOrder, fetchCalls]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop 
+          >= document.documentElement.offsetHeight - 100) {
+        loadMore();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loadMore]);
+
+  // Loading State
   if (loading && page === 1) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -281,12 +295,12 @@ const CallTracking = () => {
         </div>
       </div>
 
-      {/* Summary Stats */}
+      {/* KPI Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 sm:gap-4">
-        <KPICard title="Total Calls" value={totalCalls} icon={PhoneCall} />
-        <KPICard title="Missed Calls" value={kpiData.missedCalls} icon={PhoneMissed} />
-        <KPICard title="Answered Calls" value={kpiData.answeredCalls} icon={Phone} />
-        <KPICard title="Resolved Calls" value={kpiData.resolvedCalls} icon={CheckCircle} />
+        <KPICard title="Total Calls" value={kpiStats.totalCalls} icon={PhoneCall} />
+        <KPICard title="Missed Calls" value={kpiStats.missedCalls} icon={PhoneMissed} />
+        <KPICard title="Incoming Answered Calls" value={kpiStats.answeredCalls} icon={Phone} />
+        <KPICard title="Resolved Calls" value={kpiStats.resolvedCalls} icon={CheckCircle} />
       </div>
 
       {/* Filters */}
@@ -297,7 +311,7 @@ const CallTracking = () => {
             <Input
               placeholder="Search calls, numbers, notes..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-10 text-sm"
             />
           </div>
@@ -375,43 +389,20 @@ const CallTracking = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {calls.map((call, index) => (
-                <TableRow key={index} className="hover:bg-gray-50">
+              {calls.map((call) => (
+                <TableRow key={call.id} className="hover:bg-gray-50">
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
-                        {call.caller.avatar ? (
-                          <Image
-                            src={call.caller.avatar}
-                            alt={call.caller.name}
-                            width={40}
-                            height={40}
-                            className="object-cover"
-                          />
-                        ) : (
-                          <User className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                        )}
+                      <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-md bg-gray-100 flex items-center justify-center">
+                        <User className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                       </div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{call.caller.name}</div>
-                        <div className="text-xs sm:text-sm text-gray-500">{call.caller.phone}</div>
-                      </div>
+                      <CallerDisplay caller={call.caller} />
                     </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
-                        {call.receiver.avatar ? (
-                          <Image
-                            src={call.receiver.avatar}
-                            alt={call.receiver.name}
-                            width={32}
-                            height={32}
-                            className="object-cover"
-                          />
-                        ) : (
-                          <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
-                        )}
+                      <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 rounded-md bg-gray-100 flex items-center justify-center">
+                        <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
                       </div>
                       <span className="text-xs sm:text-sm font-medium text-gray-900">{call.receiver.name}</span>
                     </div>
@@ -448,7 +439,7 @@ const CallTracking = () => {
                       {call.status === "missed" && (
                         <button
                           onClick={() => handleUpdateStatus(call.id, "resolved")}
-                          className="p-1 sm:p-2 text-green-600 hover:text-green-800 hover:bg-gray-100 rounded-md"
+                          className="p-1 sm:p-2 text-green-600 hover:text-green-800 hover:bg-gray-100 rounded-md transition-colors"
                           title="Resolve"
                         >
                           <CheckCircle className="h-4 w-4" />
@@ -456,14 +447,14 @@ const CallTracking = () => {
                       )}
                       <button
                         onClick={() => addNote(call.id, prompt("Enter note:") || "New note")}
-                        className="p-1 sm:p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md"
+                        className="p-1 sm:p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md transition-colors"
                         title="Add Note"
                       >
                         <Edit3 className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => markPriority(call.id, call.priority === "high" ? "normal" : "high")}
-                        className="p-1 sm:p-2 text-gray-600 hover:text-yellow-600 hover:bg-gray-100 rounded-md"
+                        className="p-1 sm:p-2 text-gray-600 hover:text-yellow-600 hover:bg-gray-100 rounded-md transition-colors"
                         title="Toggle Priority"
                       >
                         <Star className={`h-4 w-4 ${call.priority === "high" ? "fill-yellow-600 text-yellow-600" : ""}`} />
@@ -476,17 +467,17 @@ const CallTracking = () => {
           </Table>
         </div>
 
-        {/* Mobile Card Layout - Compact and Clean */}
+        {/* Mobile View */}
         <div className="block sm:hidden space-y-2 p-2">
-          {calls.map((call, index) => (
-            <Card key={index} className="p-3 shadow-sm">
+          {calls.map((call) => (
+            <Card key={call.id} className="p-3 shadow-sm">
               <div className="space-y-1">
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <StatusBadge status={call.status} />
                     </div>
-                    <div className="text-xs text-gray-500">{call.caller.phone}</div>
+                    <CallerDisplay caller={call.caller} />
                   </div>
                   <div className="flex flex-col items-end gap-1">
                     <div className="text-xs text-gray-900">{call.timestamp.split(", ")[1]}</div>
@@ -514,7 +505,7 @@ const CallTracking = () => {
                   {call.status === "missed" && (
                     <button
                       onClick={() => handleUpdateStatus(call.id, "resolved")}
-                      className="p-1 text-green-600 hover:text-green-800 hover:bg-gray-100 rounded"
+                      className="p-1 text-green-600 hover:text-green-800 hover:bg-gray-100 rounded transition-colors"
                       title="Resolve"
                     >
                       <CheckCircle className="h-4 w-4" />
@@ -522,14 +513,14 @@ const CallTracking = () => {
                   )}
                   <button
                     onClick={() => addNote(call.id, prompt("Enter note:") || "New note")}
-                    className="p-1 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded"
+                    className="p-1 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors"
                     title="Add Note"
                   >
                     <Edit3 className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => markPriority(call.id, call.priority === "high" ? "normal" : "high")}
-                    className="p-1 text-gray-600 hover:text-yellow-600 hover:bg-gray-100 rounded"
+                    className="p-1 text-gray-600 hover:text-yellow-600 hover:bg-gray-100 rounded transition-colors"
                     title="Toggle Priority"
                   >
                     <Star className={`h-4 w-4 ${call.priority === "high" ? "fill-yellow-600 text-yellow-600" : ""}`} />
@@ -540,7 +531,7 @@ const CallTracking = () => {
           ))}
         </div>
 
-        {/* Loading More Indicator */}
+        {/* Loading States */}
         {loadingMore && (
           <div className="flex justify-center items-center p-4">
             <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-primary"></div>
@@ -560,31 +551,6 @@ const CallTracking = () => {
           </div>
         )}
       </Card>
-
-      {/* Custom CSS for Mobile Responsiveness */}
-      <style jsx>{`
-        @media (max-width: 640px) {
-          .space-y-4 {
-            margin-top: 0.5rem;
-          }
-          .text-xl {
-            font-size: 1.125rem;
-          }
-          .text-sm {
-            font-size: 0.75rem;
-          }
-          .p-3 {
-            padding: 0.75rem;
-          }
-          .h-4 {
-            height: 1rem;
-            width: 1rem;
-          }
-          .gap-2 {
-            gap: 0.5rem;
-          }
-        }
-      `}</style>
     </div>
   );
 };

@@ -3,34 +3,35 @@
 import { useState } from "react";
 
 export default function UnsubscribeSpamPage({ params }) {
-  const callId = params.callId;
+  const phoneNumber = params.number;
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | success | error
 
-  const markSpam = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/spam`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const data = await res.json();
-      if (data.success) {
-        setStatus("success");
-      } else {
-        setStatus("error");
+const markSpam = async () => {
+  setLoading(true);
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/calls/mark-spam-public`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber }), // ✅ send phone number
       }
-    } catch (err) {
+    );
+
+    const data = await res.json();
+    if (data.success) {
+      setStatus("success");
+    } else {
       setStatus("error");
     }
+  } catch (err) {
+    setStatus("error");
+  } finally {
     setLoading(false);
-  };
+  }
+};
+
 
   if (status === "success") {
     return (

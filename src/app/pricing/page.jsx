@@ -1,6 +1,6 @@
 "use client";
 
-import TestimonialsSection from "@/components/trackly/Testimonials";
+import TestimonialsSection from "@/components/home/Testimonials";
 import { Check, Crown, Zap, Users, Shield, Star, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";

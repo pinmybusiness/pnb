@@ -44,10 +44,10 @@ window.location.href = "/dashboard";
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold text-dark mb-1 text-center">Restaurant Login</h2>
-      <p className="text-sm text-gray-500 mb-6 text-center">
+      {/* <h2 className="text-2xl font-bold text-dark mb-1 text-center">Restaurant Login</h2> */}
+      {/* <p className="text-sm text-gray-500 mb-6 text-center">
         Login with your mobile number
-      </p>
+      </p> */}
 
       <form onSubmit={handleSubmit}>
         <div className="mb-4">

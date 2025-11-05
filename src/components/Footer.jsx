@@ -101,7 +101,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 text-center text-sm text-gray-400">
-        <p>&copy; {currentYear} FasterQ.in. All rights reserved.</p>
+        <p>&copy; 2025 FasterQ. Born in Bengaluru, India with ❤️ for startups. All rights reserved.</p>
       </div>
     </footer>
   );

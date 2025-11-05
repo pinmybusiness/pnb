@@ -1,31 +1,58 @@
-import HeroSection from '@/components/home/HeroSection';
-import WhyChooseUs from '@/components/home/WhyChooseUs';
-import FeaturedJobs from '@/components/home/FeaturedJobs';
-import Testimonials from '@/components/home/Testimonials';
-import CTASection from '@/components/home/CTASection';
-import PopularJobRoles from '@/components/home/PopularJobRoles';
-import QuickStats from '@/components/home/QuickStats';
+import Benefits from "@/components/home/Benefits";
+import FAQs from "@/components/home/FAQs";
+import Features from "@/components/home/Features";
+import FinalCTA from "@/components/home/FinalCTA";
+import Hero from "@/components/home/Hero";
+import HowItWorks from "@/components/home/HowItWorks";
+import Industries from "@/components/home/Industries";
+import Integrations from "@/components/home/Integrations";
+import Pricing from "@/components/home/Pricing";
+import TestimonialsSection from "@/components/home/Testimonials";
 
-export const metadata = {
-  title: "Find Restaurant Jobs & Hire Staff Fast | FasterQ.in",
-  description:
-    "Discover chef, waiter, and steward jobs or hire staff quickly. FasterQ.in connects restaurants and job seekers—free and fast.",
-  alternates: {
-    canonical: "https://www.fasterq.in",
-  },
-};
+// Generate dynamic metadata
+export async function generateMetadata() {
+  return {
+    title: "Call Tracking Software India | Track & Record All Sales Calls",
+    description:
+      "Automatically track and record all SIMs. Get real-time call logs, CRM sync, and insights for your sales team — no VoIP, no number change.",
+    alternates: {
+      canonical: "https://www.fasterq.in/products/trackly",
+    },
+  };
+}
 
-export default function Home() {
+export default function TracklyLanding() {
   return (
-  <main className="min-h-screen bg-[#FFF5EC]">
-    {/* <Header activeLink="/" /> */}
-    <HeroSection />          {/* Grab attention */}
-    <QuickStats />
-    <FeaturedJobs />         {/* Actual jobs */}
-    <WhyChooseUs />          {/* Build trust */}
-    <PopularJobRoles />      {/* Show opportunities */}
-    <Testimonials />         {/* Social proof */}
-    <CTASection />           {/* Final call-to-action */}
-  </main>
+    <div className="min-h-screen font-sans">
+    {/* Hero Section */}
+    <Hero />
+
+    {/* Benefits */}
+    <Benefits />
+
+          {/* Industries */}
+    <Industries />
+
+    {/* How It Works */}
+    <HowItWorks />
+
+    {/* Features */}
+    <Features />
+
+          {/* Integrations */}
+    <Integrations />
+
+    {/* Testimonials */}
+    <TestimonialsSection />
+
+    {/* Pricing */}
+    <Pricing />
+
+          {/* FAQs */}
+    <FAQs />
+
+    {/* Final CTA */}
+    <FinalCTA />
+    </div>
   );
 }

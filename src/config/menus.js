@@ -3,14 +3,14 @@ import {
   Store, Users, BarChart3, MapPin, Settings, 
   FileBarChart, LayoutDashboard, GraduationCap, 
   ClipboardList,
-  FileCheck,
-  PhoneCall
+  PhoneCall,
+  Building2
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
 export const allMenus = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [0,1,2,3,4,6,7] },
-  { name: "Restaurants", href: "/dashboard/restaurants", icon: Store, roles: [0,1,2] },
+  { name: "Organizations", href: "/dashboard/organizations", icon: Building2, roles: [0,1,2] },
   { 
     name: "Branches", 
     icon: MapPin, 
@@ -44,17 +44,17 @@ export const allMenus = [
       { name: "Analytics", href: "/dashboard/analytics", roles: [6,7] },
     ]
   },
-  { 
-    name: "Opportunities", 
-    icon: GraduationCap, 
-    roles: [0,1,2,6,7], 
-    children: [
-      { name: "Opportunities", href: "/dashboard/opportunities", roles: [0,1,2,6,7] },
-      { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [6,7] },
-    ]
-  },
-  { name: "Applications", href: "/dashboard/applications", icon: FileCheck, roles: [0,1,2] },
-  { name: "Contacts", href: "/dashboard/contacts", icon: Users, roles: [0] },
+  // { 
+  //   name: "Opportunities", 
+  //   icon: GraduationCap, 
+  //   roles: [0,1,2,6,7], 
+  //   children: [
+  //     { name: "Opportunities", href: "/dashboard/opportunities", roles: [0,1,2,6,7] },
+  //     { name: "Add opportunities", href: "/dashboard/opportunities/add", roles: [6,7] },
+  //   ]
+  // },
+  // { name: "Applications", href: "/dashboard/applications", icon: FileCheck, roles: [0,1,2] },
+  { name: "Contacts", href: "/dashboard/contacts", icon: Users, roles: [0,1,2] },
   { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0] },
   { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [0,3] },
 ];

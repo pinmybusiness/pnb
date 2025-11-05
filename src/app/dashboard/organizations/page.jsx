@@ -10,9 +10,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Card, Button, Input, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
 
-const Restaurants = () => {
+const Organizations = () => {
   const router = useRouter();
-  const [restaurants, setRestaurants] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -25,10 +25,10 @@ const Restaurants = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const restaurantsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`);
+        const organizationsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/organizations`);
         const branchesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`);
         
-        setRestaurants(restaurantsRes.data.data || []);
+        setOrganizations(organizationsRes.data.data || []);
         setBranches(branchesRes.data.data || []);
       } catch (error) {
         toast.error("Failed to fetch data");
@@ -41,30 +41,30 @@ const Restaurants = () => {
     fetchData();
   }, []);
 
-  const getRestaurantStats = (restaurantId) => {
-    const restaurantBranches = branches.filter(branch => 
-      branch.parentRestaurant?._id === restaurantId || branch.parentRestaurant === restaurantId
+  const getOrganizationStats = (organizationId) => {
+    const organizationBranches = branches.filter(branch => 
+      branch.organization?._id === organizationId || branch.organization === organizationId
     );
     
-    const activeTrials = restaurantBranches.filter(branch => branch.trial?.isActive).length;
+    const activeTrials = organizationBranches.filter(branch => branch.trial?.isActive).length;
     
     return {
-      branches: restaurantBranches.length,
+      branches: organizationBranches.length,
       activeTrials
     };
   };
 
-  const handleUpdateStatus = async (restaurantId, status) => {
+  const handleUpdateStatus = async (organizationId, status) => {
     try {
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants/${restaurantId}/status`, {
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/organizations/${organizationId}/status`, {
         status,
         reason: "Updated via admin panel"
       });
       
-      setRestaurants(restaurants.map(restaurant => 
-        restaurant._id === restaurantId 
-          ? { ...restaurant, status: { current: status, reason: "Updated via admin panel" } } 
-          : restaurant
+      setOrganizations(organizations.map(organization => 
+        organization._id === organizationId 
+          ? { ...organization, status: { current: status, reason: "Updated via admin panel" } } 
+          : organization
       ));
       
       toast.success("Status updated successfully");
@@ -73,15 +73,15 @@ const Restaurants = () => {
     }
   };
 
-  const filteredAndSortedRestaurants = restaurants
-    .filter(restaurant => {
+  const filteredAndSortedOrganizations = organizations
+    .filter(organization => {
       const matchesSearch =
-        restaurant.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        restaurant.contact?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        restaurant.contact?.phone?.toLowerCase().includes(searchTerm.toLowerCase());
+        organization.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        organization.contact?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        organization.contact?.phone?.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus =
-        statusFilter === "all" || restaurant.status?.current?.toLowerCase() === statusFilter.toLowerCase();
+        statusFilter === "all" || organization.status?.current?.toLowerCase() === statusFilter.toLowerCase();
 
       return matchesSearch && matchesStatus;
     })
@@ -93,8 +93,8 @@ const Restaurants = () => {
           bValue = b.name || '';
           break;
         case "branches":
-          aValue = getRestaurantStats(a._id).branches;
-          bValue = getRestaurantStats(b._id).branches;
+          aValue = getOrganizationStats(a._id).branches;
+          bValue = getOrganizationStats(b._id).branches;
           break;
         case "status":
           aValue = a.status?.current || '';
@@ -126,14 +126,14 @@ const Restaurants = () => {
   ];
 
   const calculateKPIs = () => {
-    if (restaurants.length === 0) return { totalRestaurants: 0, totalBranches: 0, activeTrials: 0 };
+    if (organizations.length === 0) return { totalOrganizations: 0, totalBranches: 0, activeTrials: 0 };
     
-    const totalRestaurants = restaurants.length;
+    const totalOrganizations = organizations.length;
     const totalBranches = branches.length;
     const activeTrials = branches.filter(branch => branch.trial?.isActive).length;
     
     return {
-      totalRestaurants,
+      totalOrganizations,
       totalBranches,
       activeTrials
     };
@@ -154,20 +154,20 @@ const Restaurants = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Restaurant Management</h1>
-          <p className="text-gray-500">Monitor and manage all restaurants</p>
+          <h1 className="text-2xl font-bold text-gray-900">Organization Management</h1>
+          <p className="text-gray-500">Monitor and manage all organizations</p>
         </div>
-        <Link href='/dashboard/restaurants/add'>
+        <Link href='/dashboard/organizations/add'>
           <Button className="rounded-lg">
             <Plus className="h-4 w-4 mr-2" />
-            Add Restaurant
+            Add Organization
           </Button>
         </Link>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <KPICard title="Total Restaurants" value={kpiData.totalRestaurants} icon={Store} />
+        <KPICard title="Total Organizations" value={kpiData.totalOrganizations} icon={Store} />
         <KPICard title="Total Branches" value={kpiData.totalBranches} icon={TrendingUp} />
         <KPICard title="Active Trials" value={kpiData.activeTrials} icon={DollarSign} />
       </div>
@@ -178,7 +178,7 @@ const Restaurants = () => {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
-              placeholder="Search restaurants..."
+              placeholder="Search Organizations..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -198,14 +198,14 @@ const Restaurants = () => {
         </div>
       </Card>
 
-      {/* Restaurants Table */}
+      {/* Organizations Table */}
       <Card>
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead onClick={() => handleSort("name")} className="cursor-pointer">
                 <div className="flex items-center gap-2">
-                  Restaurant Name
+                  Organization Name
                   <ArrowUpDown className="h-4 w-4" />
                 </div>
               </TableHead>
@@ -226,17 +226,17 @@ const Restaurants = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredAndSortedRestaurants.map((restaurant) => {
-              const stats = getRestaurantStats(restaurant._id);
+            {filteredAndSortedOrganizations.map((organization) => {
+              const stats = getOrganizationStats(organization._id);
               return (
-                <TableRow key={restaurant._id} className="hover:bg-gray-50">
+                <TableRow key={organization._id} className="hover:bg-gray-50">
                   <TableCell>
                      <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
-                          {restaurant.logo ? (
+                          {organization.logo ? (
                             <Image
-                              src={restaurant.logo}
-                              alt={restaurant.name}
+                              src={organization.logo}
+                              alt={organization.name}
                               width={40}
                               height={40}
                               className="object-cover"
@@ -246,16 +246,16 @@ const Restaurants = () => {
                           )}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{restaurant.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{organization.name}</div>
 
                         </div>
                       </div>
                   </TableCell>
                   <TableCell>
                     <div>
-                      <div className="text-sm text-gray-900">{restaurant.contact?.phone || 'No phone'}</div>
+                      <div className="text-sm text-gray-900">{organization.contact?.phone || 'No phone'}</div>
                       <div className="text-sm text-gray-500 truncate max-w-[200px]">
-                        {restaurant.contact?.email || 'No email'}
+                        {organization.contact?.email || 'No email'}
                       </div>
                     </div>
                   </TableCell>
@@ -271,10 +271,10 @@ const Restaurants = () => {
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <StatusBadge status={restaurant.status?.current || (restaurant.isActive ? 'active' : 'inactive')} />
-                      {restaurant.status?.reason && (
-                        <div className="text-xs text-gray-500 max-w-[150px] truncate" title={restaurant.status.reason}>
-                          {restaurant.status.reason}
+                      <StatusBadge status={organization.status?.current || (organization.isActive ? 'active' : 'inactive')} />
+                      {organization.status?.reason && (
+                        <div className="text-xs text-gray-500 max-w-[150px] truncate" title={organization.status.reason}>
+                          {organization.status.reason}
                         </div>
                       )}
                     </div>
@@ -282,14 +282,14 @@ const Restaurants = () => {
                   <TableCell>
                     <div className="flex gap-2">
                       {/* <button
-                        onClick={() => router.push(`/dashboard/restaurants/${restaurant._id}`)}
+                        onClick={() => router.push(`/dashboard/organizations/${organization._id}`)}
                         className="p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-md"
                         title="View"
                       >
                         <Eye className="h-4 w-4" />
                       </button> */}
                       <button
-                        onClick={() => router.push(`/dashboard/restaurants/${restaurant._id}`)}
+                        onClick={() => router.push(`/dashboard/organizations/${organization._id}`)}
                         className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md"
                         title="Edit"
                       >
@@ -303,14 +303,14 @@ const Restaurants = () => {
           </TableBody>
         </Table>
 
-        {filteredAndSortedRestaurants.length === 0 && (
+        {filteredAndSortedOrganizations.length === 0 && (
           <div className="p-12 text-center">
             <Store className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No restaurants found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Organizations found</h3>
             <p className="text-gray-500">
               {searchTerm || statusFilter !== "all"
                 ? "Try adjusting your search or filter criteria"
-                : "Get started by adding your first restaurant"}
+                : "Get started by adding your first organization"}
             </p>
           </div>
         )}
@@ -319,4 +319,4 @@ const Restaurants = () => {
   );
 };
 
-export default Restaurants;
+export default Organizations;

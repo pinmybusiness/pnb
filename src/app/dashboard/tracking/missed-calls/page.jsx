@@ -203,13 +203,14 @@ const MissedCalls = () => {
   const [teamLoading, setTeamLoading] = useState(true);
   const [resolvingCallId, setResolvingCallId] = useState(null);
 
-  // Constants
+  // Constants - UPDATED FOR NEW FOLLOWUP FIELD
   const STATUS_MAP = { 0: "missed", 1: "answered", 2: "resolved", 3: "ended" };
   const STATUS_REVERSE_MAP = { missed: 0, answered: 1, resolved: 2, ended: 3 };
   const DIRECTION_MAP = { 0: "incoming", 1: "outgoing" };
   const PRIORITY_MAP = { 0: "normal", 1: "high" };
+  const FOLLOWUP_STATUS_MAP = { 0: "not_required", 1: "pending", 2: "contacted", 3: "resolved", 4: "ignored" };
 
-  // Data mapping function
+  // Data mapping function - UPDATED FOR NEW FIELDS
   const mapCallData = useCallback((call) => ({
     id: call._id,
     caller: {
@@ -228,11 +229,14 @@ const MissedCalls = () => {
     }),
     notes: call.notes || "",
     priority: PRIORITY_MAP[call.priority] || "normal",
-    outgoingAttempts: call.outgoingAttempts || 0,
-    rawStatus: call.status // Store original status for API calls
+    // 🔥 UPDATED: Use new followup fields
+    followupStatus: call.followup?.status || 0,
+    followupAttempts: call.followup?.attempts || 0,
+    rawStatus: call.status,
+    rawTimestamp: call.timestamp // For proper sorting
   }), []);
 
-  // Safe team members array
+  // Safe team members array (same as before)
   const safeTeamMembers = useMemo(() => {
     if (!teamMembers) return [];
     if (Array.isArray(teamMembers)) return teamMembers;
@@ -240,7 +244,7 @@ const MissedCalls = () => {
     return [];
   }, [teamMembers]);
 
-  // API calls
+  // API calls - UPDATED FOR NEW ENDPOINTS
   const fetchTeamMembers = useCallback(async () => {
     try {
       setTeamLoading(true);
@@ -299,7 +303,6 @@ const MissedCalls = () => {
     } catch (error) {
       console.error("Error fetching team members:", error);
       toast.error("Failed to load team members");
-      // Fallback to empty array
       setTeamMembers([]);
     } finally {
       setTeamLoading(false);
@@ -314,25 +317,34 @@ const MissedCalls = () => {
         { withCredentials: true }
       );
       console.log("Missed calls API response:", response.data);
-      const mappedCalls = response.data.data.map(mapCallData);
-      setCalls(mappedCalls);
+      
+      if (response.data.success) {
+        const mappedCalls = response.data.data.map(mapCallData);
+        setCalls(mappedCalls);
+      } else {
+        toast.error(response.data.message || "Failed to fetch missed calls");
+        setCalls([]);
+      }
     } catch (error) {
       console.error("Fetch error:", error);
       toast.error(error.response?.data?.message || "Failed to fetch missed calls");
-      setCalls([]); // Fallback to empty array
+      setCalls([]);
     } finally {
       setLoading(false);
     }
   }, [mapCallData]);
 
-  // NEW: Mark call as resolved
+  // 🔥 UPDATED: Mark call as resolved using new followup endpoint
   const markAsResolved = useCallback(async (callId) => {
     try {
       setResolvingCallId(callId);
       
       const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/status`,
-        { status: 2 }, // 2 = resolved status
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/followup`,
+        { 
+          status: 3, // 3 = resolved in followup status
+          notes: "Marked as resolved from dashboard" 
+        },
         { withCredentials: true }
       );
 
@@ -342,8 +354,8 @@ const MissedCalls = () => {
           call.id === callId 
             ? { 
                 ...call, 
-                status: "resolved",
-                rawStatus: 2 
+                followupStatus: 3, // resolved
+                status: "resolved" // update main status for display
               } 
             : call
         ));
@@ -360,7 +372,36 @@ const MissedCalls = () => {
     }
   }, []);
 
-  // Effects
+  // 🔥 NEW: Update followup status (contacted, ignored, etc.)
+  const updateFollowupStatus = useCallback(async (callId, status, notes = "") => {
+    try {
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/followup`,
+        { status, notes },
+        { withCredentials: true }
+      );
+
+      if (response.data.success) {
+        setCalls(prev => prev.map(call => 
+          call.id === callId 
+            ? { 
+                ...call, 
+                followupStatus: status,
+                notes: notes || call.notes
+              } 
+            : call
+        ));
+        
+        const statusName = FOLLOWUP_STATUS_MAP[status] || "updated";
+        toast.success(`Call marked as ${statusName} successfully!`);
+      }
+    } catch (error) {
+      console.error("Update followup error:", error);
+      toast.error("Failed to update call status");
+    }
+  }, []);
+
+  // Effects (same as before)
   useEffect(() => {
     fetchMissedCalls();
   }, [fetchMissedCalls]);
@@ -369,13 +410,12 @@ const MissedCalls = () => {
     if (calls.length > 0) {
       fetchTeamMembers();
     } else {
-      // If no calls, still set teamMembers to empty array
       setTeamMembers([]);
       setTeamLoading(false);
     }
   }, [calls, fetchTeamMembers]);
 
-  // Filter and sort logic
+  // Filter and sort logic - UPDATED FOR NEW FIELDS
   const filteredAndSortedCalls = useMemo(() => {
     if (!calls || !Array.isArray(calls)) return [];
     
@@ -395,9 +435,9 @@ const MissedCalls = () => {
       .sort((a, b) => {
         const getSortValue = (item) => {
           switch (sortBy) {
-            case "timestamp": return new Date(item.timestamp).getTime();
+            case "timestamp": return new Date(item.rawTimestamp).getTime();
             case "receiver": return item.receiver.name;
-            case "outgoingAttempts": return item.outgoingAttempts;
+            case "followupAttempts": return item.followupAttempts;
             case "status": return item.status;
             default: return 0;
           }
@@ -413,11 +453,11 @@ const MissedCalls = () => {
       });
   }, [calls, searchTerm, selectedTeamMember, sortBy, sortOrder]);
 
-  // KPI calculation - Include resolved calls count
+  // KPI calculation - UPDATED FOR NEW LOGIC
   const kpiData = useMemo(() => {
     if (!calls || !Array.isArray(calls)) return { 
       missedCalls: 0, 
-      resolvedCalls: 0,
+      pendingFollowups: 0,
       teamMemberCalls: null 
     };
     
@@ -427,12 +467,12 @@ const MissedCalls = () => {
     
     return { 
       missedCalls: filteredCalls.filter(call => call.status === "missed").length,
-      resolvedCalls: filteredCalls.filter(call => call.status === "resolved").length,
+      pendingFollowups: filteredCalls.filter(call => call.followupStatus === 1).length,
       teamMemberCalls: selectedTeamMember !== "all" ? filteredCalls.length : null
     };
   }, [calls, selectedTeamMember]);
 
-  // Helper functions
+  // Helper functions (same as before)
   const getSelectedMemberName = useCallback(() => {
     if (selectedTeamMember === "all") return "All Team Members";
     if (selectedTeamMember === "unassigned") return "Unassigned Calls";
@@ -455,7 +495,7 @@ const MissedCalls = () => {
     setSelectedTeamMember("all");
   }, []);
 
-  // Action handlers
+  // Action handlers - UPDATED FOR NEW APIS
   const addNote = useCallback(async (callId, note) => {
     try {
       await axios.patch(
@@ -489,7 +529,37 @@ const MissedCalls = () => {
     }
   }, []);
 
-  // Loading state
+  // 🔥 NEW: Quick action buttons for followup status
+  // const QuickActionButtons = ({ call }) => {
+  //   if (call.followupStatus === 3) { // already resolved
+  //     return (
+  //       <Badge className="bg-green-100 text-green-800 px-2 py-1 text-xs">
+  //         Resolved
+  //       </Badge>
+  //     );
+  //   }
+
+  //   return (
+  //     <div className="flex gap-1">
+  //       <button
+  //         onClick={() => updateFollowupStatus(call.id, 2, "Customer contacted")}
+  //         className="p-1.5 text-blue-600 rounded-full hover:bg-blue-50 border border-blue-200 transition-colors"
+  //         title="Mark as contacted"
+  //       >
+  //         <PhoneOutgoing className="h-4 w-4" />
+  //       </button>
+  //       <button
+  //         onClick={() => updateFollowupStatus(call.id, 4, "Call ignored")}
+  //         className="p-1.5 text-gray-600 rounded-full hover:bg-gray-50 border border-gray-200 transition-colors"
+  //         title="Mark as ignored"
+  //       >
+  //         <X className="h-4 w-4" />
+  //       </button>
+  //     </div>
+  //   );
+  // };
+
+  // Loading state (same as before)
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -513,19 +583,19 @@ const MissedCalls = () => {
         </div>
       </div>
 
-      {/* Summary Stats */}
+      {/* Summary Stats - UPDATED */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard 
-          title="Pending Missed Calls" 
-          value={kpiData.missedCalls} 
+          title="Pending Followups" 
+          value={kpiData.pendingFollowups} 
           icon={PhoneMissed}
           className="border-l-4 border-l-red-500"
         />
         {/* <KPICard 
-          title="Resolved Calls" 
-          value={kpiData.resolvedCalls} 
-          icon={CheckCircle}
-          className="border-l-4 border-l-green-500"
+          title="Total Missed Calls" 
+          value={kpiData.missedCalls} 
+          icon={PhoneMissed}
+          className="border-l-4 border-l-orange-500"
         /> */}
         {selectedTeamMember !== "all" && selectedTeamMember !== "unassigned" && (
           <KPICard 
@@ -537,7 +607,7 @@ const MissedCalls = () => {
         )}
       </div>
 
-      {/* Filters */}
+      {/* Filters (same as before) */}
       <Card className="p-4">
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
@@ -570,7 +640,6 @@ const MissedCalls = () => {
                 </div>
               </CustomSelectItem>
               
-              {/* SAFE TEAM MEMBERS MAP */}
               {safeTeamMembers.map((member) => (
                 <CustomSelectItem key={member.userId} value={member.userId} onSelect={handleTeamMemberSelect}>
                   <div className="flex items-center gap-2">
@@ -593,7 +662,7 @@ const MissedCalls = () => {
         </div>
       </Card>
 
-      {/* Calls Table */}
+      {/* Calls Table - UPDATED FOR NEW FIELDS */}
       <Card>
         <div className="hidden sm:block">
           <Table>
@@ -619,12 +688,13 @@ const MissedCalls = () => {
                   </div>
                 </TableHead>
                 <TableHead>Notes</TableHead>
-                <TableHead onClick={() => handleSort("outgoingAttempts")} className="cursor-pointer">
+                <TableHead onClick={() => handleSort("followupAttempts")} className="cursor-pointer">
                   <div className="flex items-center gap-2">
                     Follow-up Attempts
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>
+                {/* <TableHead>Quick Actions</TableHead> */}
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -643,7 +713,14 @@ const MissedCalls = () => {
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <CallStatusIcon status={call.status} direction={call.direction} />
-                      {/* <StatusBadge status={call.status} /> */}
+                      <Badge className={`px-2 py-1 text-xs ${
+                        call.followupStatus === 1 ? "bg-yellow-100 text-yellow-800" :
+                        call.followupStatus === 2 ? "bg-blue-100 text-blue-800" :
+                        call.followupStatus === 3 ? "bg-green-100 text-green-800" :
+                        "bg-gray-100 text-gray-800"
+                      }`}>
+                        {FOLLOWUP_STATUS_MAP[call.followupStatus] || "unknown"}
+                      </Badge>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -659,17 +736,20 @@ const MissedCalls = () => {
                   </TableCell>
                   <TableCell>
                     <Badge className={`px-2 py-1 rounded-full text-xs ${
-                      call.outgoingAttempts > 0 
+                      call.followupAttempts > 0 
                         ? "bg-orange-100 text-orange-800" 
                         : "bg-blue-100 text-blue-800"
                     }`}>
-                      {call.outgoingAttempts} attempt{call.outgoingAttempts !== 1 ? 's' : ''}
+                      {call.followupAttempts} attempt{call.followupAttempts !== 1 ? 's' : ''}
                     </Badge>
                   </TableCell>
+                  {/* <TableCell>
+                    <QuickActionButtons call={call} />
+                  </TableCell> */}
                   <TableCell>
                     <div className="flex gap-2">
-                      {/* Resolve Button - Only show for non-resolved calls */}
-                      {call.status !== "resolved" && (
+                      {/* Resolve Button */}
+                      {call.followupStatus !== 3 && (
                         <ResolveButton 
                           callId={call.id}
                           currentStatus={call.status}
@@ -700,7 +780,7 @@ const MissedCalls = () => {
           </Table>
         </div>
 
-        {/* Mobile View */}
+        {/* Mobile View - UPDATED */}
         <div className="sm:hidden space-y-3 p-4">
           {filteredAndSortedCalls.map((call) => (
             <Card key={call.id} className="p-4">
@@ -718,7 +798,13 @@ const MissedCalls = () => {
                       )}
                     </div>
                   </div>
-                  <StatusBadge status={call.status} />
+                  <Badge className={`px-2 py-1 text-xs ${
+                    call.followupStatus === 1 ? "bg-yellow-100 text-yellow-800" :
+                    call.followupStatus === 3 ? "bg-green-100 text-green-800" :
+                    "bg-gray-100 text-gray-800"
+                  }`}>
+                    {FOLLOWUP_STATUS_MAP[call.followupStatus] || "unknown"}
+                  </Badge>
                 </div>
 
                 <div className="flex items-center gap-2 text-sm">
@@ -736,23 +822,29 @@ const MissedCalls = () => {
 
                 <div className="flex items-center justify-between pt-2">
                   <Badge className={`px-2 py-1 text-xs ${
-                    call.outgoingAttempts > 0 ? "bg-orange-100 text-orange-800" : "bg-blue-100 text-blue-800"
+                    call.followupAttempts > 0 ? "bg-orange-100 text-orange-800" : "bg-blue-100 text-blue-800"
                   }`}>
-                    {call.outgoingAttempts} attempt{call.outgoingAttempts !== 1 ? 's' : ''}
+                    {call.followupAttempts} attempt{call.followupAttempts !== 1 ? 's' : ''}
                   </Badge>
 
-                  {/* Mobile Resolve Button */}
-                  {call.status !== "resolved" && (
-                    <ResolveButton 
-                      callId={call.id}
-                      currentStatus={call.status}
-                      onResolve={markAsResolved}
-                      loading={resolvingCallId === call.id}
-                    />
-                  )}
+                  {/* <QuickActionButtons call={call} /> */}
                 </div>
 
                 <div className="flex gap-2 pt-2 border-t">
+                  {call.followupStatus !== 3 && (
+                    <button
+                      onClick={() => markAsResolved(call.id)}
+                      disabled={resolvingCallId === call.id}
+                      className="flex-1 flex items-center justify-center gap-1 p-2 text-green-600 hover:bg-green-50 rounded-md transition-colors disabled:opacity-50"
+                    >
+                      {resolvingCallId === call.id ? (
+                        <div className="h-4 w-4 border-2 border-green-600 rounded-full animate-spin" />
+                      ) : (
+                        <Check className="h-4 w-4" />
+                      )}
+                      <span className="text-sm">Resolve</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => addNote(call.id, prompt("Enter note:") || "New note")}
                     className="flex-1 flex items-center justify-center gap-1 p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md transition-colors"

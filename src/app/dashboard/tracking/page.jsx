@@ -389,8 +389,8 @@ const CallTracking = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {calls.map((call) => (
-                <TableRow key={call.id} className="hover:bg-gray-50">
+              {calls.map((call, index) => (
+                <TableRow key={index} className="hover:bg-gray-50">
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-md bg-gray-100 flex items-center justify-center">
@@ -469,8 +469,8 @@ const CallTracking = () => {
 
         {/* Mobile View */}
         <div className="block sm:hidden space-y-2 p-2">
-          {calls.map((call) => (
-            <Card key={call.id} className="p-3 shadow-sm">
+          {calls.map((call, index) => (
+            <Card key={index} className="p-3 shadow-sm">
               <div className="space-y-1">
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col gap-1">

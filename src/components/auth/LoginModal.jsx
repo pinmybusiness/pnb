@@ -1,23 +1,13 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback } from "react";
 import { X } from "lucide-react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import RestaurantLoginForm from "./RestaurantLoginForm";
 import PropTypes from "prop-types";
-import CandidateLoginForm from "./CandidateLoginForm";
+import RestaurantLoginForm from "./RestaurantLoginForm";
 
-export default function LoginModal({ isOpen, onClose, initialTab = "candidate" }) {
-  const [activeTab, setActiveTab] = useState(initialTab);
-
-  // Update active tab when modal opens or initialTab changes
-  useEffect(() => {
-    if (isOpen) {
-      setActiveTab(initialTab);
-    }
-  }, [isOpen, initialTab]);
-
-  // Handle keyboard accessibility for closing modal
+export default function LoginModal({ isOpen, onClose }) {
+  // Handle keyboard close
   const handleKeyDown = useCallback(
     (event) => {
       if (event.key === "Escape") {
@@ -50,72 +40,30 @@ export default function LoginModal({ isOpen, onClose, initialTab = "candidate" }
         aria-labelledby="login-modal-title"
       >
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden transform transition-all duration-300 scale-100">
-          {/* Modal Header with Tabs */}
-          <div className="flex border-b border-gray-200 relative bg-gray-50">
-            <button
-              onClick={() => setActiveTab("candidate")}
-              className={`flex-1 py-3 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                activeTab === "candidate"
-                  ? "text-orange-600 border-b-2 border-orange-600"
-                  : "text-gray-600 hover:text-orange-600"
-              }`}
-              aria-selected={activeTab === "candidate"}
-              role="tab"
-              id="candidate-tab"
-            >
-              Candidate
-            </button>
-            <button
-              onClick={() => setActiveTab("restaurant")}
-              className={`flex-1 py-3 text-sm font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                activeTab === "restaurant"
-                  ? "text-orange-600 border-b-2 border-orange-600"
-                  : "text-gray-600 hover:text-orange-600"
-              }`}
-              aria-selected={activeTab === "restaurant"}
-              role="tab"
-              id="restaurant-tab"
-            >
-              Restaurant
-            </button>
-            {/* Close Button */}
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-3">
+            <h2 id="login-modal-title" className="text-lg font-semibold text-gray-800">
+              Login
+            </h2>
+            
             <button
               onClick={onClose}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="p-2 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-100 transition focus:outline-none focus:ring-2 focus:ring-orange-500"
               aria-label="Close login modal"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Modal Content */}
-          <div className="relative p-6" role="tabpanel" aria-labelledby={activeTab === "candidate" ? "candidate-tab" : "restaurant-tab"}>
-            {activeTab === "candidate" ? (
-              <div>
-                {/* <h2 id="login-modal-title" className="text-2xl font-bold text-gray-900 mb-4 text-center">
-                  Candidate Login
-                </h2> */}
-                <CandidateLoginForm onSuccess={onClose} />
-                <button
-                  onClick={onClose}
-                  className="w-full mt-4 text-sm font-medium text-gray-600 hover:text-orange-600 hover:underline transition focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  aria-label="Cancel login"
-                >
-                  Cancel
-                </button>
-              </div>
-            ) : (
-              <div>
-                <RestaurantLoginForm onSuccess={onClose} />
-                <button
-                  onClick={onClose}
-                  className="w-full mt-4 text-sm font-medium text-gray-600 hover:text-orange-600 hover:underline transition focus:outline-none focus:ring-2 focus:ring-orange-500"
-                  aria-label="Cancel login"
-                >
-                  Cancel
-                </button>
-              </div>
-            )}
+          {/* Content */}
+          <div className="p-6">
+            <RestaurantLoginForm onSuccess={onClose} />
+            <button
+              onClick={onClose}
+              className="w-full mt-4 text-sm font-medium text-gray-600 hover:text-orange-600 hover:underline transition focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>
@@ -126,5 +74,4 @@ export default function LoginModal({ isOpen, onClose, initialTab = "candidate" }
 LoginModal.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  initialTab: PropTypes.oneOf(["candidate", "restaurant"]),
 };

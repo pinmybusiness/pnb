@@ -1,6 +1,6 @@
 import { authService } from "@/services/authService";
 import { makeStore } from "@/store";
-import { Providers } from "../../providers";
+import { Providers } from "../providers";
 import axios from "axios";
 import OwnerBranchFormContent from "@/components/csr/OwnerBranchFormContent";
 

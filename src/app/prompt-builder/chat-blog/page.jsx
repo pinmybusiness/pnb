@@ -22,8 +22,10 @@ const WEBSITES = [
 ];
 
 const ARTICLES_API = "https://datacenter.randomstrangerchats.com/api/get-website-articles-slug?website=";
-const RESEARCH_API = "http://localhost:1001/api/content/research";
-const CONTENT_API = "http://localhost:1001/api/content/generate-content";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+export const RESEARCH_API = `${BASE_URL}/api/content/research`;
+export const CONTENT_API = `${BASE_URL}/api/content/generate-content`;
 
 export default function PromptBuilder() {
   // ---- Site context ----

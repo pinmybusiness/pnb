@@ -136,7 +136,7 @@ const Branches = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Branch Management</h1>
-          <p className="text-gray-500">Monitor and manage all restaurant branches</p>
+          <p className="text-gray-500">Monitor and manage all Organization branches</p>
         </div>
         <Link href='/dashboard/branches/add'>
           <Button className="rounded-lg">
@@ -172,7 +172,7 @@ const Branches = () => {
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
             <Input
-              placeholder="Search branches by name, address, or restaurant..."
+              placeholder="Search branches by name, address, or Organization..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -200,9 +200,9 @@ const Branches = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead onClick={() => handleSort("restaurant")} className="cursor-pointer">
+              <TableHead onClick={() => handleSort("Organization")} className="cursor-pointer">
                 <div className="flex items-center gap-2">
-                  Restaurant
+                  Organization
                   <ArrowUpDown className="h-4 w-4" />
                 </div>
               </TableHead>

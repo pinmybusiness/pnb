@@ -4,7 +4,7 @@ import CtaButton from "./CtaButton";
 const steps = [
   {
     number: 1,
-    title: "Sign Up for Free",
+    title: "Sign Up",
     description: "Create your Trackly account on our analytics dashboard.",
     icon: Users,
   },

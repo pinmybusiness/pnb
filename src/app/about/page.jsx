@@ -36,7 +36,7 @@ export default function AboutPage() {
             </a>
             <a
               href="#demo"
-              className="border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-[#FF5211] transition-all hover:scale-105"
+              className="border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:!text-[#FF5211] transition-all hover:scale-105"
             >
               See Demo
             </a>
@@ -74,7 +74,7 @@ export default function AboutPage() {
             {[
               { icon: Phone, emoji: '📱', title: 'SIM-First Tracking', desc: 'No number changes or VoIP -track calls seamlessly on your existing SIM cards, perfect for bootstrapped teams.' },
               { icon: Zap, emoji: '📊', title: 'Real-Time Dashboards', desc: 'Instant insights into call patterns and team performance, fueling growth from day one.' },
-              { icon: MessageSquare, emoji: '💬', title: 'WhatsApp & SMS Alerts', desc: 'Daily summaries and missed call notifications delivered directly to your phone -stay connected on the go.' },
+              { icon: MessageSquare, emoji: '💬', title: 'WhatsApp Alerts', desc: 'Daily summaries and missed call notifications delivered directly to your phone -stay connected on the go.' },
               { icon: Shield, emoji: '🇮🇳', title: 'India-Hosted & Local Support', desc: 'Data stored in India with lightning-fast IST support and affordable rupee pricing tailored for Indian hustlers.' },
             ].map((item, idx) => (
               <div key={idx} className="group bg-white rounded-3xl p-6 md:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#FF5211]/30 hover:-translate-y-2">
@@ -298,7 +298,7 @@ export default function AboutPage() {
             </a>
             <a
               href="/contact"
-              className="border-2 border-white text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-white hover:text-[#FF5211] transition-all hover:scale-105"
+              className="border-2 border-white text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-white hover:!text-[#FF5211] transition-all hover:scale-105"
             >
               Chat with Us
             </a>

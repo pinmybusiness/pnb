@@ -16,7 +16,7 @@ export async function generateMetadata() {
     description:
       "Automatically track and record all SIMs. Get real-time call logs, CRM sync, and insights for your sales team — no VoIP, no number change.",
     alternates: {
-      canonical: "https://www.fasterq.in/products/trackly",
+      canonical: "https://www.fasterq.in",
     },
   };
 }

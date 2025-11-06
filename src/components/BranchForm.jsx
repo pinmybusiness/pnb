@@ -32,7 +32,7 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
     console.log('BranchForm mounted', new Date().toISOString());
     const fetchData = async () => {
       try {
-        const restaurantsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/restaurants`);
+        const restaurantsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/organizations`);
         setRestaurants(restaurantsRes.data.data);
 
         const citiesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/cities`);

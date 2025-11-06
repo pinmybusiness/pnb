@@ -48,7 +48,7 @@ useEffect(() => {
     const fetchRestaurant = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/api/restaurants/${params.id}`);
+        const response = await api.get(`/api/organizations/${params.id}`);
         const restaurantData = response.data.data;
         
         // Ensure contact object exists
@@ -117,14 +117,14 @@ useEffect(() => {
       };
 
       if (isEditMode) {
-        await api.put(`/api/restaurants/${params.id}`, submissionData);
-        toast.success('Restaurant updated successfully!');
+        await api.put(`/api/organizations/${params.id}`, submissionData);
+        toast.success('Organization updated successfully!');
       } else {
-        await api.post('/api/restaurants', submissionData);
-        toast.success('Restaurant created successfully!');
+        await api.post('/api/organizations', submissionData);
+        toast.success('Organization created successfully!');
       }
       
-      router.push('/dashboard/restaurants');
+      router.push('/dashboard/organizations');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Something went wrong');
     } finally {
@@ -137,14 +137,14 @@ useEffect(() => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {isEditMode ? 'Edit Restaurant' : 'Add New Restaurant'}
+            {isEditMode ? 'Edit Organization' : 'Add New Organization'}
           </h1>
           <p className="text-gray-500">
-            {isEditMode ? 'Update restaurant details' : 'Create a new restaurant'}
+            {isEditMode ? 'Update Organization details' : 'Create a new Organization'}
           </p>
         </div>
         <button
-          onClick={() => router.push('/dashboard/restaurants')}
+          onClick={() => router.push('/dashboard/organizations')}
           className="flex items-center text-gray-600 hover:text-gray-900"
         >
           <X className="h-5 w-5 mr-1" />
@@ -162,7 +162,7 @@ useEffect(() => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Restaurant Name *
+                Organization Name *
               </label>
               <input
                 type="text"
@@ -202,7 +202,7 @@ useEffect(() => {
                 onChange={handleChange}
                 rows={3}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="Brief description about the restaurant"
+                placeholder="Brief description about the Organization"
               />
             </div> */}
           </div>
@@ -251,7 +251,7 @@ useEffect(() => {
         <div className="flex justify-end space-x-3">
           <button
             type="button"
-            onClick={() => router.push('/dashboard/restaurants')}
+            onClick={() => router.push('/dashboard/organizations')}
             className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
           >
             Cancel
@@ -264,9 +264,9 @@ useEffect(() => {
             {loading ? (
               'Processing...'
             ) : isEditMode ? (
-              'Update Restaurant'
+              'Update Organization'
             ) : (
-              'Create Restaurant'
+              'Create Organization'
             )}
           </button>
         </div>

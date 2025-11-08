@@ -96,7 +96,7 @@ const BranchProfile = () => {
                 <p className="text-gray-900">{branch.name}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-700">Parent Restaurant</p>
+                <p className="text-sm font-medium text-gray-700">Parent Organization</p>
                 <p className="text-gray-900">{branch.parentRestaurant?.name || 'N/A'}</p>
               </div>
               <div>
@@ -109,7 +109,7 @@ const BranchProfile = () => {
           </div>
 
           {/* Location Information */}
-          <div>
+          {/* <div>
             <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
               <MapPin className="h-5 w-5 mr-2 text-primary" />
               Location Information
@@ -136,7 +136,7 @@ const BranchProfile = () => {
                 <p className="text-gray-900">{branch.location?.country || 'N/A'}</p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Trial Information */}
           {/* <div>

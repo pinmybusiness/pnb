@@ -187,7 +187,7 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
       }
 
       if (!effectiveBranchId && !formData.parentRestaurant) {
-        toast.error('Please select a parent restaurant', { id: 'restaurant-error' });
+        toast.error('Please select a parent Organization', { id: 'restaurant-error' });
         setLoading(false);
         return;
       }
@@ -315,7 +315,7 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
                         <div>
               <label className="block text-sm font-medium text-dark mb-1">
-                Restaurant {effectiveBranchId ? '' : '*'}
+                Organization {effectiveBranchId ? '' : '*'}
               </label>
               {effectiveBranchId ? (
                 <div className="flex items-center border border-soft rounded-lg bg-gray-100">
@@ -333,7 +333,7 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
                   options={restaurantOptions}
                   value={restaurantOptions.find((option) => option._id === formData.parentRestaurant) || null}
                   onChange={handleRestaurantChange}
-                  placeholder="Search and select a restaurant"
+                  placeholder="Search and select a Organization"
                   isClearable
                   isSearchable
                   className="w-full text-sm"

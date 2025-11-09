@@ -13,15 +13,13 @@ import {
 } from "@/components/ui";
 
 // StatusBadge Component
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ answered }) => {
   const statusConfig = {
-    missed: { className: "bg-red-100 text-red-800", label: "Missed" },
-    answered: { className: "bg-blue-100 text-blue-800", label: "Answered" },
-    resolved: { className: "bg-green-100 text-green-800", label: "Resolved" },
-    ended: { className: "bg-gray-100 text-gray-800", label: "Ended" }
+    true: { className: "bg-green-100 text-green-800", label: "Answered" },
+    false: { className: "bg-red-100 text-red-800", label: "Missed" }
   };
 
-  const { className, label } = statusConfig[status] || statusConfig.ended;
+  const { className, label } = statusConfig[answered] || statusConfig.false;
 
   return (
     <Badge className={`px-2 py-1 text-xs font-medium rounded-full ${className}`}>
@@ -30,21 +28,85 @@ const StatusBadge = ({ status }) => {
   );
 };
 
-// CallerDisplay Component to handle duplicate name/phone
+// DirectionBadge Component
+const DirectionBadge = ({ inbound }) => {
+  const directionConfig = {
+    true: { className: "bg-blue-100 text-blue-800", icon: PhoneIncoming, label: "Incoming" },
+    false: { className: "bg-purple-100 text-purple-800", icon: PhoneOutgoing, label: "Outgoing" }
+  };
+
+  const { className, icon: Icon, label } = directionConfig[inbound] || directionConfig.true;
+
+  return (
+    <Badge className={`px-2 py-1 text-xs font-medium rounded-full ${className}`}>
+      <div className="flex items-center gap-1">
+        <Icon className="h-3 w-3" />
+        {label}
+      </div>
+    </Badge>
+  );
+};
+
+// FollowUpBadge Component
+const FollowUpBadge = ({ followUp }) => {
+  const followUpConfig = {
+    0: { className: "bg-gray-100 text-gray-800", label: "None" },
+    1: { className: "bg-yellow-100 text-yellow-800", label: "Pending" },
+    2: { className: "bg-blue-100 text-blue-800", label: "Done" },
+    3: { className: "bg-green-100 text-green-800", label: "Resolved" },
+    4: { className: "bg-red-100 text-red-800", label: "Ignored" }
+  };
+
+  const status = followUp?.status || 0;
+  const { className, label } = followUpConfig[status] || followUpConfig[0];
+
+  return (
+    <Badge className={`px-2 py-1 text-xs font-medium rounded-full ${className}`}>
+      {label}
+    </Badge>
+  );
+};
+
+// CallerDisplay Component
 const CallerDisplay = ({ caller }) => {
-  const { name, phone } = caller;
+  const { name, phone, formattedPhone } = caller;
   
-  const isDuplicate = name === phone || 
-                     name === "Unknown" || 
-                     name?.includes(phone) || 
-                     phone?.includes(name);
+  const displayName = name || formattedPhone || phone || "Unknown Caller";
+  const displayPhone = formattedPhone || phone;
 
   return (
     <div className="flex flex-col items-start">
-      <div className="text-sm font-medium text-gray-900">{name}</div>
-      {!isDuplicate && (
-        <div className="text-xs sm:text-sm text-gray-500">{phone}</div>
+      <div className="text-sm font-medium text-gray-900">{displayName}</div>
+      {displayPhone && (
+        <div className="text-xs text-gray-500">{displayPhone}</div>
       )}
+    </div>
+  );
+};
+
+// SIMPLE TimeDisplay Component - DIRECT INDIAN TIME
+const TimeDisplay = ({ startTime }) => {
+  // Convert startTime to Indian time
+  const indianTime = new Date(startTime);
+  
+  const timeString = indianTime.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Kolkata'
+  });
+  
+  const dateString = indianTime.toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+    timeZone: 'Asia/Kolkata'
+  });
+
+  return (
+    <div className="text-xs sm:text-sm">
+      <div className="font-medium text-gray-900">{timeString}</div>
+      <div className="text-xs text-gray-500">{dateString}</div>
     </div>
   );
 };
@@ -54,10 +116,10 @@ const CallTracking = () => {
   const [calls, setCalls] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [directionFilter, setDirectionFilter] = useState("all");
+  const [answeredFilter, setAnsweredFilter] = useState("all");
+  const [inboundFilter, setInboundFilter] = useState("all");
   const [agentFilter, setAgentFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("timestamp");
+  const [sortBy, setSortBy] = useState("startTime");
   const [sortOrder, setSortOrder] = useState("desc");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -73,46 +135,50 @@ const CallTracking = () => {
   // Refs
   const debounceTimerRef = useRef(null);
 
-  // Constants
-  const STATUS_MAP = { 0: "missed", 1: "answered", 2: "resolved", 3: "ended" };
-  const DIRECTION_MAP = { 0: "incoming", 1: "outgoing" };
-  const PRIORITY_MAP = { 0: "normal", 1: "high" };
-
   // Filter Options
-  const statusOptions = [
+  const answeredOptions = [
     { value: "all", label: "All Status" },
-    { value: "missed", label: "Missed" },
-    { value: "answered", label: "Answered" },
-    { value: "resolved", label: "Resolved" },
-    { value: "ended", label: "Ended" },
+    { value: "true", label: "Answered" },
+    { value: "false", label: "Missed" },
   ];
 
-  const directionOptions = [
+  const inboundOptions = [
     { value: "all", label: "All Directions" },
-    { value: "incoming", label: "Incoming" },
-    { value: "outgoing", label: "Outgoing" },
+    { value: "true", label: "Incoming" },
+    { value: "false", label: "Outgoing" },
   ];
 
-  // Data Mapping
-  const mapCallData = useCallback((call) => ({
-    id: call._id,
-    caller: {
-      name: call.callerName || call.callerPhone || "Unknown",
-      phone: call.callerPhone,
-    },
-    receiver: {
-      name: call.receiver?.name || "Unknown",
-    },
-    duration: call.duration || "0:00",
-    status: STATUS_MAP[call.status] || "answered",
-    direction: DIRECTION_MAP[call.direction] || "incoming",
-    timestamp: new Date(call.timestamp).toLocaleString("en-IN", {
-      dateStyle: "short",
-      timeStyle: "short",
-    }),
-    notes: call.notes || "",
-    priority: PRIORITY_MAP[call.priority] || "normal",
-  }), []);
+  // Data Mapping - SIMPLE AND CLEAN
+  const mapCallData = useCallback((call) => {
+    return {
+      id: call._id,
+      caller: {
+        name: call.phonebookName,
+        phone: call.fromNumber,
+        formattedPhone: call.fromFormattedNumber
+      },
+      receiver: {
+        name: call.userId?.name || "Unknown",
+        id: call.userId?._id
+      },
+      duration: call.duration ? formatSeconds(call.duration) : "0:00",
+      answered: call.answered,
+      inbound: call.inbound,
+      startTime: call.startTime, // Only this for display
+      notes: call.notes || "",
+      isSpam: call.isSpam || false,
+      recordingUrl: call.recordingUrl,
+      followUp: call.followUp || { status: 0, attempts: 0 }
+    };
+  }, []);
+
+  // Format seconds to MM:SS
+  const formatSeconds = (seconds) => {
+    if (!seconds || seconds <= 0) return '0:00';
+    const minutes = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
   // Debounced Search
   const handleSearchChange = useCallback((value) => {
@@ -140,14 +206,14 @@ const CallTracking = () => {
         page: pageNum,
         limit: 20,
         search: debouncedSearchTerm,
-        status: statusFilter !== "all" ? statusFilter : undefined,
-        direction: directionFilter !== "all" ? directionFilter : undefined,
+        answered: answeredFilter !== "all" ? answeredFilter : undefined,
+        inbound: inboundFilter !== "all" ? inboundFilter : undefined,
         agent: agentFilter !== "all" ? agentFilter : undefined,
         sortBy,
         sortOrder,
       };
 
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/calls`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/calls/branch`, {
         params,
         withCredentials: true,
       });
@@ -171,7 +237,7 @@ const CallTracking = () => {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [debouncedSearchTerm, statusFilter, directionFilter, agentFilter, sortBy, sortOrder, mapCallData]);
+  }, [debouncedSearchTerm, answeredFilter, inboundFilter, agentFilter, sortBy, sortOrder, mapCallData]);
 
   // Agent Options
   const agentOptions = useMemo(() => {
@@ -183,20 +249,22 @@ const CallTracking = () => {
   }, [calls]);
 
   // Action Handlers
-  const handleUpdateStatus = useCallback(async (callId, status) => {
+  const handleUpdateFollowUp = useCallback(async (callId, status) => {
     try {
-      const statusMap = { missed: 0, answered: 1, resolved: 2, ended: 3 };
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/status`,
-        { status: statusMap[status] },
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/followup`,
+        { status },
         { withCredentials: true }
       );
       setCalls(prev => prev.map(call => 
-        call.id === callId ? { ...call, status } : call
+        call.id === callId ? { 
+          ...call, 
+          followUp: { ...call.followUp, status } 
+        } : call
       ));
-      toast.success("Call status updated successfully");
+      toast.success("Follow-up status updated successfully");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update status");
+      toast.error(error.response?.data?.message || "Failed to update follow-up status");
     }
   }, []);
 
@@ -216,20 +284,19 @@ const CallTracking = () => {
     }
   }, []);
 
-  const markPriority = useCallback(async (callId, priority) => {
+  const markAsSpam = useCallback(async (callId) => {
     try {
-      const priorityMap = { normal: 0, high: 1 };
       await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/priority`,
-        { priority: priorityMap[priority] },
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/spam`,
+        {},
         { withCredentials: true }
       );
       setCalls(prev => prev.map(call => 
-        call.id === callId ? { ...call, priority } : call
+        call.id === callId ? { ...call, isSpam: true } : call
       ));
-      toast.success("Priority updated successfully");
+      toast.success("Call marked as spam");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update priority");
+      toast.error(error.response?.data?.message || "Failed to mark as spam");
     }
   }, []);
 
@@ -262,7 +329,7 @@ const CallTracking = () => {
   useEffect(() => {
     setPage(1);
     fetchCalls(1, false);
-  }, [debouncedSearchTerm, statusFilter, directionFilter, agentFilter, sortBy, sortOrder, fetchCalls]);
+  }, [debouncedSearchTerm, answeredFilter, inboundFilter, agentFilter, sortBy, sortOrder, fetchCalls]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -299,7 +366,7 @@ const CallTracking = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 sm:gap-4">
         <KPICard title="Total Calls" value={kpiStats.totalCalls} icon={PhoneCall} />
         <KPICard title="Missed Calls" value={kpiStats.missedCalls} icon={PhoneMissed} />
-        <KPICard title="Incoming Answered Calls" value={kpiStats.answeredCalls} icon={Phone} />
+        <KPICard title="Answered Calls" value={kpiStats.answeredCalls} icon={Phone} />
         <KPICard title="Resolved Calls" value={kpiStats.resolvedCalls} icon={CheckCircle} />
       </div>
 
@@ -316,22 +383,22 @@ const CallTracking = () => {
             />
           </div>
           <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            value={answeredFilter}
+            onChange={(e) => setAnsweredFilter(e.target.value)}
             className="px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
           >
-            {statusOptions.map((option) => (
+            {answeredOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </select>
           <select
-            value={directionFilter}
-            onChange={(e) => setDirectionFilter(e.target.value)}
+            value={inboundFilter}
+            onChange={(e) => setInboundFilter(e.target.value)}
             className="px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
           >
-            {directionOptions.map((option) => (
+            {inboundOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
@@ -364,33 +431,34 @@ const CallTracking = () => {
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>
-                <TableHead className="whitespace-nowrap">Receiver</TableHead>
+                <TableHead className="whitespace-nowrap">Agent</TableHead>
                 <TableHead onClick={() => handleSort("duration")} className="cursor-pointer whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     Duration
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>
-                <TableHead onClick={() => handleSort("status")} className="cursor-pointer whitespace-nowrap">
+                <TableHead onClick={() => handleSort("answered")} className="cursor-pointer whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     Status
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>
                 <TableHead className="whitespace-nowrap">Direction</TableHead>
-                <TableHead onClick={() => handleSort("timestamp")} className="cursor-pointer whitespace-nowrap">
+                <TableHead className="cursor-pointer whitespace-nowrap">
                   <div className="flex items-center gap-2">
-                    Time
+                    Time (Indian Time)
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>
+                <TableHead className="whitespace-nowrap">Follow-up</TableHead>
                 <TableHead className="whitespace-nowrap">Notes</TableHead>
                 <TableHead className="whitespace-nowrap">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {calls.map((call, index) => (
-                <TableRow key={index} className="hover:bg-gray-50">
+                <TableRow key={call._id || index} className="hover:bg-gray-50">
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-md bg-gray-100 flex items-center justify-center">
@@ -411,23 +479,16 @@ const CallTracking = () => {
                     <div className="text-xs sm:text-sm font-mono text-gray-900">{call.duration}</div>
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={call.status} />
+                    <StatusBadge answered={call.answered} />
+                  </TableCell>
+                  <TableCell>
+                    <DirectionBadge inbound={call.inbound} />
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <div className="flex items-center gap-1">
-                      {call.direction === "incoming" ? (
-                        <PhoneIncoming className="h-4 w-4 text-green-600" />
-                      ) : (
-                        <PhoneOutgoing className="h-4 w-4 text-blue-600" />
-                      )}
-                      <span className="text-xs sm:text-sm capitalize">{call.direction}</span>
-                    </div>
+                    <TimeDisplay startTime={call.startTime} />
                   </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <div className="text-xs sm:text-sm">
-                      <div>{call.timestamp.split(", ")[1]}</div>
-                      <div className="text-xs text-gray-500">{call.timestamp.split(", ")[0]}</div>
-                    </div>
+                  <TableCell>
+                    <FollowUpBadge followUp={call.followUp} />
                   </TableCell>
                   <TableCell>
                     <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[150px] sm:max-w-[200px]">
@@ -436,11 +497,11 @@ const CallTracking = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 sm:gap-2">
-                      {call.status === "missed" && (
+                      {!call.answered && call.inbound && call.followUp.status === 1 && (
                         <button
-                          onClick={() => handleUpdateStatus(call.id, "resolved")}
+                          onClick={() => handleUpdateFollowUp(call.id, 2)}
                           className="p-1 sm:p-2 text-green-600 hover:text-green-800 hover:bg-gray-100 rounded-md transition-colors"
-                          title="Resolve"
+                          title="Mark Follow-up Done"
                         >
                           <CheckCircle className="h-4 w-4" />
                         </button>
@@ -452,13 +513,15 @@ const CallTracking = () => {
                       >
                         <Edit3 className="h-4 w-4" />
                       </button>
-                      <button
-                        onClick={() => markPriority(call.id, call.priority === "high" ? "normal" : "high")}
-                        className="p-1 sm:p-2 text-gray-600 hover:text-yellow-600 hover:bg-gray-100 rounded-md transition-colors"
-                        title="Toggle Priority"
-                      >
-                        <Star className={`h-4 w-4 ${call.priority === "high" ? "fill-yellow-600 text-yellow-600" : ""}`} />
-                      </button>
+                      {/* {!call.isSpam && (
+                        <button
+                          onClick={() => markAsSpam(call.id)}
+                          className="p-1 sm:p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-md transition-colors"
+                          title="Mark as Spam"
+                        >
+                          <Star className="h-4 w-4" />
+                        </button>
+                      )} */}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -470,43 +533,34 @@ const CallTracking = () => {
         {/* Mobile View */}
         <div className="block sm:hidden space-y-2 p-2">
           {calls.map((call, index) => (
-            <Card key={index} className="p-3 shadow-sm">
+            <Card key={call._id || index} className="p-3 shadow-sm">
               <div className="space-y-1">
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                      <StatusBadge status={call.status} />
+                      <StatusBadge answered={call.answered} />
+                      <FollowUpBadge followUp={call.followUp} />
                     </div>
                     <CallerDisplay caller={call.caller} />
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <div className="text-xs text-gray-900">{call.timestamp.split(", ")[1]}</div>
-                    <div className="text-xs text-gray-500">{call.timestamp.split(", ")[0]}</div>
-                  </div>
+                  <TimeDisplay startTime={call.startTime} />
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-gray-900">{call.receiver.name}</span>
                     <span className="text-xs text-gray-500">• {call.duration}</span>
                   </div>
-                  <div className="flex items-center gap-1">
-                    {call.direction === "incoming" ? (
-                      <PhoneIncoming className="h-3 w-3 text-green-600" />
-                    ) : (
-                      <PhoneOutgoing className="h-3 w-3 text-blue-600" />
-                    )}
-                    <span className="text-xs capitalize text-gray-600">{call.direction}</span>
-                  </div>
+                  <DirectionBadge inbound={call.inbound} />
                 </div>
                 <div className="text-xs text-gray-500 truncate">
                   Notes: {call.notes || "No notes"}
                 </div>
                 <div className="flex gap-2 justify-end mt-1">
-                  {call.status === "missed" && (
+                  {!call.answered && call.inbound && call.followUp.status === 1 && (
                     <button
-                      onClick={() => handleUpdateStatus(call.id, "resolved")}
+                      onClick={() => handleUpdateFollowUp(call.id, 2)}
                       className="p-1 text-green-600 hover:text-green-800 hover:bg-gray-100 rounded transition-colors"
-                      title="Resolve"
+                      title="Mark Follow-up Done"
                     >
                       <CheckCircle className="h-4 w-4" />
                     </button>
@@ -518,13 +572,15 @@ const CallTracking = () => {
                   >
                     <Edit3 className="h-4 w-4" />
                   </button>
-                  <button
-                    onClick={() => markPriority(call.id, call.priority === "high" ? "normal" : "high")}
-                    className="p-1 text-gray-600 hover:text-yellow-600 hover:bg-gray-100 rounded transition-colors"
-                    title="Toggle Priority"
-                  >
-                    <Star className={`h-4 w-4 ${call.priority === "high" ? "fill-yellow-600 text-yellow-600" : ""}`} />
-                  </button>
+                  {/* {!call.isSpam && (
+                    <button
+                      onClick={() => markAsSpam(call.id)}
+                      className="p-1 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded transition-colors"
+                      title="Mark as Spam"
+                    >
+                      <Star className="h-4 w-4" />
+                    </button>
+                  )} */}
                 </div>
               </div>
             </Card>
@@ -544,7 +600,7 @@ const CallTracking = () => {
             <PhoneCall className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
             <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2">No calls found</h3>
             <p className="text-xs sm:text-sm text-gray-500">
-              {searchTerm || statusFilter !== "all" || directionFilter !== "all" || agentFilter !== "all"
+              {searchTerm || answeredFilter !== "all" || inboundFilter !== "all" || agentFilter !== "all"
                 ? "Try adjusting your search or filter criteria"
                 : "Get started by adding your first call"}
             </p>

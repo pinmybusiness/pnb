@@ -30,8 +30,9 @@ export const allMenus = [
     icon: PhoneCall, 
     roles: [6,7,8], 
     children: [
-      { name: "MissedCalls", href: "/dashboard/tracking/missed-calls", roles: [6,7,8] },
-      { name: "Calls History", href: "/dashboard/tracking", roles: [6,7,8] },
+      { name: "FollowUp Calls", href: "/dashboard/trackly/followup-calls", roles: [6,7,8] },
+      { name: "Calls History", href: "/dashboard/trackly", roles: [6,7,8] },
+      // { name: "Spam Calls", href: "/dashboard/trackly/spam-numbers", roles: [6,7,8] },
     ]
   },
   { 

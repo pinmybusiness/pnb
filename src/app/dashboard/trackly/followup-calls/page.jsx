@@ -4,7 +4,6 @@ import {
   PhoneMissed, 
   Search, 
   CheckCircle, 
-  Star, 
   Edit3, 
   ArrowUpDown, 
   User, 
@@ -13,7 +12,9 @@ import {
   Users, 
   Filter,
   Check,
-  X
+  X,
+  Shield,
+  Ban
 } from "lucide-react";
 import KPICard from "@/components/ui/KPICard";
 import { toast } from "react-hot-toast";
@@ -109,35 +110,22 @@ const UserAvatar = ({ name, className = "w-8 h-8" }) => (
   </div>
 );
 
-// Status Badge Component - UPDATED FOR NEW MODEL
-const StatusBadge = ({ answered }) => (
-  <Badge className={`px-2 py-1 text-xs font-medium ${
-    answered ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-  }`}>
-    {answered ? "Answered" : "Missed"}
-  </Badge>
-);
-
-// FollowUp Badge Component - NEW
+// FollowUp Badge Component - SIMPLIFIED (Only shows attempts count)
 const FollowUpBadge = ({ followUp }) => {
-  const followUpConfig = {
-    0: { label: "No Follow-up", color: "bg-gray-100 text-gray-800" },
-    1: { label: "Pending", color: "bg-yellow-100 text-yellow-800" },
-    2: { label: "Contacted", color: "bg-blue-100 text-blue-800" },
-    3: { label: "Resolved", color: "bg-green-100 text-green-800" },
-    4: { label: "Ignored", color: "bg-red-100 text-red-800" }
-  };
-
-  const config = followUpConfig[followUp?.status] || followUpConfig[0];
+  const attempts = followUp?.attempts || 0;
+  
+  // if (attempts === 0) {
+  //   return null; 
+  // }
 
   return (
-    <Badge className={`px-2 py-1 text-xs ${config.color}`}>
-      {config.label}
+    <Badge className="bg-orange-100 text-orange-800 px-2 py-1 text-xs font-medium">
+      {attempts} attempt{attempts !== 1 ? 's' : ''}
     </Badge>
   );
 };
 
-// Compact Resolve Button Component - UPDATED
+// Compact Resolve Button Component
 const ResolveButton = ({ callId, followUpStatus, onResolve, loading }) => {
   const isResolved = followUpStatus === 3;
   
@@ -165,7 +153,34 @@ const ResolveButton = ({ callId, followUpStatus, onResolve, loading }) => {
   );
 };
 
-// TimeDisplay Component - UPDATED FOR INDIAN TIME
+// Spam Button with Confirmation
+const SpamButton = ({ callId, isSpam, onMarkSpam }) => {
+  const handleClick = () => {
+    if (window.confirm('Are you sure you want to mark this number as spam? This will mark all calls from this number as spam.')) {
+      onMarkSpam(callId);
+    }
+  };
+
+  if (isSpam) {
+    return (
+      <Badge className="bg-red-100 text-red-800 px-2 py-1 text-xs">
+        <Shield className="h-5 w-5" />
+      </Badge>
+    );
+  }
+
+  return (
+    <button
+      onClick={handleClick}
+      className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-md transition-colors"
+      title="Mark as Spam"
+    >
+      <Ban className="h-5 w-5" />
+    </button>
+  );
+};
+
+// TimeDisplay Component
 const TimeDisplay = ({ startTime }) => {
   const displayDate = new Date(startTime);
   
@@ -191,7 +206,7 @@ const TimeDisplay = ({ startTime }) => {
   );
 };
 
-// CallerDisplay component - UPDATED FOR NEW FIELDS
+// CallerDisplay component
 const CallerDisplay = ({ caller }) => {
   const { name, phone, formattedPhone } = caller;
   
@@ -227,7 +242,7 @@ const MissedCalls = () => {
   const [teamLoading, setTeamLoading] = useState(true);
   const [resolvingCallId, setResolvingCallId] = useState(null);
 
-  // Data mapping function - UPDATED FOR NEW MODEL
+  // Data mapping function
   const mapCallData = useCallback((call) => ({
     id: call._id,
     caller: {
@@ -264,7 +279,7 @@ const MissedCalls = () => {
     return [];
   }, [teamMembers]);
 
-  // API calls - UPDATED FOR NEW ENDPOINTS
+  // API calls
   const fetchTeamMembers = useCallback(async () => {
     try {
       setTeamLoading(true);
@@ -278,17 +293,13 @@ const MissedCalls = () => {
           `${process.env.NEXT_PUBLIC_API_URL}/api/calls/team/performance?period=today`,
           { withCredentials: true }
         );
-        console.log("Team performance API response:", response.data);
         members = response.data?.data || [];
       } catch (performanceError) {
-        console.log("Performance API failed, trying member-stats API");
-        
         try {
           const response = await axios.get(
             `${process.env.NEXT_PUBLIC_API_URL}/api/calls/team/member-stats?period=today`,
             { withCredentials: true }
           );
-          console.log("Member-stats API response:", response.data);
           members = response.data?.data?.teamStats || [];
         } catch (memberStatsError) {
           console.log("Member-stats API also failed");
@@ -297,7 +308,6 @@ const MissedCalls = () => {
 
       // Agar APIs fail hui ya data nahi mila, toh calls se extract karo
       if (!members || members.length === 0) {
-        console.log("Extracting team members from calls data");
         const receiverMap = new Map();
         calls.forEach(call => {
           if (call.receiver && call.receiver.id && call.receiver.id !== "unassigned" && !receiverMap.has(call.receiver.id)) {
@@ -313,11 +323,9 @@ const MissedCalls = () => {
 
       // Final safety check - ensure it's an array
       if (!Array.isArray(members)) {
-        console.warn("Team members is not an array, converting:", members);
         members = members ? [members] : [];
       }
 
-      console.log("Final team members:", members);
       setTeamMembers(members);
       
     } catch (error) {
@@ -333,10 +341,9 @@ const MissedCalls = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/missed`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/branch-followup-calls`,
         { withCredentials: true }
       );
-      console.log("Missed calls API response:", response.data);
       
       if (response.data.success) {
         const mappedCalls = response.data.data.map(mapCallData);
@@ -354,7 +361,7 @@ const MissedCalls = () => {
     }
   }, [mapCallData]);
 
-  // Mark call as resolved - UPDATED FOR NEW FOLLOWUP
+  // Mark call as resolved
   const markAsResolved = useCallback(async (callId) => {
     try {
       setResolvingCallId(callId);
@@ -363,26 +370,15 @@ const MissedCalls = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/followup`,
         { 
           status: 3, // 3 = resolved in followup status
-          notes: "Marked as resolved from dashboard" 
+          notes: "Marked as resolved from dashboard",
+          updateAll: true 
         },
         { withCredentials: true }
       );
 
-      if (response.data.success) {
-        // Update local state
-        setCalls(prev => prev.map(call => 
-          call.id === callId 
-            ? { 
-                ...call, 
-                followUp: {
-                  ...call.followUp,
-                  status: 3 // resolved
-                }
-              } 
-            : call
-        ));
-        
+      if (response.data.success) {        
         toast.success("Call marked as resolved successfully!");
+        fetchMissedCalls();
       } else {
         toast.error(response.data.message || "Failed to mark as resolved");
       }
@@ -392,37 +388,27 @@ const MissedCalls = () => {
     } finally {
       setResolvingCallId(null);
     }
-  }, []);
+  }, [fetchMissedCalls]);
 
-  // Update followup status
-  const updateFollowupStatus = useCallback(async (callId, status, notes = "") => {
+  // Mark as spam with confirmation
+  const markAsSpam = useCallback(async (callId) => {
     try {
       const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/followup`,
-        { status, notes },
+        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/spam`,
+        {},
         { withCredentials: true }
       );
-
+      
       if (response.data.success) {
         setCalls(prev => prev.map(call => 
-          call.id === callId 
-            ? { 
-                ...call, 
-                followUp: {
-                  ...call.followUp,
-                  status: status
-                },
-                notes: notes || call.notes
-              } 
-            : call
+          call.id === callId ? { ...call, isSpam: true } : call
         ));
-        
-        const statusNames = { 1: "pending", 2: "contacted", 3: "resolved", 4: "ignored" };
-        toast.success(`Call marked as ${statusNames[status]} successfully!`);
+        toast.success("Call marked as spam successfully!");
+      } else {
+        toast.error(response.data.message || "Failed to mark as spam");
       }
     } catch (error) {
-      console.error("Update followup error:", error);
-      toast.error("Failed to update call status");
+      toast.error("Failed to mark as spam");
     }
   }, []);
 
@@ -440,7 +426,7 @@ const MissedCalls = () => {
     }
   }, [calls, fetchTeamMembers]);
 
-  // Filter and sort logic - UPDATED FOR NEW FIELDS
+  // Filter and sort logic
   const filteredAndSortedCalls = useMemo(() => {
     if (!calls || !Array.isArray(calls)) return [];
     
@@ -463,7 +449,6 @@ const MissedCalls = () => {
             case "startTime": return new Date(item.startTime).getTime();
             case "receiver": return item.receiver.name;
             case "followUpAttempts": return item.followUp.attempts;
-            case "answered": return item.answered;
             default: return 0;
           }
         };
@@ -478,7 +463,7 @@ const MissedCalls = () => {
       });
   }, [calls, searchTerm, selectedTeamMember, sortBy, sortOrder]);
 
-  // KPI calculation - UPDATED
+  // KPI calculation
   const kpiData = useMemo(() => {
     if (!calls || !Array.isArray(calls)) return { 
       missedCalls: 0, 
@@ -537,22 +522,6 @@ const MissedCalls = () => {
     }
   }, []);
 
-  const markAsSpam = useCallback(async (callId) => {
-    try {
-      await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/spam`,
-        {},
-        { withCredentials: true }
-      );
-      setCalls(prev => prev.map(call => 
-        call.id === callId ? { ...call, isSpam: true } : call
-      ));
-      toast.success("Call marked as spam");
-    } catch (error) {
-      toast.error("Failed to mark as spam");
-    }
-  }, []);
-
   // Loading state
   if (loading) {
     return (
@@ -577,7 +546,7 @@ const MissedCalls = () => {
         </div>
       </div>
 
-      {/* Summary Stats - UPDATED */}
+      {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <KPICard 
           title="Pending Followups" 
@@ -650,7 +619,7 @@ const MissedCalls = () => {
         </div>
       </Card>
 
-      {/* Calls Table - UPDATED FOR NEW FIELDS */}
+      {/* Calls Table - SIMPLIFIED (No Status column, Only Follow-up attempts) */}
       <Card>
         <div className="hidden sm:block">
           <Table>
@@ -663,14 +632,18 @@ const MissedCalls = () => {
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead onClick={() => handleSort("startTime")} className="cursor-pointer">
                   <div className="flex items-center gap-2">
                     Time
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>
-                <TableHead>Follow-up</TableHead>
+                <TableHead onClick={() => handleSort("followUpAttempts")} className="cursor-pointer">
+                  <div className="flex items-center gap-2">
+                    Follow-up
+                    <ArrowUpDown className="h-4 w-4" />
+                  </div>
+                </TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -690,22 +663,10 @@ const MissedCalls = () => {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge answered={call.answered} />
-                    </div>
-                  </TableCell>
-                  <TableCell>
                     <TimeDisplay startTime={call.startTime} />
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <FollowUpBadge followUp={call.followUp} />
-                      {call.followUp.attempts > 0 && (
-                        <Badge className="bg-orange-100 text-orange-800 px-2 py-1 text-xs">
-                          {call.followUp.attempts} attempt{call.followUp.attempts !== 1 ? 's' : ''}
-                        </Badge>
-                      )}
-                    </div>
+                    <FollowUpBadge followUp={call.followUp} />
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
@@ -724,15 +685,11 @@ const MissedCalls = () => {
                         <Edit3 className="h-5 w-5" />
                       </button>
                       
-                      {!call.isSpam && (
-                        <button
-                          onClick={() => markAsSpam(call.id)}
-                          className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-md transition-colors"
-                          title="Mark as Spam"
-                        >
-                          <X className="h-5 w-5" />
-                        </button>
-                      )}
+                      <SpamButton 
+                        callId={call.id}
+                        isSpam={call.isSpam}
+                        onMarkSpam={markAsSpam}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -741,7 +698,7 @@ const MissedCalls = () => {
           </Table>
         </div>
 
-        {/* Mobile View - UPDATED */}
+        {/* Mobile View - SIMPLIFIED */}
         <div className="sm:hidden space-y-3 p-4">
           {filteredAndSortedCalls.map((call) => (
             <Card key={call.id} className="p-4">
@@ -763,15 +720,6 @@ const MissedCalls = () => {
                   <TimeDisplay startTime={call.startTime} />
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                  <StatusBadge answered={call.answered} />
-                  {call.followUp.attempts > 0 && (
-                    <Badge className="bg-orange-100 text-orange-800 px-2 py-1 text-xs">
-                      {call.followUp.attempts} attempt{call.followUp.attempts !== 1 ? 's' : ''}
-                    </Badge>
-                  )}
-                </div>
-
                 <div className="flex gap-2 pt-2 border-t">
                   <ResolveButton 
                     callId={call.id}
@@ -788,15 +736,11 @@ const MissedCalls = () => {
                     <span className="text-sm">Note</span>
                   </button>
                   
-                  {!call.isSpam && (
-                    <button
-                      onClick={() => markAsSpam(call.id)}
-                      className="flex-1 flex items-center justify-center gap-1 p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-md transition-colors"
-                    >
-                      <X className="h-4 w-4" />
-                      <span className="text-sm">Spam</span>
-                    </button>
-                  )}
+                  <SpamButton 
+                    callId={call.id}
+                    isSpam={call.isSpam}
+                    onMarkSpam={markAsSpam}
+                  />
                 </div>
               </div>
             </Card>

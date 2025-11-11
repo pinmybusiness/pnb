@@ -202,16 +202,16 @@ const CallTracking = () => {
         setLoadingMore(true);
       }
 
-      const params = {
-        page: pageNum,
-        limit: 20,
-        search: debouncedSearchTerm,
-        answered: answeredFilter !== "all" ? answeredFilter : undefined,
-        inbound: inboundFilter !== "all" ? inboundFilter : undefined,
-        agent: agentFilter !== "all" ? agentFilter : undefined,
-        sortBy,
-        sortOrder,
-      };
+       const params = {
+      page: pageNum,
+      limit: 20,
+      search: debouncedSearchTerm,
+      answered: answeredFilter !== "all" ? answeredFilter : undefined,
+      inbound: inboundFilter !== "all" ? inboundFilter : undefined,
+      agent: agentFilter !== "all" ? agentFilter : undefined,
+      sortBy: sortBy, 
+      sortOrder: sortOrder,
+    };
 
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/calls/branch`, {
         params,
@@ -447,7 +447,7 @@ const CallTracking = () => {
                 <TableHead className="whitespace-nowrap">Direction</TableHead>
                 <TableHead className="cursor-pointer whitespace-nowrap">
                   <div className="flex items-center gap-2">
-                    Time (Indian Time)
+                    Time
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>

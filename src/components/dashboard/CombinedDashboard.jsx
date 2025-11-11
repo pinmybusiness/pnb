@@ -77,38 +77,41 @@ const monthDayLabels = (d = new Date()) => {
 // and derive outgoing = total - (answered + missed)
 // Call Trends: robust to labels for today/week/month
 const formatTrendsData = (trends = [], period = "today") => {
+  if (!Array.isArray(trends)) return [];
+
   const byKey = new Map();
 
-  for (const item of trends || []) {
-    const total = Number(item.totalCalls || 0);
-    const answered = Number(item.answeredCalls || 0);
-    const missed = Number(item.missedCalls || 0);
-    const outgoing = Math.max(total - answered - missed, 0);
-
+  for (const item of trends) {
     let key;
+    let name;
 
     if (period === "today") {
       const hour = Number(item._id);
       if (isNaN(hour) || hour < 0 || hour > 23) continue;
       key = hour;
-      byKey.set(key, { name: formatHour12(hour), total, answered, missed, outgoing });
-    }
-
-    else if (period === "week") {
+      name = formatHour12(hour);
+    } else if (period === "week") {
       const idx = Number(item._id);
       if (isNaN(idx) || idx < 0 || idx > 6) continue;
-      const label = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][idx];
-      key = label;
-      byKey.set(key, { name: label, total, answered, missed, outgoing });
-    }
-
-    else if (period === "month") {
+      name = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][idx];
+      key = name;
+    } else if (period === "month") {
       const day = Number(item._id);
       if (isNaN(day) || day < 1 || day > 31) continue;
+      name = `Day ${day}`;
       key = day;
-      byKey.set(key, { name: `Day ${day}`, total, answered, missed, outgoing });
+    } else {
+      continue;
     }
+
+    const total = Number(item.callCount || 0);
+    const answered = Number(item.answeredCount || 0);
+    const missed = Number(item.missedCount || 0);
+    const outgoing = Math.max(total - answered - missed, 0);
+
+    byKey.set(key, { name, total, answered, missed, outgoing });
   }
+
 
   // Return ordered + zero-filled
   if (period === "today") {
@@ -613,12 +616,14 @@ const OverviewTab = ({
           loading={statsLoading}
         />
 
-        <KPICard
-          title="Spam Calls"
-          value={stats?.overview?.spamCalls || 0}
-          icon={Ban}
-          loading={statsLoading}
-        />
+        <Link href="/dashboard/trackly/spam-numbers" className="lg:col-span-1">
+          <KPICard
+            title="Spam Calls"
+            value={stats?.overview?.spamCalls || 0}
+            icon={Ban}
+            loading={statsLoading}
+          />
+        </Link>
 
         <Link href="/dashboard/tracking/missed-calls" className="lg:col-span-1">
           <KPICard

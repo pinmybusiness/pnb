@@ -238,7 +238,7 @@ export default function ContactPage() {
                   Chat on WhatsApp
                 </h3>
                 <a 
-                  href="https://wa.me/919798288748" 
+                  href="https://wa.me/919798288748?text=Hi%20there!%20I%20just%20visited%20your%20site%20and%20wanted%20to%20connect." 
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl hover:shadow-md transition-all group/item"
@@ -334,7 +334,7 @@ export default function ContactPage() {
                     <span>Call Now</span>
                   </a>
                   <a
-                    href="https://wa.me/919798288748"
+                    href="https://wa.me/919798288748?text=Hi%20there!%20I%20just%20visited%20your%20site%20and%20wanted%20to%20connect."
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-green-500 text-white px-8 py-4 rounded-full font-bold text-base md:text-lg hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center justify-center gap-3 group border-2 border-white/20"

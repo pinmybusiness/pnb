@@ -593,7 +593,7 @@ const OverviewTab = ({
     <>
      {/* KPIs - Responsive grid */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-3 sm:gap-4">
-        <Link href="/dashboard/tracking" className="lg:col-span-1">
+        <Link href="/dashboard/trackly" className="lg:col-span-1">
           <KPICard
             title="Total Calls"
             value={stats?.overview?.totalCalls || 0}
@@ -625,7 +625,7 @@ const OverviewTab = ({
           />
         </Link>
 
-        <Link href="/dashboard/tracking/missed-calls" className="lg:col-span-1">
+        <Link href="/dashboard/trackly/followup-calls" className="lg:col-span-1">
           <KPICard
             title="Pending Follow-ups"
             value={missedCallsData?.length || 0}

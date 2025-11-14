@@ -4,7 +4,9 @@ import {
   FileBarChart, LayoutDashboard, GraduationCap, 
   ClipboardList,
   PhoneCall,
-  Building2
+  Building2,
+  Package,
+  CreditCard
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
@@ -20,7 +22,6 @@ export const allMenus = [
       { name: "List Branches", href: "/dashboard/branches" },
     ]
   },
-  { name: "Teams", href: "/dashboard/teams", icon: Users, roles: [0,3] },
   { name: "Leads", href: "/dashboard/leads", icon: BarChart3, roles: [1] },
   { name: "Customers", href: "/dashboard/customers", icon: Users, roles: [1] },
   { name: "Orders", href: "/dashboard/orders", icon: BarChart3, roles: [4] },
@@ -45,6 +46,9 @@ export const allMenus = [
       { name: "Analytics", href: "/dashboard/analytics", roles: [6,7] },
     ]
   },
+  { name: "Teams", href: "/dashboard/teams", icon: Users, roles: [0,3,6] },
+  { name: "Subscriptions", href: "/dashboard/service-subscriptions", icon: CreditCard, roles: [0] },
+  // { name: "Services", href: "/dashboard/services", icon: Package, roles: [6] },
   // { 
   //   name: "Opportunities", 
   //   icon: GraduationCap, 

@@ -1,21 +1,15 @@
-// components/UserForm.js
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import axios from 'axios';
-
 import { 
   User, 
-  Phone, 
-  Mail, 
-  Lock, 
-  Building, 
-  MapPin, 
-  ChevronDown, 
-  X 
+  X, 
+  Building 
 } from 'lucide-react';
+import { useSelector } from 'react-redux';
 
 const roleOptions = [
   { value: 0, label: 'Company Admin', scope: 'company' },
@@ -32,19 +26,31 @@ const roleOptions = [
 const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
+  const { user } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     name: '',
     mobile: '',
     email: '',
     password: '',
-    role: 8,
+    role: 8,        // default Branch Staff
     restaurant: '',
-    branch: ''
+    branch: user?.branch || '' // auto assign branch if available
   });
 
   const [errors, setErrors] = useState({});
+
+  // 👇 Auto-adjust based on who is creating user
+  useEffect(() => {
+    if (user && (user.role === 6 || user.role === 7)) {
+      // branch-level user → cannot choose role or branch
+      setFormData(prev => ({
+        ...prev,
+        role: 8, // Always Branch Staff
+        branch: user.branch || ''
+      }));
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -54,29 +60,15 @@ const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
     }
   };
 
-  const handleRoleSelect = (roleValue) => {
-    setFormData(prev => ({
-      ...prev,
-      role: roleValue,
-      restaurant: roleValue >= 3 && roleValue <= 5 ? prev.restaurant : '',
-      branch: roleValue >= 6 ? prev.branch : ''
-    }));
-    setShowRoleDropdown(false);
-  };
-
   const validateForm = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.mobile.trim()) newErrors.mobile = 'Mobile is required';
     if (!formData.password) newErrors.password = 'Password is required';
-    if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
-
-    if (formData.role >= 3 && formData.role <= 5 && !formData.restaurant) {
-      newErrors.restaurant = 'Restaurant is required for this role';
-    }
-    if (formData.role >= 6 && !formData.branch) {
+    if (formData.password.length < 6)
+      newErrors.password = 'Password must be at least 6 characters';
+    if (!formData.branch && (formData.role >= 6))
       newErrors.branch = 'Branch is required for this role';
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -90,9 +82,9 @@ const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
     }
     setLoading(true);
     try {
-      const response = await axios.post('/api/auth/register', formData);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, formData);
       toast.success('User created successfully!');
-      if (onSuccess) onSuccess(response.data.data);
+      onSuccess?.(response.data.data);
       onClose?.();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to create user');
@@ -101,14 +93,11 @@ const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
     }
   };
 
-  const getSelectedRoleLabel = () => {
-    const role = roleOptions.find(r => r.value === formData.role);
-    return role ? role.label : 'Select Role';
-  };
-
   const filteredBranches = formData.restaurant
     ? branches.filter(branch => branch.parentRestaurant === formData.restaurant)
     : [];
+
+  const showRoleSection = !(user?.role === 6 || user?.role === 7); // hide if branch-level user
 
   return (
     <div className="max-w-6xl mx-auto p-6 animate-fade-in">
@@ -144,7 +133,9 @@ const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="John Doe"
               />
               {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
@@ -158,8 +149,10 @@ const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
                 name="mobile"
                 value={formData.mobile}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${errors.mobile ? 'border-red-500' : 'border-gray-300'}`}
-                placeholder="+91 9876543210"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.mobile ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="9876543210"
               />
               {errors.mobile && <p className="mt-1 text-sm text-red-600">{errors.mobile}</p>}
             </div>
@@ -185,7 +178,9 @@ const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.password ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="Enter password"
               />
               {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password}</p>}
@@ -193,81 +188,65 @@ const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
           </div>
         </div>
 
-        {/* Role & Assignments */}
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-            <Building className="h-5 w-5 mr-2 text-primary" />
-            Role & Assignment
-          </h2>
+        {/* Role & Assignment (hide for branch-level users) */}
+        {showRoleSection && (
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+              <Building className="h-5 w-5 mr-2 text-primary" />
+              Role & Assignment
+            </h2>
 
-          {/* Role */}
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Role *</label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-                className="w-full flex items-center justify-between px-3 py-2 border border-gray-300 rounded-md"
-              >
-                <span>{getSelectedRoleLabel()}</span>
-                <ChevronDown className="h-4 w-4 text-gray-400" />
-              </button>
-              {showRoleDropdown && (
-                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                  {roleOptions.map((role) => (
-                    <button
-                      key={role.value}
-                      type="button"
-                      onClick={() => handleRoleSelect(role.value)}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 flex justify-between"
-                    >
-                      <span>{role.label}</span>
-                      <span className="text-xs text-gray-500 capitalize">{role.scope}</span>
-                    </button>
+            {/* Restaurant selection if needed */}
+            {(formData.role >= 3 && formData.role <= 5) && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Restaurant *</label>
+                <select
+                  name="restaurant"
+                  value={formData.restaurant}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border rounded-md ${
+                    errors.restaurant ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">Select Restaurant</option>
+                  {restaurants.map((rest) => (
+                    <option key={rest._id} value={rest._id}>
+                      {rest.name}
+                    </option>
                   ))}
-                </div>
-              )}
-            </div>
+                </select>
+                {errors.restaurant && (
+                  <p className="mt-1 text-sm text-red-600">{errors.restaurant}</p>
+                )}
+              </div>
+            )}
+
+            {/* Branch selection if needed */}
+            {formData.role >= 6 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Branch *</label>
+                <select
+                  name="branch"
+                  value={formData.branch}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border rounded-md ${
+                    errors.branch ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                >
+                  <option value="">Select Branch</option>
+                  {filteredBranches.map((branch) => (
+                    <option key={branch._id} value={branch._id}>
+                      {branch.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.branch && (
+                  <p className="mt-1 text-sm text-red-600">{errors.branch}</p>
+                )}
+              </div>
+            )}
           </div>
-
-          {/* Restaurant (conditional) */}
-          {(formData.role >= 3 && formData.role <= 5) && (
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Restaurant *</label>
-              <select
-                name="restaurant"
-                value={formData.restaurant}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${errors.restaurant ? 'border-red-500' : 'border-gray-300'}`}
-              >
-                <option value="">Select Restaurant</option>
-                {restaurants.map((rest) => (
-                  <option key={rest._id} value={rest._id}>{rest.name}</option>
-                ))}
-              </select>
-              {errors.restaurant && <p className="mt-1 text-sm text-red-600">{errors.restaurant}</p>}
-            </div>
-          )}
-
-          {/* Branch (conditional) */}
-          {formData.role >= 6 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Branch *</label>
-              <select
-                name="branch"
-                value={formData.branch}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${errors.branch ? 'border-red-500' : 'border-gray-300'}`}
-              >
-                <option value="">Select Branch</option>
-                {filteredBranches.map((branch) => (
-                  <option key={branch._id} value={branch._id}>{branch.name}</option>
-                ))}
-              </select>
-              {errors.branch && <p className="mt-1 text-sm text-red-600">{errors.branch}</p>}
-            </div>
-          )}
-        </div>
+        )}
 
         {/* Buttons */}
         <div className="flex justify-end space-x-3">

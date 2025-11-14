@@ -61,7 +61,7 @@ export default function Pricing() {
                   "Real-Time Alerts",
                   "Analytics Dashboard",
                   "Team Call Reports on WhatsApp",
-                  "CRM & Web Dashboard",
+                  "Web Dashboard",
                   // "Call Recording",
                   "Secure Storage & Support"
                   // "Multi-Channel Support",

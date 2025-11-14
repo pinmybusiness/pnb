@@ -1,22 +1,15 @@
 'use client';
 
-import { useState } from "react";
-import {
-  Users,
-  Search,
-  Plus,
-  Mail,
-  Calendar,
-  ArrowUpDown,
-  Eye,
-  UserPlus,
-} from "lucide-react";
-import { teams, branches, restaurants } from "@/data/mockData";
-import KPICard from "@/components/ui/KPICard";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-hot-toast';
+import { Loader2, Users, Search, UserPlus, Mail, Calendar, ArrowUpDown, Eye } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import KPICard from '@/components/ui/KPICard';
 
-// 🔹 Reusable components (same as Branches)
+// 🔹 Reusable components (same as original design)
 const Card = ({ className = "", children }) => (
   <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
     {children}
@@ -58,69 +51,126 @@ const TableCell = ({ children, className = "" }) => (
 
 const Teams = () => {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("name");
-  const [sortOrder, setSortOrder] = useState("asc");
+  const { user, token } = useSelector((state) => state.auth);
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
 
-  const getBranchInfo = (branchId) => {
-    const branch = branches.find((b) => b.id === branchId);
-    const restaurant = branch
-      ? restaurants.find((r) => r.id === branch.restaurantId)
-      : null;
-    return { branch, restaurant };
+  const isBranchUser = [6, 7].includes(user?.role);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+const [selectedMember, setSelectedMember] = useState(null);
+const [plans, setPlans] = useState([]);
+const [selectedPlan, setSelectedPlan] = useState('');
+
+const openAssignPlanModal = async (memberId) => {
+  setSelectedMember(memberId);
+  setShowAssignModal(true);
+
+  // Fetch all available plans once
+  if (plans.length === 0) {
+    try {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/services/plans`);
+      setPlans(res.data.data || []);
+    } catch (err) {
+      toast.error('Failed to load plans');
+    }
+  }
+};
+
+const assignPlanToMember = async () => {
+  if (!selectedPlan || !selectedMember) {
+    toast.error('Please select a plan');
+    return;
+  }
+
+  try {
+    // Use existing /subscribe API
+    const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/services/subscribe`, {
+      userId: selectedMember, // team member ka ID
+      planId: selectedPlan,
+      addons: [], // optional if no addons
+    });
+
+    if (res.data.success) {
+      toast.success('Plan assigned successfully!');
+      setShowAssignModal(false);
+    } else {
+      toast.error(res.data.message || 'Failed to assign plan');
+    }
+  } catch (err) {
+    toast.error(err.response?.data?.message || 'Failed to assign plan');
+  }
+};
+
+
+  const fetchTeamMembers = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/teams`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setTeamMembers(res.data.data || []);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || 'Failed to load team members');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredTeams = teams
+  useEffect(() => {
+    fetchTeamMembers();
+  }, []);
+
+  // Filter and sort functionality
+  const filteredMembers = teamMembers
     .filter(
       (member) =>
-        member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.role.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.email.toLowerCase().includes(searchTerm.toLowerCase())
+        member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.mobile?.includes(searchTerm) ||
+        member.roleLabel?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => {
       let aValue, bValue;
       switch (sortBy) {
-        case "name":
-          aValue = a.name;
-          bValue = b.name;
+        case 'name':
+          aValue = a.name || '';
+          bValue = b.name || '';
           break;
-        case "role":
-          aValue = a.role;
-          bValue = b.role;
+        case 'email':
+          aValue = a.email || '';
+          bValue = b.email || '';
           break;
-        case "email":
-          aValue = a.email;
-          bValue = b.email;
-          break;
-        case "joined":
-          aValue = new Date(a.joinDate);
-          bValue = new Date(b.joinDate);
+        case 'role':
+          aValue = a.roleLabel || '';
+          bValue = b.roleLabel || '';
           break;
         default:
           return 0;
       }
-      if (typeof aValue === "string") {
-        return sortOrder === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      }
-      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+      return sortOrder === 'asc' 
+        ? aValue.localeCompare(bValue) 
+        : bValue.localeCompare(aValue);
     });
 
   const handleSort = (field) => {
     if (sortBy === field) {
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(field);
-      setSortOrder("asc");
+      setSortOrder('asc');
     }
   };
 
+  // Role statistics
   const roleStats = {
-    managers: teams.filter((t) => t.role.includes("Manager")).length,
-    analysts: teams.filter((t) => t.role.includes("Analyst")).length,
-    assistants: teams.filter((t) => t.role.includes("Assistant")).length,
-    total: teams.length,
+    total: teamMembers.length,
+    managers: teamMembers.filter((t) => t.roleLabel?.toLowerCase().includes('manager')).length,
+    analysts: teamMembers.filter((t) => t.roleLabel?.toLowerCase().includes('analyst')).length,
+    assistants: teamMembers.filter((t) => t.roleLabel?.toLowerCase().includes('assistant')).length,
   };
 
   return (
@@ -131,20 +181,29 @@ const Teams = () => {
           <h1 className="text-2xl font-bold text-gray-900">Team Management</h1>
           <p className="text-gray-500">Manage team members across all branches</p>
         </div>
-        <Link href='/dashboard/teams/add'>
-        <Button>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Add Team
-        </Button>
-        </Link>
+        <div className="flex gap-3">
+          <Button onClick={fetchTeamMembers} disabled={loading}>
+            {loading ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              'Refresh'
+            )}
+          </Button>
+          <Link href='/dashboard/teams/add'>
+            <Button>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add Team
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <KPICard title="Total Members" value={roleStats.total} icon={Users} />
-        <KPICard title="Managers" value={roleStats.managers} icon={Users} />
-        <KPICard title="Analysts" value={roleStats.analysts} icon={Users} />
-        <KPICard title="Assistants" value={roleStats.assistants} icon={Users} />
+        {/* <KPICard title="Managers" value={roleStats.managers} icon={Users} /> */}
+        {/* <KPICard title="Analysts" value={roleStats.analysts} icon={Users} /> */}
+        {/* <KPICard title="Assistants" value={roleStats.assistants} icon={Users} /> */}
       </div>
 
       {/* Filters */}
@@ -162,101 +221,161 @@ const Teams = () => {
         </div>
       </Card>
 
+{showAssignModal && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+      <h2 className="text-lg font-semibold mb-3">Assign Plan</h2>
+
+      <select
+        className="border border-gray-300 rounded-md p-2 w-full mb-4"
+        value={selectedPlan}
+        onChange={(e) => setSelectedPlan(e.target.value)}
+      >
+        <option value="">Select Plan</option>
+        {plans.map(plan => (
+         <option key={plan._id} value={plan._id}>
+  {plan.serviceId?.name || 'Unknown Service'} — {plan.name} — ₹{plan.price}
+</option>
+
+        ))}
+      </select>
+
+      <div className="flex justify-end gap-3">
+        <button
+          onClick={() => setShowAssignModal(false)}
+          className="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={assignPlanToMember}
+          className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+        >
+          Assign
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
       {/* Teams Table */}
       <Card>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead onClick={() => handleSort("name")}>
+              <TableHead onClick={() => handleSort('name')}>
                 <div className="flex items-center gap-2">
                   Name <ArrowUpDown className="h-4 w-4" />
                 </div>
               </TableHead>
-              <TableHead onClick={() => handleSort("role")}>
-                <div className="flex items-center gap-2">
-                  Role <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
-              <TableHead onClick={() => handleSort("email")}>
+              <TableHead>Mobile</TableHead>
+              {/* <TableHead onClick={() => handleSort('email')}>
                 <div className="flex items-center gap-2">
                   Email <ArrowUpDown className="h-4 w-4" />
                 </div>
-              </TableHead>
-              <TableHead>Branch & Restaurant</TableHead>
-              <TableHead onClick={() => handleSort("joined")}>
+              </TableHead> */}
+              {!isBranchUser && <TableHead>Restaurant</TableHead>}
+              {!isBranchUser && <TableHead>Branch</TableHead>}
+              <TableHead onClick={() => handleSort('role')}>
                 <div className="flex items-center gap-2">
-                  Joined <ArrowUpDown className="h-4 w-4" />
+                  Role <ArrowUpDown className="h-4 w-4" />
                 </div>
               </TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTeams.map((member) => {
-              const { branch, restaurant } = getBranchInfo(member.branchId);
-              return (
-                <TableRow key={member.id} className="hover:bg-gray-50">
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={isBranchUser ? 6 : 8} className="text-center py-8">
+                  <div className="flex justify-center items-center gap-2 text-gray-500">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    Loading team members...
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : filteredMembers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={isBranchUser ? 6 : 8} className="text-center py-12">
+                  <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No team members found</h3>
+                  <p className="text-gray-500">
+                    {searchTerm
+                      ? "Try adjusting your search terms"
+                      : "Get started by adding your first team member"}
+                  </p>
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredMembers.map((member, index) => (
+                <TableRow key={member._id} className="hover:bg-gray-50">
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 flex items-center justify-center rounded-full bg-primary/10 text-primary font-medium">
                         {member.name
-                          .split(" ")
+                          ?.split(' ')
                           .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()}
+                          .join('')
+                          .toUpperCase() || 'U'}
                       </div>
                       <div>
-                        <div className="font-medium">{member.name}</div>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <Mail className="h-3 w-3" /> {member.email}
-                        </div>
+                        <div className="font-medium">{member.name || '—'}</div>
+                        {/* <div className="flex items-center gap-1 text-sm text-gray-500">
+                          <Mail className="h-3 w-3" /> 
+                          {member.email || 'No email'}
+                        </div> */}
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell>{member.role}</TableCell>
-                  <TableCell>{member.email}</TableCell>
-                  <TableCell>
-                    <div className="max-w-[200px] truncate">
-                      {branch?.name || "Unknown"} <br />
-                      <span className="text-xs text-gray-500">{restaurant?.name || ""}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2 text-gray-600 text-sm">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(member.joinDate).toLocaleDateString()}
-                    </div>
+                  <TableCell>{member.mobile || '—'}</TableCell>
+                  {/* <TableCell>{member.email || '—'}</TableCell> */}
+                  {!isBranchUser && (
+                    <TableCell>
+                      <div className="max-w-[200px] truncate">
+                        {member.restaurant?.name || '—'}
+                      </div>
+                    </TableCell>
+                  )}
+                  {!isBranchUser && (
+                    <TableCell>
+                      <div className="max-w-[200px] truncate">
+                        {member.branch?.name || '—'}
+                      </div>
+                    </TableCell>
+                  )}
+                  <TableCell className="capitalize">
+                    {member.roleLabel || '—'}
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => router.push(`/dashboard/teams/${member.id}`)}
+                        onClick={() => router.push(`/dashboard/teams/${member._id}`)}
                         className="p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-md"
                         title="View"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
+                     {member.role === 8 && (
+                        <button
+                          onClick={() => openAssignPlanModal(member._id)}
+                          className="p-2 text-orange-600 hover:text-white hover:bg-orange-500 rounded-md"
+                          title="Assign Plan"
+                        >
+                          <UserPlus className="h-4 w-4" />
+                        </button>
+                      )}
+
                     </div>
                   </TableCell>
                 </TableRow>
-              );
-            })}
+              ))
+            )}
           </TableBody>
         </Table>
-
-        {filteredTeams.length === 0 && (
-          <div className="p-12 text-center">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No team members found</h3>
-            <p className="text-gray-500">
-              {searchTerm
-                ? "Try adjusting your search terms"
-                : "Get started by inviting your first team member"}
-            </p>
-          </div>
-        )}
       </Card>
     </div>
+    
   );
 };
 

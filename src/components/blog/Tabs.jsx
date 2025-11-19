@@ -15,24 +15,40 @@ export default function Tabs({ slug }) {
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API}/api/get-website-articles-slug?website=${WEBSITE}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data?.posts) return;
+    const fetchTabsData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `${API}/api/get-tabs-data?website=${WEBSITE}`
+        );
+        const data = await response.json();
+        
+        if (data.statusCode === 200 && data.tabs) {
+          // Filter posts by category and they are already sorted by menu_order from API
+          const filtered = data.tabs.filter((p) => 
+            p.slug.startsWith(category + "/")
+          );
 
-        const filtered = data.posts.filter((p) => p.slug.startsWith(category + "/"));
-        const finalTabs = filtered.map((p) => {
-          const name = p.slug.split("/").pop().replace(/-/g, " ");
-          return {
+          // Use nav_title if available, otherwise use title
+          const finalTabs = filtered.map((p) => ({
             slug: p.slug,
-            label: name.charAt(0).toUpperCase() + name.slice(1),
-          };
-        });
+            label: p.nav_title || p.title,
+            menu_order: p.menu_order || 0
+          }));
 
-        setTabs(finalTabs);
-      });
+          setTabs(finalTabs);
+        }
+      } catch (error) {
+        console.error('Error fetching tabs data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTabsData();
   }, [slug, category]);
 
   useEffect(() => {
@@ -66,10 +82,25 @@ export default function Tabs({ slug }) {
     }
   };
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="-mt-8 max-w-7xl mx-auto px-4">
+        <div className="bg-amber-50 rounded-2xl border-2 border-gray-100 p-4">
+          <div className="flex gap-2 overflow-hidden">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-10 bg-gray-200 rounded-xl animate-pulse w-32"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!tabs.length) return null;
 
   return (
-    <div className="-mt-8 max-w-7xl mx-auto relative group">
+    <div className="-mt-10 max-w-7xl mx-auto relative group">
       {/* Gradient fade effects */}
       {showLeftArrow && (
         <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
@@ -104,7 +135,7 @@ export default function Tabs({ slug }) {
       <div className="bg-amber-50 rounded-2xl shadow-md border-2 border-gray-100 p-2 relative overflow-hidden">
         <div
           id="tabs-container"
-          className="flex gap-2 overflow-x-auto scrollbar-hide scroll-smooth"
+          className="flex gap-2 md:gap-5 overflow-x-auto scrollbar-hide scroll-smooth"
         >
           {tabs.map((t) => {
             const isActive = pathname === "/" + t.slug;
@@ -115,7 +146,7 @@ export default function Tabs({ slug }) {
                 className={`
                   relative px-5 py-3 mt-[6px] rounded-xl text-sm font-semibold transition-all whitespace-nowrap flex-shrink-0
                   ${isActive 
-                    ? "text-white  bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-200" 
+                    ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-200" 
                     : "text-gray-600 border-1 border-orange-200 bg-orange-50 hover:text-[#FF5211] hover:bg-orange-100"
                   }
                 `}

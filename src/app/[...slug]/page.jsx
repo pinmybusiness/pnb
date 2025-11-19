@@ -6,6 +6,7 @@ import { formatDateWithSuffix } from "@/utils/dateFormat";
 import { Calendar, Clock } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getReadingTime } from "@/utils/readingTime";
+import { getStructuredData } from "@/utils/structuredData";
 
 // DYNAMIC SETTINGS FOR FRESH DATA
 export const dynamic = "force-dynamic";
@@ -59,8 +60,25 @@ export default async function Page({ params }) {
   const parts = slug.split("/");
   const category = parts[0];
 
+  const structuredData = getStructuredData(data.article, data.comments.meta,  data.faqs);
+
+
   return (
     <>
+
+    {/* BlogPosting Schema */}
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData.blogPosting) }}
+    />
+    
+    {/* FAQ Schema (only if exists) */}
+    {structuredData.faqPage && (
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData.faqPage) }}
+      />
+    )}
 
       {/* HERO SECTION */}
       <div className="-mt-5 bg-gradient-to-br from-[#FFF5EC] via-orange-50/60 to-white border-b border-gray-100">
@@ -78,11 +96,11 @@ export default async function Page({ params }) {
               <span className="text-sm text-gray-600">{post.views} views</span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+            <h1 className="main-content mb-4 leading-tight">
               {post.heading_one}
             </h1>
 
-            <p className="text-lg md:text-xl text-gray-600 mb-6 leading-relaxed">
+            <p className="main-content mb-6 leading-relaxed">
               {post.description}
             </p>
 

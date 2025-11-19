@@ -5,19 +5,11 @@ import toast from "react-hot-toast";
 const WEBSITES = [
   {
     id: 1,
-    label: "Pride Location",
-    brand: "PrideLocation.com",
-    baseUrl: "https://www.pridelocation.com",
-    videoChatUrl: "https://www.pridelocation.com/video-chat-app",
-    apiWebsiteParam: 1,
-  },
-  {
-    id: 2,
-    label: "ChatUSA.club",
-    brand: "ChatUSA.club",
-    baseUrl: "https://www.chatusa.club",
-    videoChatUrl: "https://app.chatusa.club",
-    apiWebsiteParam: 2,
+    label: "Trackly (FasterQ)",
+    brand: "Trackly by FasterQ",
+    baseUrl: "https://www.fasterq.in",
+    startNowUrl: "https://www.fasterq.in/contact", 
+    apiWebsiteParam: 5,
   },
 ];
 
@@ -29,19 +21,19 @@ export const CONTENT_API = `${BASE_URL}/api/content/generate-content`;
 
 export default function PromptBuilder() {
   // ---- Site context ----
-  const [selectedWebsiteId, setSelectedWebsiteId] = useState(2);
+  const [selectedWebsiteId, setSelectedWebsiteId] = useState(1);
   const selectedWebsite = useMemo(
     () => WEBSITES.find((w) => w.id === selectedWebsiteId),
     [selectedWebsiteId]
   );
 
   // ---- Basic fields ----
-  const [brandName, setBrandName] = useState("ChatUSA.club");
-  const [topic, setTopic] = useState("Ome TV vs ChatUSA");
-  const [primaryKeyword, setPrimaryKeyword] = useState("");
+  const [brandName, setBrandName] = useState("Trackly by FasterQ");
+  const [topic, setTopic] = useState("SalesTrail vs Trackly – Best Call Tracking Tool");
+  const [primaryKeyword, setPrimaryKeyword] = useState("call tracking software");
   const [url, setUrl] = useState("");
   const [pageType, setPageType] = useState("Blog");
-  const [audienceLocale, setAudienceLocale] = useState("United States");
+  const [audienceLocale, setAudienceLocale] = useState("India");
   const [currentSummary, setCurrentSummary] = useState("");
   const [usp, setUsp] = useState("");
   const [tone, setTone] = useState("Informative, Authoritative, Actionable, Slightly Conversational");
@@ -126,7 +118,7 @@ export default function PromptBuilder() {
 STRICTLY PROVIDE ONLY RAW RESEARCH DATA IN JSON FORMAT. NO FINAL CONTENT.
 
 Topic: "${topic}"
-Website Context: ${selectedWebsite?.brand || "ChatUSA.club"}
+Website Context: ${selectedWebsite?.brand || "Trackly by FasterQ"}
 
 Generate comprehensive research data for SEO content writing with following structure:
 
@@ -147,7 +139,9 @@ Generate comprehensive research data for SEO content writing with following stru
 }
 
 IMPORTANT: Return ONLY valid JSON, no additional text or explanations.
-Focus on US-based video chat alternatives with safety features. Avoid external security content.
+Focus strictly on call tracking, sales monitoring, agent analytics, KPI dashboards, 
+team performance, sales productivity, call recordings, outbound calling results, 
+and comparison with competitors like SalesTrail, JustCall, CallHippo, MyOperator, Exotel.
     `.trim();
 
     setResearchPrompt(prompt);
@@ -299,7 +293,7 @@ Focus on US-based video chat alternatives with safety features. Avoid external s
         },
         body: JSON.stringify({
           topic: topic,
-          websiteContext: selectedWebsite?.brand || "ChatUSA.club"
+          websiteContext: selectedWebsite?.brand || "Trackly by FasterQ"
         }),
       });
 
@@ -458,11 +452,13 @@ Focus on US-based video chat alternatives with safety features. Avoid external s
     setIsFetchingArticles(true);
     try {
       const videoChatEntry = {
-        url: selectedWebsite.videoChatUrl,
+        url: selectedWebsite.startNowUrl,
         preferred_anchors: [
-          "start random video chat",
-          "start free chat now",
-          "one-on-one video chat",
+        "Request a Trackly demo",
+        "Connect with our team",
+        "Get custom pricing",
+        "Start with Trackly",
+        "Speak with a product expert"
         ],
         context_hint: "conversion-focused link",
       };
@@ -483,14 +479,15 @@ Focus on US-based video chat alternatives with safety features. Avoid external s
         preferred_anchors: [
           readableAnchorFromSlug(p.slug),
           "read the full guide",
-          "best tips for chat",
+          "call productivity tips",
+          "sales team analytics"
         ],
         context_hint: "related article link",
       }));
 
       const merged = [videoChatEntry, ...articleEntries, ...internalLinks].slice(0, Math.max(3, internalLinks.length + 3));
       setInternalLinks(merged);
-      toast.success("Internal links updated with video chat + latest articles!");
+      toast.success("Trackly internal links added!");
     } catch (e) {
       console.error(e);
       toast.error("Could not fetch latest articles.");
@@ -610,13 +607,13 @@ Focus on US-based video chat alternatives with safety features. Avoid external s
                   label="Main Topic" 
                   value={topic} 
                   setValue={setTopic} 
-                  placeholder="Ome TV vs ChatUSA" 
+                  placeholder="SalesTrail vs Trackly"
                 />
                 <Input 
                   label="Brand Name" 
                   value={brandName} 
                   setValue={setBrandName} 
-                  placeholder="ChatUSA.club" 
+                  placeholder="Trackly" 
                 />
               </div>
 
@@ -726,14 +723,14 @@ Focus on US-based video chat alternatives with safety features. Avoid external s
                     title="Secondary Keywords" 
                     items={secondaryKeywords} 
                     setItems={setSecondaryKeywords} 
-                    placeholder="e.g., random video chat usa" 
+                    placeholder="e.g., call analytics software"
                   />
                   <div className="h-4" />
                   <ListEditor 
                     title="Competing Intents" 
                     items={competingIntents} 
                     setItems={setCompetingIntents} 
-                    placeholder="e.g., find safe alternatives to Ome TV" 
+                    placeholder="e.g., best call tracking tools, improve sales team monitoring"
                   />
                 </section>
 
@@ -750,62 +747,70 @@ Focus on US-based video chat alternatives with safety features. Avoid external s
 
                 {/* Internal Links Section */}
                 <section className="bg-white rounded-2xl shadow p-5 border">
-                  <h2 className="text-xl font-semibold mb-4">Internal Link Map</h2>
-                  <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-xl font-semibold mb-4">Internal Link Map</h2>
+
+                <div className="flex items-center gap-2 mb-4">
                     <button
-                      className="px-4 py-2 rounded-2xl bg-emerald-600 text-white disabled:opacity-60"
-                      onClick={autoFillInternalLinks}
-                      disabled={isFetchingArticles || !selectedWebsite}
+                    className="px-4 py-2 rounded-2xl bg-emerald-600 text-white disabled:opacity-60"
+                    onClick={autoFillInternalLinks}
+                    disabled={isFetchingArticles || !selectedWebsite}
                     >
-                      {isFetchingArticles ? "Fetching..." : "Auto-fill Internal Links"}
+                    {isFetchingArticles ? "Fetching..." : "Auto-fill Internal Links"}
                     </button>
-                    <span className="text-sm text-gray-600">Adds video chat + latest articles</span>
-                  </div>
-                  
-                  <div className="space-y-6">
+
+                    <span className="text-sm text-gray-600">
+                    Adds Trackly product links + important pages
+                    </span>
+                </div>
+
+                <div className="space-y-6">
                     {internalLinks.map((l, i) => (
-                      <div key={i} className="border rounded-xl p-4">
+                    <div key={i} className="border rounded-xl p-4">
                         <div className="flex justify-between items-center">
-                          <h3 className="font-medium">Internal Link #{i + 1}</h3>
-                          <button className="text-sm text-red-600" onClick={() => removeInternalLink(i)}>
+                        <h3 className="font-medium">Internal Link #{i + 1}</h3>
+                        <button className="text-sm text-red-600" onClick={() => removeInternalLink(i)}>
                             Remove
-                          </button>
+                        </button>
                         </div>
+
                         <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <Input label="URL" value={l.url} setValue={(v) => updateInternalLink(i, "url", v)} />
-                          <Input
+                        <Input label="URL" value={l.url} setValue={(v) => updateInternalLink(i, "url", v)} />
+                        <Input
                             label="Context Hint"
                             value={l.context_hint}
                             setValue={(v) => updateInternalLink(i, "context_hint", v)}
-                          />
+                        />
                         </div>
+
                         <div className="mt-3">
-                          <h4 className="text-sm font-semibold mb-2">Preferred Anchors</h4>
-                          <div className="space-y-2">
+                        <h4 className="text-sm font-semibold mb-2">Preferred Anchors</h4>
+                        <div className="space-y-2">
                             {l.preferred_anchors.map((a, j) => (
-                              <div key={j} className="flex gap-2">
+                            <div key={j} className="flex gap-2">
                                 <input
-                                  className="flex-1 border rounded-lg px-3 py-2"
-                                  value={a}
-                                  onChange={(e) => updateAnchor(i, j, e.target.value)}
-                                  placeholder="e.g., one-on-one video chat"
+                                className="flex-1 border rounded-lg px-3 py-2"
+                                value={a}
+                                onChange={(e) => updateAnchor(i, j, e.target.value)}
+                                placeholder="e.g., real-time call analytics"
                                 />
                                 <button className="px-3 py-2 border rounded-lg" onClick={() => removeAnchor(i, j)}>
-                                  Remove
+                                Remove
                                 </button>
-                              </div>
+                            </div>
                             ))}
-                          </div>
-                          <button className="mt-2 px-3 py-2 rounded-lg bg-gray-100" onClick={() => addAnchor(i)}>
-                            + Add Anchor
-                          </button>
                         </div>
-                      </div>
+
+                        <button className="mt-2 px-3 py-2 rounded-lg bg-gray-100" onClick={() => addAnchor(i)}>
+                            + Add Anchor
+                        </button>
+                        </div>
+                    </div>
                     ))}
+
                     <button className="px-4 py-2 rounded-2xl bg-gray-100" onClick={addInternalLink}>
-                      + Add Internal Link
+                    + Add Internal Link
                     </button>
-                  </div>
+                </div>
                 </section>
 
                 {/* Requirements Section */}

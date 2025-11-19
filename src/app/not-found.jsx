@@ -13,7 +13,7 @@ export default function NotFound() {
           href="/"
           className="text-primary hover:text-primary-dark underline transition-fast"
         >
-          Return to Dashboard
+          Go to Home
         </a>
       </div>
     </div>

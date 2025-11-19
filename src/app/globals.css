@@ -247,3 +247,28 @@ input, textarea {
 .main-content a:hover {
   text-decoration: underline;
 }
+
+@media (max-width: 768px) {
+   .main-content h1 {
+    font-size: 28px;
+    line-height: 36px;
+  }
+  .main-content h2 {
+    font-size: 22px;
+    line-height: 30px;
+  }
+  .main-content h3 {
+    font-size: 18px;
+    line-height: 26px;
+  }
+  .main-content h4 {
+    font-size: 16px;
+    line-height: 24px;
+  }
+  .main-content p,
+  .main-content li,
+  .main-content a {
+    font-size: 14px ;
+    line-height: 22px;
+  } 
+}

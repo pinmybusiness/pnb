@@ -8,7 +8,6 @@ import { notFound } from "next/navigation";
 import { getReadingTime } from "@/utils/readingTime";
 import { getStructuredData } from "@/utils/structuredData";
 
-// DYNAMIC SETTINGS FOR FRESH DATA
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -44,8 +43,20 @@ export async function generateMetadata({ params }) {
 //  MAIN PAGE
 // -------------------------
 export default async function Page({ params }) {
-  const slug = params.slug.join("/");
+  // Convert slug array → single slug string
+  const slugArray = params.slug; 
+  const slug = slugArray.join("/");
 
+  // Check if post is category post or direct post
+  const isCategoryPost = slugArray.length > 1;
+
+  // category only if slug has folder
+  const category = isCategoryPost ? slugArray[0] : null;
+
+  // Main post slug
+  const postSlug = isCategoryPost ? slugArray[1] : slugArray[0];
+
+  // Fetch data
   const res = await fetch(
     `${API}/api/get-article?slug=${slug}&website=${WEBSITE}`,
     { cache: "no-store" }
@@ -57,81 +68,90 @@ export default async function Page({ params }) {
   if (!data.article) return notFound();
 
   const post = data.article;
-  const parts = slug.split("/");
-  const category = parts[0];
+  const parts = slugArray;
 
-  const structuredData = getStructuredData(data.article, data.comments.meta,  data.faqs);
-
+  const structuredData = getStructuredData(
+    data.article,
+    data.comments?.meta,
+    data.faqs
+  );
 
   return (
     <>
-
-    {/* BlogPosting Schema */}
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData.blogPosting) }}
-    />
-    
-    {/* FAQ Schema (only if exists) */}
-    {structuredData.faqPage && (
+      {/* BLOG SCHEMA */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData.faqPage) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData.blogPosting),
+        }}
       />
-    )}
+
+      {structuredData.faqPage && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData.faqPage),
+          }}
+        />
+      )}
 
       {/* HERO SECTION */}
       <div className="-mt-5 bg-gradient-to-br from-[#FFF5EC] via-orange-50/60 to-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-14">
-          
+
+          {/* Breadcrumbs */}
           <Breadcrumbs parts={parts} />
 
-          {/* HEADER */}
           <div className="max-w-4xl">
+            {/* Category + Views */}
             <div className="flex items-center gap-3 mb-4">
-              <span className="inline-flex items-center gap-2 bg-[#FF5211] text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide">
-                {category.replace(/-/g, " ")}
-              </span>
+
+              {/* Category Badge (only for category posts) */}
+              {category && (
+                <span className="inline-flex items-center gap-2 bg-[#FF5211] text-white px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide">
+                  {category.replace(/-/g, " ")}
+                </span>
+              )}
 
               <span className="text-sm text-gray-600">{post.views} views</span>
             </div>
 
+            {/* Title */}
             <h1 className="main-content mb-4 leading-tight">
               {post.heading_one}
             </h1>
 
+            {/* Description */}
             <p className="main-content mb-6 leading-relaxed">
               {post.description}
             </p>
 
-            {/* META */}
+            {/* META INFO */}
             <div className="flex flex-wrap items-center gap-4 md:gap-6 text-sm pb-6">
-            <div className="flex items-center gap-3">
-            
-            {/* Avatar */}
-            {post.author_avatar ? (
-                <img
-                src={post.author_avatar}
-                alt={post.author_username}
-                className="w-10 h-10 rounded-full object-cover border-2 border-orange-500 shadow-sm"
-                />
-            ) : (
-                <div className="w-10 h-10 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-full flex items-center justify-center text-white font-bold">
-                {post.author_username
-                    ? post.author_username.charAt(0).toUpperCase()
-                    : "T"}
+
+              {/* Author */}
+              <div className="flex items-center gap-3">
+                {post.author_avatar ? (
+                  <img
+                    src={post.author_avatar}
+                    alt={post.author_username}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-orange-500 shadow-sm"
+                  />
+                ) : (
+                  <div className="w-10 h-10 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-full flex items-center justify-center text-white font-bold">
+                    {post.author_username
+                      ? post.author_username.charAt(0).toUpperCase()
+                      : "T"}
+                  </div>
+                )}
+
+                <div>
+                  <p className="font-semibold text-gray-900 capitalize">
+                    {post.author_username || "Trackly Team"}
+                  </p>
+                  <p className="text-gray-500 text-xs">Content Team</p>
                 </div>
-            )}
-
-            {/* Author Text */}
-            <div>
-                <p className="font-semibold text-gray-900 capitalize">
-                {post.author_username || "Trackly Team"}
-                </p>
-                <p className="text-gray-500 text-xs">Content Team</p>
-            </div>
-            </div>
-
+              </div>
 
               <div className="hidden md:block w-px h-8 bg-gray-300"></div>
 
@@ -150,33 +170,32 @@ export default async function Page({ params }) {
           </div>
         </div>
       </div>
-        {/* TABS */}
-        <Tabs slug={slug} pathname={`/${slug}`} />
+
+      {/* TABS */}
+      <Tabs slug={slug} category={category} pathname={`/${slug}`} />
 
       {/* PAGE BODY */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 pt-12">
-
-
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-          {/* ------- MAIN CONTENT ------- */}
+          {/* MAIN CONTENT */}
           <div className="lg:col-span-8">
             <article className="bg-white">
               <div className="main-content">
                 <div
-                    className="prose max-w-none"
-                    dangerouslySetInnerHTML={{ __html: post.content }}
+                  className="prose max-w-none"
+                  dangerouslySetInnerHTML={{ __html: post.content }}
                 />
               </div>
 
-               {/* FAQs */}
-            {data.faqs && data.faqs.length > 0 && (
+              {/* FAQs */}
+              {data.faqs && data.faqs.length > 0 && (
                 <div className="mt-2">
-                <FAQs faqs={data.faqs} />
+                  <FAQs faqs={data.faqs} />
                 </div>
-            )}
+              )}
 
-              {/* READ MORE / CTA */}
+              {/* CTA */}
               <div className="mt-10 bg-gradient-to-br from-[#FF5211] via-orange-600 to-orange-700 rounded-3xl p-10 text-white text-center relative overflow-hidden">
                 <h3 className="text-2xl md:text-3xl font-bold mb-3 z-10 relative">
                   Ready to Transform Your Sales?
@@ -193,18 +212,14 @@ export default async function Page({ params }) {
                 </a>
               </div>
             </article>
-
-           
           </div>
 
-          {/* ------- SIDEBAR ------- */}
+          {/* SIDEBAR (optional) */}
           {/* <div className="lg:col-span-4">
             <Sidebar slug={slug} />
           </div> */}
         </div>
       </div>
-
-        
     </>
   );
 }

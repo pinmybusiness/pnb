@@ -10,46 +10,77 @@ const WEBSITE = process.env.NEXT_PUBLIC_WEBSITE_ID;
 
 export default function Tabs({ slug }) {
   const pathname = usePathname();
-  const category = slug.split("/")[0];
   const [tabs, setTabs] = useState([]);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Function to extract relative path from full URL
+  const getRelativePath = (url) => {
+    if (!url) return '';
+    
+    try {
+      // If it's already a relative path, return as is
+      if (url.startsWith('/')) {
+        return url;
+      }
+      
+      // If it's a full URL, extract the pathname
+      if (url.startsWith('http')) {
+        const urlObj = new URL(url);
+        return urlObj.pathname;
+      }
+      
+      return url;
+    } catch (error) {
+      console.error('Error parsing URL:', error);
+      return url;
+    }
+  };
+
   useEffect(() => {
-    const fetchTabsData = async () => {
+    const fetchNavigationTabs = async () => {
       try {
         setLoading(true);
         const response = await fetch(
-          `${API}/api/get-tabs-data?website=${WEBSITE}`
+          `${API}/api/get-post-navigation-tabs?slug=${slug}&website=${WEBSITE}`
         );
         const data = await response.json();
         
         if (data.statusCode === 200 && data.tabs) {
-          // Filter posts by category and they are already sorted by menu_order from API
-          const filtered = data.tabs.filter((p) => 
-            p.slug.startsWith(category + "/")
-          );
+          // Format tabs data with relative paths
+          const formattedTabs = data.tabs.map((tab, index) => {
+            const relativePath = getRelativePath(tab.tab_url);
+            
+            return {
+              id: index,
+              label: tab.tab_name,
+              url: tab.tab_url,
+              relativePath: relativePath,
+              order: tab.tab_order
+            };
+          });
 
-          // Use nav_title if available, otherwise use title
-          const finalTabs = filtered.map((p) => ({
-            slug: p.slug,
-            label: p.nav_title || p.title,
-            menu_order: p.menu_order || 0
-          }));
-
-          setTabs(finalTabs);
+          // Sort by order
+          const sortedTabs = formattedTabs.sort((a, b) => a.order - b.order);
+          setTabs(sortedTabs);
+        } else {
+          console.log('No navigation tabs found for this post');
+          setTabs([]);
         }
       } catch (error) {
-        console.error('Error fetching tabs data:', error);
+        console.error('Error fetching navigation tabs:', error);
+        setTabs([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTabsData();
-  }, [slug, category]);
+    if (slug && WEBSITE) {
+      fetchNavigationTabs();
+    }
+  }, [slug]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -132,17 +163,19 @@ export default function Tabs({ slug }) {
       )}
 
       {/* Tabs container */}
-      <div className="bg-amber-50 rounded-2xl shadow-md border-2 border-gray-100 p-2 relative overflow-hidden">
+      <div className="bg-amber-50 rounded-2xl shadow-md border-2 border-gray-100 p-2 px-4 pb-3 relative overflow-hidden">
         <div
           id="tabs-container"
           className="flex gap-2 md:gap-5 overflow-x-auto scrollbar-hide scroll-smooth"
         >
-          {tabs.map((t) => {
-            const isActive = pathname === "/" + t.slug;
+          {tabs.map((tab) => {
+            // Use relative path for active state comparison
+            const isActive = pathname === tab.relativePath;
+            
             return (
               <Link
-                key={t.slug}
-                href={`/${t.slug}`}
+                key={tab.id}
+                href={tab.relativePath} // Use relative path for Next.js Link
                 className={`
                   relative px-5 py-3 mt-[6px] rounded-xl text-sm font-semibold transition-all whitespace-nowrap flex-shrink-0
                   ${isActive 
@@ -159,7 +192,7 @@ export default function Tabs({ slug }) {
                   </span>
                 )}
                 
-                {t.label}
+                {tab.label}
                 
                 {/* Bottom active bar */}
                 {isActive && (
@@ -174,16 +207,19 @@ export default function Tabs({ slug }) {
       {/* Mobile indicator dots */}
       {tabs.length > 3 && (
         <div className="flex justify-center gap-1.5 mt-3 md:hidden">
-          {tabs.map((t, index) => (
-            <div
-              key={t.slug}
-              className={`h-1.5 rounded-full transition-all ${
-                pathname === "/" + t.slug
-                  ? "w-6 bg-[#FF5211]"
-                  : "w-1.5 bg-gray-300"
-              }`}
-            />
-          ))}
+          {tabs.map((tab) => {
+            const isActive = pathname === tab.relativePath;
+            return (
+              <div
+                key={tab.id}
+                className={`h-1.5 rounded-full transition-all ${
+                  isActive
+                    ? "w-6 bg-[#FF5211]"
+                    : "w-1.5 bg-gray-300"
+                }`}
+              />
+            );
+          })}
         </div>
       )}
 

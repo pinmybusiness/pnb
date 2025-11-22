@@ -5,11 +5,11 @@ import toast from "react-hot-toast";
 const WEBSITES = [
   {
     id: 1,
-    label: "Trackly (FasterQ)",
-    brand: "Trackly by FasterQ",
+    label: "FasterQ.in",
+    brand: "FasterQ.in",
     baseUrl: "https://www.fasterq.in",
     startNowUrl: "https://www.fasterq.in/contact", 
-    apiWebsiteParam: 5,
+    apiWebsiteParam: 8,
   },
 ];
 
@@ -28,7 +28,7 @@ export default function PromptBuilder() {
   );
 
   // ---- Basic fields ----
-  const [brandName, setBrandName] = useState("Trackly by FasterQ");
+  const [brandName, setBrandName] = useState("FasterQ.in");
   const [topic, setTopic] = useState("SalesTrail vs Trackly – Best Call Tracking Tool");
   const [primaryKeyword, setPrimaryKeyword] = useState("call tracking software");
   const [url, setUrl] = useState("");
@@ -64,7 +64,7 @@ export default function PromptBuilder() {
   // Requirements
   const [includeProsCons, setIncludeProsCons] = useState(true);
   const [minWordCount, setMinWordCount] = useState(1000);
-  const [targetWordCount, setTargetWordCount] = useState(1500);
+  const [targetWordCount, setTargetWordCount] = useState(2500);
   const [faq, setFaq] = useState(true);
   const [tlDr, setTlDr] = useState(true);
   const [facts, setFacts] = useState(true);
@@ -157,7 +157,7 @@ and comparison with competitors like SalesTrail, JustCall, CallHippo, MyOperator
 
     const payload = {
       role: "system",
-      instruction: "You are an expert SEO Head and Senior Content Writer for a leading digital marketing agency. Your job is to create a single, highly optimized web page that strictly follows Google Search Essentials, Helpful Content Guidelines, Spam Policies, and E-E-A-T principles. The content must be optimized both for traditional search engines and for large language models (LLMs)/AI Overviews. It should be structured, genuinely helpful, concise yet comprehensive, and directly usable for publication.",
+      instruction: "You are an expert SEO Head and Senior Content Writer for a leading digital marketing agency. Your job is to create a single, highly optimized web page that strictly follows Google Search Essentials, Helpful Content Guidelines, Spam Policies, and E-E-A-T principles.",
       inputs: {
         brand_name: brandName,
         topic: topic,
@@ -235,9 +235,9 @@ and comparison with competitors like SalesTrail, JustCall, CallHippo, MyOperator
           paragraph_words_max: 70,
           active_voice: true,
           plain_language: true,
-          readability_score_target: "Flesch-Kincaid Grade Level 7-9 (score 65-75)",
+          readability_score_target: "Flesch-Kincaid Grade Level 7-9 (score 70-80)",
           avoid_jargon_unless_explained: true,
-          question_based_headings: true,
+          question_based_headings: false,
           bulleted_lists_for_skimmability: true,
           avoid_ai_indicators: "STRICTLY avoid AI-written symbols like '-' or special glyphs. Use regular punctuation only.",
         },
@@ -246,8 +246,8 @@ and comparison with competitors like SalesTrail, JustCall, CallHippo, MyOperator
         "A. Meta Title",
         "B. Meta Description", 
         "C. H1",
-        "D. Updated Outline (H2/H3/H4, including some in question format)",
-        "E. Final Content (plain text, 1000-1500+ words, includes TL;DR, fact blocks, headings, lists, disclosures, FAQs, pros/cons, CTAs)",
+        "D. Updated Outline (H2/H3/H4, including only some in question format)",
+        "E. Final Content (plain text, 1000-2500+ words, includes TL;DR, fact blocks, headings, lists, disclosures, FAQs, pros/cons, CTAs)",
         "F. Internal Link Placements (sentence + anchor - URL) - PLACE IN MAIN CONTENT ONLY",
         "G. CTAs (including suggested placement)",
         "H. Schema (JSON-LD)",
@@ -255,20 +255,22 @@ and comparison with competitors like SalesTrail, JustCall, CallHippo, MyOperator
         "J. Metrics (word count, title chars, meta chars, H1 chars, primary keyword, secondary keyword, avg sentence words, avg paragraph words, readability score)",
       ],
       notes: [
-        "CRITICAL: All internal links must be placed within the main content body, NOT in FAQ sections.",
+        "CRITICAL: All internal links must be placed within the main content body, NOT in FAQ sections. Outline content Readability must be 7-9.",
         "STRICTLY avoid AI-written symbols like em dashes, arrows, etc. Use regular punctuation only.",
         "Content must be genuinely helpful, human-first, and AI Overview-friendly.",
-        "Always add a TL;DR style answer card near the top (50-90 words, 1 citation).",
-        "Include 1-2 fact blocks with outbound authoritative citations (FTC, Google, industry).",
-        "Use clear question-based H2/H3 headings to match search queries and LLM extraction.",
-        "Break down long paragraphs with bulleted lists or shorter sentences.",
-        "No keyword stuffing-use keywords naturally.",
-        "Provide transparent pros/cons and note limitations honestly.",
-        "Add disclosures if comparing competitors or linking to commercial resources.",
-        "Ensure content meets both SEO best practices and readability targets for web publishing.",
-        "Always deliver a strong opening hook and a conclusive summary with a final CTA.",
-        "Use Tables to compare features, pros/cons, pricing, etc. where relevant.",
-        "Ensure all internal links use preferred anchors and fit contextually within main content.",
+        "**Must be AI Overview–ready:** include TL;DR answer card + concise FAQs (40–60 words each).",
+        "Always add at least one fact block with outbound authoritative citation (FTC, Google, or industry).",
+        "Use question-based headings for better snippet and AI extraction.",
+        "Break up long text into short paragraphs and bulleted lists for scannability.",
+        "Keyword usage must stay natural and within density ranges.",
+        "Be transparent about pros, cons, and limitations.",
+        "Disclose brand affiliation if competitors are mentioned.",
+        "Conclude with a strong final CTA and summary.",
+        "Use Tables to compare features, pros/cons, pricing, steps, or eligibility criteria. Each table must include descriptive headers and be optimized for snippets.",
+        "Ensure all internal links use preferred anchors and fit contextually.",
+        "Include at least one snippet-ready definition, list, or table for visibility.",
+        "Add schema markup for Article + FAQ + Breadcrumb + Table (if applicable).",
+        "Follow Universal SEO Pre-Publish Checklist for structure, links, citations, and Core Web Vitals compliance."
       ],
     };
 
@@ -1021,11 +1023,6 @@ and comparison with competitors like SalesTrail, JustCall, CallHippo, MyOperator
   );
 }
 
-// ... (UI Components और Utility functions वही रहेंगे जो आपके पास पहले से हैं)
-// Input, SelectInput, TextArea, ListEditor, Toggle, NumberInput components
-// toSlug, buildArticleUrl, readableAnchorFromSlug functions
-
-// UI Components (same as before)
 function Input({ label, value, setValue, placeholder }) {
   return (
     <label className="block">

@@ -15,12 +15,23 @@ export default function Header({ activeLink = "" }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState({});
   const dispatch = useDispatch();
   const router = useRouter();
   const { user } = useSelector((state) => state.auth);
 
   const links = [
     { name: "Home", path: "/" },
+    { 
+    name: "Call Tracker",
+    dropdown: [
+      { label: "Overview", path: "/call-tracker" },
+      { label: "Incoming", path: "/call-tracker/incoming-call-tracker" },
+      { label: "Outgoing", path: "/call-tracker/outgoing-call-tracker" },
+      { label: "Missed", path: "/call-tracker/missed-call-tracker" },
+      { label: "Analytics", path: "/call-tracker/call-tracker-analytics" },
+    ]
+  },
     // { name: "Trackly", path: "/products/trackly" },
     // { name: "Jobs", path: "/jobs" },
     { name: "About", path: "/about" },
@@ -67,27 +78,43 @@ export default function Header({ activeLink = "" }) {
             {/* Desktop Nav - Modern Pills */}
             <nav className="hidden md:flex items-center space-x-2">
               {links.map((link) => (
-                <Link
-                  key={link.name}
-                  href={link.path}
-                  className={`relative px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                    activeLink === link.path
-                      ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-500/30"
-                      : "text-gray-700 hover:text-[#FF5211] hover:bg-orange-50/80"
-                  }`}
-                >
-                  <span className="relative z-10 flex items-center gap-2">
-                    {link.name}
-                    {link.name === "Jobs" && (
-                      <span className="text-[9px] font-bold uppercase text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-full px-2 py-0.5 shadow-sm animate-pulse">
-                        Free
-                      </span>
-                    )}
-                  </span>
-                  {activeLink !== link.path && (
-                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-[#FF5211]/0 via-[#FF5211]/5 to-[#FF5211]/0 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                <div key={link.name} className="relative group">
+                  {!link.dropdown ? (
+                    <Link
+                      href={link.path}
+                      className={`relative px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                        activeLink === link.path
+                          ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-500/30"
+                          : "text-gray-700 hover:text-[#FF5211] hover:bg-orange-50/80"
+                      }`}
+                    >
+                      {link.name}
+                    </Link>
+                  ) : (
+                    <>
+                      {/* Call Tracker parent button */}
+                      <button
+                        className={`relative px-5 py-2.5 text-sm font-semibold rounded-xl flex items-center gap-1 transition-all duration-300 text-gray-700 hover:text-[#FF5211] hover:bg-orange-50/80`}
+                      >
+                        {link.name}
+                        <ChevronDown className="w-4 h-4 mt-0.5 group-hover:rotate-180 transition-transform" />
+                      </button>
+
+                      {/* Dropdown menu */}
+                      <div className="absolute left-0 mt-2 w-52 bg-white/95 backdrop-blur-xl rounded-xl shadow-xl border border-orange-100 opacity-0 group-hover:opacity-100 group-hover:translate-y-2 translate-y-0 invisible group-hover:visible transition-all duration-300">
+                        {link.dropdown.map((item) => (
+                          <Link
+                            key={item.label}
+                            href={item.path}
+                            className="block px-4 py-3 text-sm text-gray-700 hover:bg-orange-50 hover:text-[#FF5211] transition rounded-lg"
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </>
                   )}
-                </Link>
+                </div>
               ))}
             </nav>
 
@@ -191,25 +218,59 @@ export default function Header({ activeLink = "" }) {
         >
           <nav className="flex flex-col p-4 space-y-2">
             {links.map((link) => (
-              <a
-                key={link.name}
-                href={link.path}
-                onClick={() => setMobileOpen(false)}
-                className={`relative flex items-center justify-between px-5 py-3.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                  activeLink === link.path
-                    ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-500/30"
-                    : "text-gray-700 hover:text-[#FF5211] hover:bg-orange-50"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  {link.name}
-                  {link.name === "Jobs" && (
-                    <span className="text-[9px] font-bold uppercase text-white bg-gradient-to-r from-green-500 to-emerald-600 rounded-full px-2 py-0.5 shadow-sm">
-                      Free
-                    </span>
-                  )}
-                </span>
-              </a>
+              <div key={link.name}>
+                {!link.dropdown ? (
+                  <a
+                    href={link.path}
+                    onClick={() => setMobileOpen(false)}
+                    className={`relative flex items-center justify-between px-5 py-3.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
+                      activeLink === link.path
+                        ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-500/30"
+                        : "text-gray-700 hover:text-[#FF5211] hover:bg-orange-50"
+                    }`}
+                  >
+                    {link.name}
+                  </a>
+                ) : (
+                  <>
+                    {/* Call Tracker mobile toggle */}
+                    <button
+                      onClick={() =>
+                        setDropdownOpen((prev) => ({
+                          ...prev,
+                          [link.name]: !prev[link.name],
+                        }))
+                      }
+                      className="flex items-center justify-between w-full px-5 py-3.5 text-sm font-semibold rounded-xl text-gray-700 hover:bg-orange-50 transition"
+                    >
+                      {link.name}
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${
+                          dropdownOpen?.[link.name] ? "rotate-180" : ""
+                        }`}
+                      />
+                    </button>
+
+                    {/* Mobile dropdown items */}
+                    <div
+                      className={`overflow-hidden transition-all ${
+                        dropdownOpen?.[link.name] ? "max-h-96" : "max-h-0"
+                      }`}
+                    >
+                      {link.dropdown.map((item) => (
+                        <a
+                          key={item.label}
+                          href={item.path}
+                          onClick={() => setMobileOpen(false)}
+                          className="block ml-6 mt-1 px-4 py-3 text-sm text-gray-700 rounded-lg hover:bg-orange-50 hover:text-[#FF5211] transition"
+                        >
+                          {item.label}
+                        </a>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             ))}
 
             <div className="pt-3 border-t-2 border-orange-100 flex flex-col gap-2">

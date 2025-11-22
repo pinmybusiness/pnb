@@ -4,9 +4,10 @@ import Tabs from "@/components/blog/Tabs";
 import FAQs from "@/components/blog/FAQs";
 import { formatDateWithSuffix } from "@/utils/dateFormat";
 import { Calendar, Clock } from "lucide-react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { getReadingTime } from "@/utils/readingTime";
 import { getStructuredData } from "@/utils/structuredData";
+import LatestBlogs from "@/components/blog/LatestBlogs";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,11 +15,21 @@ export const revalidate = 0;
 const API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL;
 const WEBSITE = process.env.NEXT_PUBLIC_WEBSITE_ID;
 
+// Fetch latest articles from the API
+const response = await fetch(
+  `${API}/api/get-latest-website-articles?website=${WEBSITE}`,
+  { cache: "no-store" }
+);
+const { latest_articles } = await response.json();
+const latestSixArticles = latest_articles.slice(0, 6);
+
 // -------------------------
 //  SEO METADATA
 // -------------------------
 export async function generateMetadata({ params }) {
-  const slug = params.slug.join("/");
+  // Await params first
+  const { slug: slugArray } = await params;
+  const slug = slugArray.join("/");
 
   const res = await fetch(
     `${API}/api/get-article?slug=${slug}&website=${WEBSITE}`,
@@ -40,12 +51,52 @@ export async function generateMetadata({ params }) {
 }
 
 // -------------------------
+//  REDIRECTION CHECK FUNCTION
+// -------------------------
+async function checkRedirection(slug) {
+  try {
+    const redirectRes = await fetch(
+      `${API}/api/check-redirect?url=${slug}&website=${WEBSITE}`,
+      { 
+        cache: "no-store",
+        timeout: 10000 // Note: fetch timeout not directly supported, use AbortController if needed
+      }
+    );
+
+    if (redirectRes.ok) {
+      const redirectData = await redirectRes.json();
+      const redirectStatus = parseInt(redirectData.statusCode);
+      const redirectUrl = redirectData.redirectUrl;
+
+      // If valid redirect found
+      if (redirectUrl && (redirectStatus === 301 || redirectStatus === 302)) {
+        return {
+          shouldRedirect: true,
+          status: redirectStatus,
+          url: redirectUrl.startsWith('/') ? redirectUrl : `/${redirectUrl}`
+        };
+      }
+    }
+  } catch (err) {
+    console.error("[Redirect Check Error]:", err);
+  }
+
+  return { shouldRedirect: false };
+}
+
+// -------------------------
 //  MAIN PAGE
 // -------------------------
 export default async function Page({ params }) {
-  // Convert slug array → single slug string
-  const slugArray = params.slug; 
+  // Await params first, then use its properties
+  const { slug: slugArray } = await params;
   const slug = slugArray.join("/");
+
+  // First check for redirection
+  const redirection = await checkRedirection(slug);
+  if (redirection.shouldRedirect) {
+    redirect(redirection.url);
+  }
 
   // Check if post is category post or direct post
   const isCategoryPost = slugArray.length > 1;
@@ -62,10 +113,25 @@ export default async function Page({ params }) {
     { cache: "no-store" }
   );
 
-  if (!res.ok) return notFound();
+  // If article not found, check redirection again (in case API returns different response)
+  if (!res.ok) {
+    const redirectionRetry = await checkRedirection(slug);
+    if (redirectionRetry.shouldRedirect) {
+      redirect(redirectionRetry.url);
+    }
+    return notFound();
+  }
+
   const data = await res.json();
 
-  if (!data.article) return notFound();
+  // If article not found in data, check redirection
+  if (!data.article) {
+    const redirectionRetry = await checkRedirection(slug);
+    if (redirectionRetry.shouldRedirect) {
+      redirect(redirectionRetry.url);
+    }
+    return notFound();
+  }
 
   const post = data.article;
   const parts = slugArray;
@@ -218,6 +284,27 @@ export default async function Page({ params }) {
           {/* <div className="lg:col-span-4">
             <Sidebar slug={slug} />
           </div> */}
+        </div>
+
+        {/* LATEST BLOGS SECTION */}
+        <div className="mt-14">
+          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-gray-900">
+            You May Also Like
+          </h2>
+
+          <LatestBlogs
+            articles={latestSixArticles.map((item) => ({
+              slug: item.slug,
+              heading_one: item.heading_one,
+              imageAlt: item.imageAlt,
+            }))}
+            pageSize={6}
+            heading="You May Also Like"
+            headingAlign="left"
+            showCTAButton={true}
+            ctaHref="/blog"
+            showBackground={false}
+          />
         </div>
       </div>
     </>

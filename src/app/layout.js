@@ -3,6 +3,7 @@ import "./globals.css";
 import { inter, yesteryear } from "@/lib/fonts";
 import { Toaster } from "react-hot-toast";
 import ClientHeaderFooter from "./ClientHeaderFooter";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 export const metadata = {
   title: "Call Tracking Software India | Track & Record All Sales Calls",
@@ -40,6 +41,7 @@ export default function RootLayout({ children }) {
         {/* Move Providers to individual pages or components that need them */}
         <ClientHeaderFooter position="header" />
         {children}
+        <WhatsAppButton />
         <ClientHeaderFooter position="footer" />
         <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
 

@@ -8,6 +8,7 @@ import { notFound, redirect } from "next/navigation";
 import { getReadingTime } from "@/utils/readingTime";
 import { getStructuredData } from "@/utils/structuredData";
 import LatestBlogs from "@/components/blog/LatestBlogs";
+import TabsSSR from "@/components/blog/tabs/TabsSSR";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -238,7 +239,7 @@ export default async function Page({ params }) {
       </div>
 
       {/* TABS */}
-      <Tabs slug={slug} category={category} pathname={`/${slug}`} />
+      <TabsSSR slug={slug} pathname={`/${slug}`} />
 
       {/* PAGE BODY */}
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">

@@ -86,12 +86,12 @@ export default function DownloadPage() {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-gray-900">Android App</h3>
-                      <p className="text-sm text-gray-600">Version 1.0.0 • 6.8 MB</p>
+                      <p className="text-sm text-gray-600">Version 1.0.0 • 6.5 MB</p>
                     </div>
                   </div>
 
                   <a
-                    href="/fasterq-trackly.apk"
+                    href="https://cdn.fasterq.in/images/fasterq-app.apk"
                     download
                     className="w-full bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-5 rounded-full font-bold text-lg hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center justify-center gap-3 group/btn shadow-xl mb-4"
                   >

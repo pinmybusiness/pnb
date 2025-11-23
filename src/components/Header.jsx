@@ -119,7 +119,7 @@ export default function Header({ activeLink = "" }) {
             </nav>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-3">
+            <div className="hidden md:flex items-center space-x-4">
               {user ? (
                 <div className="relative">
                   <button
@@ -189,6 +189,13 @@ export default function Header({ activeLink = "" }) {
                     <span className="group-hover:text-[#FF5211] transition-colors">Login</span>
                   </button>
 
+                  <Link
+                    href="/contact"
+                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#FF5211] to-orange-600 hover:from-[#FF5211] hover:to-orange-700 rounded-xl transition-all duration-300 shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105"
+                  >
+                    Book a Demo
+                  </Link>
+
                   {/* <a
                     href="/register"
                     className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#FF5211] to-orange-600 hover:from-[#FF5211] hover:to-orange-700 rounded-xl transition-all duration-300 shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105 group"
@@ -198,6 +205,7 @@ export default function Header({ activeLink = "" }) {
                   </a> */}
                 </>
               )}
+              
             </div>
 
             {/* Mobile Menu Button */}

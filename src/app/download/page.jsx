@@ -1,6 +1,7 @@
-"use client";
 
 import { Download, Shield, Zap, Check, Star, Users, ArrowRight, Smartphone, CheckCircle, Clock, Phone } from "lucide-react";
+
+const APK_URL = "https://cdn.fasterq.in/images/fasterq-app.apk";
 
 export default function DownloadPage() {
   return (
@@ -91,7 +92,7 @@ export default function DownloadPage() {
                   </div>
 
                   <a
-                    href="https://cdn.fasterq.in/images/fasterq-app.apk"
+                    href={APK_URL}
                     download
                     className="w-full bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-5 rounded-full font-bold text-lg hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center justify-center gap-3 group/btn shadow-xl mb-4"
                   >
@@ -295,7 +296,7 @@ export default function DownloadPage() {
               <p className="text-xl mb-8 text-white/90">Join 200+ businesses already using Trackly</p>
               
               <a
-                href="/fasterq-trackly.apk"
+                href={APK_URL}
                 download
                 className="bg-white text-[#FF5211] px-10 py-5 rounded-full font-bold text-lg hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center gap-3 group"
               >
@@ -307,20 +308,6 @@ export default function DownloadPage() {
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% {
-            transform: translateY(0px);
-          }
-          50% {
-            transform: translateY(-10px);
-          }
-        }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-      `}</style>
     </div>
   );
 }

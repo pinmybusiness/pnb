@@ -160,7 +160,7 @@ input, textarea {
   @apply inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition-colors;
 }
 
-@keyframes slideIn {
+  @keyframes slideIn {
         from {
           opacity: 0;
           transform: translateX(-10px);
@@ -169,8 +169,21 @@ input, textarea {
           opacity: 1;
           transform: translateX(0);
         }
-      }
+    }
       
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
       
 
 /* BlogPage.module.css */

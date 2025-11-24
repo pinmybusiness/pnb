@@ -1,7 +1,7 @@
 import TabsCSR from "./TabsCSR";
 
-const API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL;
-const WEBSITE = process.env.NEXT_PUBLIC_WEBSITE_ID;
+const API = process.env.API_BLOG_BASE_URL || 'https://datacenter.randomstrangerchats.com';
+const WEBSITE = process.env.WEBSITE_ID || '8';
 
 export default async function TabsSSR({ slug, pathname }) {
   let tabs = [];

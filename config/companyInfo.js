@@ -1,7 +1,7 @@
 // config/companyInfo.js
 const companyInfo = {
   name: process.env.NEXT_PUBLIC_APP_NAME || "FasterQ.in",
-  email: "PrideLocation@gmail.com",
+  email: "info@fasterq.in",
   website_url: process.env.NEXT_PUBLIC_WEBSITE_URL || "https://www.fasterq.in",
   website_id: process.env.NEXT_PUBLIC_WEBSITE_ID || "8",
   title: "Call Tracking Software India | Track & Record All Sales Calls",

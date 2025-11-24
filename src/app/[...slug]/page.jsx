@@ -13,8 +13,8 @@ import TabsSSR from "@/components/blog/tabs/TabsSSR";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const API = process.env.NEXT_PUBLIC_API_BLOG_BASE_URL;
-const WEBSITE = process.env.NEXT_PUBLIC_WEBSITE_ID;
+const API = process.env.API_BLOG_BASE_URL || 'https://datacenter.randomstrangerchats.com';
+const WEBSITE = process.env.WEBSITE_ID || '8';
 
 // Fetch latest articles from the API
 const response = await fetch(

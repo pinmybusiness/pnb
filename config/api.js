@@ -1,6 +1,6 @@
 // src/config/api.js
 export const API_CONFIG = {
-  baseUrl: process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'http://datacenter.randomstrangerchats.com:8080',
+  baseUrl: process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://datacenter.randomstrangerchats.com',
   endpoints: {
     getArticles: '/api/get-website-articles',
     getLatestArticles: '/api/get-latest-website-articles',

@@ -221,43 +221,42 @@ const assignPlanToMember = async () => {
         </div>
       </Card>
 
-{showAssignModal && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
-      <h2 className="text-lg font-semibold mb-3">Assign Plan</h2>
+      {showAssignModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
+            <h2 className="text-lg font-semibold mb-3">Assign Plan</h2>
 
-      <select
-        className="border border-gray-300 rounded-md p-2 w-full mb-4"
-        value={selectedPlan}
-        onChange={(e) => setSelectedPlan(e.target.value)}
-      >
-        <option value="">Select Plan</option>
-        {plans.map(plan => (
-         <option key={plan._id} value={plan._id}>
-  {plan.serviceId?.name || 'Unknown Service'} — {plan.name} — ₹{plan.price}
-</option>
+            <select
+              className="border border-gray-300 rounded-md p-2 w-full mb-4"
+              value={selectedPlan}
+              onChange={(e) => setSelectedPlan(e.target.value)}
+            >
+              <option value="">Select Plan</option>
+              {plans.map(plan => (
+              <option key={plan._id} value={plan._id}>
+        {plan.serviceId?.name || 'Unknown Service'} — {plan.name} — ₹{plan.price}
+      </option>
 
-        ))}
-      </select>
+              ))}
+            </select>
 
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={() => setShowAssignModal(false)}
-          className="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={assignPlanToMember}
-          className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
-        >
-          Assign
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowAssignModal(false)}
+                className="px-4 py-2 border rounded-md text-gray-600 hover:bg-gray-100"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={assignPlanToMember}
+                className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+              >
+                Assign
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Teams Table */}
       <Card>
@@ -288,7 +287,7 @@ const assignPlanToMember = async () => {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={isBranchUser ? 6 : 8} className="text-center py-8">
+                <TableCell colSpan={isBranchUser ? 6 : 7} className="text-center py-8">
                   <div className="flex justify-center items-center gap-2 text-gray-500">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     Loading team members...
@@ -297,7 +296,7 @@ const assignPlanToMember = async () => {
               </TableRow>
             ) : filteredMembers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isBranchUser ? 6 : 8} className="text-center py-12">
+                <TableCell colSpan={isBranchUser ? 6 : 7} className="text-center py-12">
                   <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No team members found</h3>
                   <p className="text-gray-500">
@@ -356,7 +355,7 @@ const assignPlanToMember = async () => {
                       >
                         <Eye className="h-4 w-4" />
                       </button>
-                     {member.role === 8 && (
+                     {member.role === 7 && (
                         <button
                           onClick={() => openAssignPlanModal(member._id)}
                           className="p-2 text-orange-600 hover:text-white hover:bg-orange-500 rounded-md"

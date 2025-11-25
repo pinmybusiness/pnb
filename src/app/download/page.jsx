@@ -1,4 +1,3 @@
-
 import { Download, Shield, Zap, Check, Star, Users, ArrowRight, Smartphone, CheckCircle, Clock, Phone } from "lucide-react";
 
 const APK_URL = "https://cdn.fasterq.in/images/fasterq-app.apk";

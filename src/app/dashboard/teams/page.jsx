@@ -4,10 +4,21 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
-import { Loader2, Users, Search, UserPlus, Mail, Calendar, ArrowUpDown, Eye } from 'lucide-react';
+import {
+  Loader2,
+  Users,
+  Search,
+  UserPlus,
+  ArrowUpDown,
+  Eye
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import KPICard from '@/components/ui/KPICard';
+
+// 🔹 Import Roles + Helpers
+import { ROLES } from '@/constants/roles';
+import { isBranchUser as checkBranchUser, isRootAdmin } from '@/constants/roleHelpers';
 
 // 🔹 Reusable components (same as original design)
 const Card = ({ className = "", children }) => (
@@ -52,65 +63,74 @@ const TableCell = ({ children, className = "" }) => (
 const Teams = () => {
   const router = useRouter();
   const { user, token } = useSelector((state) => state.auth);
+
   const [teamMembers, setTeamMembers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
 
-  const isBranchUser = [6, 7].includes(user?.role);
+  // 🔹 Replace hard-coded [6, 7] with helper
+  const isBranchUser = checkBranchUser(user?.role);
+
+  // Assign plan modal states
   const [showAssignModal, setShowAssignModal] = useState(false);
-const [selectedMember, setSelectedMember] = useState(null);
-const [plans, setPlans] = useState([]);
-const [selectedPlan, setSelectedPlan] = useState('');
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [plans, setPlans] = useState([]);
+  const [selectedPlan, setSelectedPlan] = useState('');
 
-const openAssignPlanModal = async (memberId) => {
-  setSelectedMember(memberId);
-  setShowAssignModal(true);
+  const openAssignPlanModal = async (memberId) => {
+    setSelectedMember(memberId);
+    setShowAssignModal(true);
 
-  // Fetch all available plans once
-  if (plans.length === 0) {
+    if (plans.length === 0) {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/services/plans`
+        );
+        setPlans(res.data.data || []);
+      } catch (err) {
+        toast.error('Failed to load plans');
+      }
+    }
+  };
+
+  const assignPlanToMember = async () => {
+    if (!selectedPlan || !selectedMember) {
+      toast.error('Please select a plan');
+      return;
+    }
+
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/services/plans`);
-      setPlans(res.data.data || []);
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/services/subscribe`,
+        {
+          userId: selectedMember,
+          planId: selectedPlan,
+          addons: [],
+        }
+      );
+
+      if (res.data.success) {
+        toast.success('Plan assigned successfully!');
+        setShowAssignModal(false);
+      } else {
+        toast.error(res.data.message || 'Failed to assign plan');
+      }
     } catch (err) {
-      toast.error('Failed to load plans');
+      toast.error(err.response?.data?.message || 'Failed to assign plan');
     }
-  }
-};
-
-const assignPlanToMember = async () => {
-  if (!selectedPlan || !selectedMember) {
-    toast.error('Please select a plan');
-    return;
-  }
-
-  try {
-    // Use existing /subscribe API
-    const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/services/subscribe`, {
-      userId: selectedMember, // team member ka ID
-      planId: selectedPlan,
-      addons: [], // optional if no addons
-    });
-
-    if (res.data.success) {
-      toast.success('Plan assigned successfully!');
-      setShowAssignModal(false);
-    } else {
-      toast.error(res.data.message || 'Failed to assign plan');
-    }
-  } catch (err) {
-    toast.error(err.response?.data?.message || 'Failed to assign plan');
-  }
-};
-
+  };
 
   const fetchTeamMembers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/teams`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/teams`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setTeamMembers(res.data.data || []);
     } catch (error) {
       console.error(error);
@@ -124,7 +144,7 @@ const assignPlanToMember = async () => {
     fetchTeamMembers();
   }, []);
 
-  // Filter and sort functionality
+  // Filter + sort
   const filteredMembers = teamMembers
     .filter(
       (member) =>
@@ -140,10 +160,6 @@ const assignPlanToMember = async () => {
           aValue = a.name || '';
           bValue = b.name || '';
           break;
-        case 'email':
-          aValue = a.email || '';
-          bValue = b.email || '';
-          break;
         case 'role':
           aValue = a.roleLabel || '';
           bValue = b.roleLabel || '';
@@ -151,8 +167,9 @@ const assignPlanToMember = async () => {
         default:
           return 0;
       }
-      return sortOrder === 'asc' 
-        ? aValue.localeCompare(bValue) 
+
+      return sortOrder === 'asc'
+        ? aValue.localeCompare(bValue)
         : bValue.localeCompare(aValue);
     });
 
@@ -165,31 +182,27 @@ const assignPlanToMember = async () => {
     }
   };
 
-  // Role statistics
+  // Stats
   const roleStats = {
     total: teamMembers.length,
-    managers: teamMembers.filter((t) => t.roleLabel?.toLowerCase().includes('manager')).length,
-    analysts: teamMembers.filter((t) => t.roleLabel?.toLowerCase().includes('analyst')).length,
-    assistants: teamMembers.filter((t) => t.roleLabel?.toLowerCase().includes('assistant')).length,
   };
 
   return (
     <div className="space-y-6 animate-fade-in">
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Team Management</h1>
           <p className="text-gray-500">Manage team members across all branches</p>
         </div>
+
         <div className="flex gap-3">
           <Button onClick={fetchTeamMembers} disabled={loading}>
-            {loading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              'Refresh'
-            )}
+            {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : "Refresh"}
           </Button>
-          <Link href='/dashboard/teams/add'>
+
+          <Link href="/dashboard/teams/add">
             <Button>
               <UserPlus className="h-4 w-4 mr-2" />
               Add Team
@@ -201,26 +214,22 @@ const assignPlanToMember = async () => {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <KPICard title="Total Members" value={roleStats.total} icon={Users} />
-        {/* <KPICard title="Managers" value={roleStats.managers} icon={Users} /> */}
-        {/* <KPICard title="Analysts" value={roleStats.analysts} icon={Users} /> */}
-        {/* <KPICard title="Assistants" value={roleStats.assistants} icon={Users} /> */}
       </div>
 
       {/* Filters */}
       <Card className="p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search team members..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Search team members..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
         </div>
       </Card>
 
+      {/* Assign Plan Modal */}
       {showAssignModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-[400px]">
@@ -232,11 +241,10 @@ const assignPlanToMember = async () => {
               onChange={(e) => setSelectedPlan(e.target.value)}
             >
               <option value="">Select Plan</option>
-              {plans.map(plan => (
-              <option key={plan._id} value={plan._id}>
-        {plan.serviceId?.name || 'Unknown Service'} — {plan.name} — ₹{plan.price}
-      </option>
-
+              {plans.map((plan) => (
+                <option key={plan._id} value={plan._id}>
+                  {plan.serviceId?.name || 'Unknown Service'} — {plan.name} — ₹{plan.price}
+                </option>
               ))}
             </select>
 
@@ -247,6 +255,7 @@ const assignPlanToMember = async () => {
               >
                 Cancel
               </button>
+
               <button
                 onClick={assignPlanToMember}
                 className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
@@ -258,7 +267,7 @@ const assignPlanToMember = async () => {
         </div>
       )}
 
-      {/* Teams Table */}
+      {/* Team Table */}
       <Card>
         <Table>
           <TableHeader>
@@ -268,26 +277,26 @@ const assignPlanToMember = async () => {
                   Name <ArrowUpDown className="h-4 w-4" />
                 </div>
               </TableHead>
+
               <TableHead>Mobile</TableHead>
-              {/* <TableHead onClick={() => handleSort('email')}>
-                <div className="flex items-center gap-2">
-                  Email <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead> */}
+
               {!isBranchUser && <TableHead>Restaurant</TableHead>}
               {!isBranchUser && <TableHead>Branch</TableHead>}
+
               <TableHead onClick={() => handleSort('role')}>
                 <div className="flex items-center gap-2">
                   Role <ArrowUpDown className="h-4 w-4" />
                 </div>
               </TableHead>
+
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={isBranchUser ? 6 : 7} className="text-center py-8">
+                <TableCell colSpan={8} className="text-center py-8">
                   <div className="flex justify-center items-center gap-2 text-gray-500">
                     <Loader2 className="h-5 w-5 animate-spin" />
                     Loading team members...
@@ -296,39 +305,27 @@ const assignPlanToMember = async () => {
               </TableRow>
             ) : filteredMembers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isBranchUser ? 6 : 7} className="text-center py-12">
+                <TableCell colSpan={8} className="text-center py-12">
                   <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No team members found</h3>
-                  <p className="text-gray-500">
-                    {searchTerm
-                      ? "Try adjusting your search terms"
-                      : "Get started by adding your first team member"}
-                  </p>
                 </TableCell>
               </TableRow>
             ) : (
-              filteredMembers.map((member, index) => (
+              filteredMembers.map((member) => (
                 <TableRow key={member._id} className="hover:bg-gray-50">
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 flex items-center justify-center rounded-full bg-primary/10 text-primary font-medium">
-                        {member.name
-                          ?.split(' ')
-                          .map((n) => n[0])
-                          .join('')
-                          .toUpperCase() || 'U'}
+                        {member.name?.split(' ').map((n) => n[0]).join('').toUpperCase() || 'U'}
                       </div>
                       <div>
                         <div className="font-medium">{member.name || '—'}</div>
-                        {/* <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <Mail className="h-3 w-3" /> 
-                          {member.email || 'No email'}
-                        </div> */}
                       </div>
                     </div>
                   </TableCell>
+
                   <TableCell>{member.mobile || '—'}</TableCell>
-                  {/* <TableCell>{member.email || '—'}</TableCell> */}
+
                   {!isBranchUser && (
                     <TableCell>
                       <div className="max-w-[200px] truncate">
@@ -336,6 +333,7 @@ const assignPlanToMember = async () => {
                       </div>
                     </TableCell>
                   )}
+
                   {!isBranchUser && (
                     <TableCell>
                       <div className="max-w-[200px] truncate">
@@ -343,9 +341,11 @@ const assignPlanToMember = async () => {
                       </div>
                     </TableCell>
                   )}
+
                   <TableCell className="capitalize">
                     {member.roleLabel || '—'}
                   </TableCell>
+
                   <TableCell>
                     <div className="flex gap-2">
                       <button
@@ -355,7 +355,9 @@ const assignPlanToMember = async () => {
                       >
                         <Eye className="h-4 w-4" />
                       </button>
-                     {member.role === 7 && (
+
+                      {/* Assign plan only for BRANCH_TEAM */}
+                      {isRootAdmin(user.role) && member.role === ROLES.BRANCH_TEAM && (
                         <button
                           onClick={() => openAssignPlanModal(member._id)}
                           className="p-2 text-orange-600 hover:text-white hover:bg-orange-500 rounded-md"
@@ -364,7 +366,6 @@ const assignPlanToMember = async () => {
                           <UserPlus className="h-4 w-4" />
                         </button>
                       )}
-
                     </div>
                   </TableCell>
                 </TableRow>
@@ -374,7 +375,6 @@ const assignPlanToMember = async () => {
         </Table>
       </Card>
     </div>
-    
   );
 };
 

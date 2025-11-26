@@ -19,15 +19,15 @@ export default function LoginPage() {
         {/* Main Content */}
         <div className="relative z-10 w-full max-w-md">
           {/* Floating feature cards */}
-          <div className="hidden md:block absolute -left-32 top-1/4 bg-white rounded-2xl p-4 shadow-xl border border-gray-100 max-w-[160px] animate-float">
+          <div className="hidden md:block absolute -left-32 z-11 top-1/4 bg-white rounded-2xl p-4 shadow-xl border border-gray-100 max-w-[180px] animate-float">
             <div className="flex items-center gap-2 mb-2">
               <Zap className="w-5 h-5 text-yellow-500" />
               <span className="text-sm font-bold">Real-time Sync</span>
             </div>
-            <p className="text-xs text-gray-600">Instant tracking</p>
+            <p className="text-xs text-gray-600">Instant call tracking</p>
           </div>
 
-          <div className="hidden md:block absolute -right-32 top-1/3 bg-white rounded-2xl p-4 shadow-xl border border-gray-100 max-w-[160px] animate-float" style={{animationDelay: '1s'}}>
+          <div className="hidden md:block absolute -right-32 z-11 top-1/3 bg-white rounded-2xl p-4 shadow-xl border border-gray-100 max-w-[160px] animate-float" style={{animationDelay: '1s'}}>
             <div className="flex items-center gap-2 mb-2">
               <Shield className="w-5 h-5 text-green-500" />
               <span className="text-sm font-bold">Secure</span>

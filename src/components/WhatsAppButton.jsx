@@ -23,7 +23,7 @@ export default function WhatsAppButton() {
 
   return (
     <a
-      href="https://wa.me/919876543210?text=Hi%20FasterQ%20Team%2C%20I%20need%20help%20getting%20started%20with%20your%20call-tracking%20software."
+      href="https://wa.me/919798288748?text=Hi%20FasterQ%20Team%2C%20I%20need%20help%20getting%20started%20with%20your%20call-tracking%20software."
       target="_blank"
       rel="noopener noreferrer"
       className="fixed bottom-6 right-6 z-50 group select-none"

@@ -35,6 +35,9 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showEditMemberModal, setShowEditMemberModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
+  const [addLoading, setAddLoading] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+
   const [filters, setFilters] = useState({
     role: '',
     status: '',
@@ -102,62 +105,68 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
     }
   };
 
-  const handleAddMember = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
-        addMemberForm,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
-
-      if (res.data.success) {
-        toast.success('Team member added successfully');
-        setShowAddMemberModal(false);
-        setAddMemberForm({
-          name: '',
-          mobile: '',
-          email: '',
-          password: '',
-          role: 8,
-          branch: branchId,
-        });
-        fetchTeamMembers();
+const handleAddMember = async (e) => {
+  e.preventDefault();
+  setAddLoading(true);
+  try {
+    const res = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
+      addMemberForm,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add team member');
-      console.error('Add member error:', error);
+    );
+
+    if (res.data.success) {
+      toast.success('Team member added successfully');
+      setShowAddMemberModal(false);
+      setAddMemberForm({
+        name: '',
+        mobile: '',
+        email: '',
+        password: '',
+        role: 8,
+        branch: branchId,
+      });
+      fetchTeamMembers();
     }
-  };
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Failed to add team member');
+  } finally {
+    setAddLoading(false);
+  }
+};
 
-  const handleEditMember = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/teams/${selectedMember._id}`,
-        editMemberForm,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-        }
-      );
 
-      if (res.data.success) {
-        toast.success('Team member updated successfully');
-        setShowEditMemberModal(false);
-        setSelectedMember(null);
-        fetchTeamMembers();
+const handleEditMember = async (e) => {
+  e.preventDefault();
+  setEditLoading(true);
+  try {
+    const res = await axios.put(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/teams/${selectedMember._id}`,
+      editMemberForm,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
       }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update team member');
-      console.error('Edit member error:', error);
+    );
+
+    if (res.data.success) {
+      toast.success('Team member updated successfully');
+      setShowEditMemberModal(false);
+      setSelectedMember(null);
+      fetchTeamMembers();
     }
-  };
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Failed to update team member');
+  } finally {
+    setEditLoading(false);
+  }
+};
+
 
   const openEditModal = (member) => {
     setSelectedMember(member);
@@ -419,13 +428,24 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
                 >
                   Cancel
                 </button>
-                <button
+               <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                  disabled={addLoading}
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50"
                 >
-                  <UserPlus className="h-4 w-4 mr-1 inline" />
-                  Add Member
+                  {addLoading ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin inline mr-2" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4 mr-1 inline" />
+                      Add Member
+                    </>
+                  )}
                 </button>
+
               </div>
             </form>
           </div>
@@ -488,10 +508,20 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
+                  disabled={editLoading}
+                  className="flex-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 disabled:opacity-50"
                 >
-                  <Save className="h-4 w-4 mr-1 inline" />
-                  Update Member
+                  {editLoading ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin inline mr-2" />
+                      Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-1 inline" />
+                      Update Member
+                    </>
+                  )}
                 </button>
               </div>
             </form>

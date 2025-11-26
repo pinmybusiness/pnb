@@ -1,9 +1,11 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function WhatsAppButton() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   // 5 sec open → 5 sec close → loop
   useEffect(() => {
@@ -13,6 +15,11 @@ export default function WhatsAppButton() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // dashboard or dashboard ke koi subpages (ex: /dashboard/settings)
+  if (pathname.startsWith("/dashboard")) {
+    return null;
+  }
 
   return (
     <a

@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
-import { X, Lock, Phone, Eye, EyeOff, Sparkles, Shield } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Lock, Phone, Eye, EyeOff, Sparkles, Shield } from "lucide-react";
 import PropTypes from "prop-types";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "@/store/authThunks";
 import { toast } from "react-hot-toast";
 
-// Login Form Component
 export default function LoginForm({ onSuccess }) {
   const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +26,9 @@ export default function LoginForm({ onSuccess }) {
   }, [user, token, onSuccess, router]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // form submit / Enter dono ke liye
+    if (isLoading) return;
+
     setIsLoading(true);
 
     try {
@@ -35,7 +36,7 @@ export default function LoginForm({ onSuccess }) {
       toast.success("Login successful!");
       window.location.href = "/dashboard";
     } catch (error) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       toast.error(error.message || "Login failed. Please try again.");
     } finally {
       setIsLoading(false);
@@ -43,7 +44,8 @@ export default function LoginForm({ onSuccess }) {
   };
 
   return (
-    <div className="space-y-5">
+    // yahan pe form use karo
+    <form className="space-y-5" onSubmit={handleSubmit}>
       {/* Mobile Number Input */}
       <div>
         <label className="text-sm font-semibold text-gray-700 mb-2 block flex items-center gap-2">
@@ -102,45 +104,19 @@ export default function LoginForm({ onSuccess }) {
         </div>
       </div>
 
-      {/* Remember Me */}
-      {/* <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 cursor-pointer group">
-          <div className="relative">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="sr-only peer"
-            />
-            <div className="w-5 h-5 border-2 border-gray-300 rounded-md peer-checked:bg-gradient-to-r peer-checked:from-[#FF5211] peer-checked:to-orange-600 peer-checked:border-[#FF5211] transition-all duration-300 flex items-center justify-center">
-              {rememberMe && (
-                <svg className="w-3 h-3 text-white" fill="none" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" viewBox="0 0 24 24" stroke="currentColor">
-                  <path d="M5 13l4 4L19 7"></path>
-                </svg>
-              )}
-            </div>
-          </div>
-          <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
-            Remember me
-          </span>
-        </label>
-        
-        <a href="/forgot-password" className="text-sm font-semibold text-[#FF5211] hover:text-orange-600 transition-colors">
-          Forgot Password?
-        </a>
-      </div> */}
-
       {/* Submit Button */}
       <button
-        onClick={handleSubmit}
+        type="submit" // IMPORTANT
         disabled={isLoading}
         className="relative w-full group overflow-hidden"
       >
         <div className="absolute inset-0 bg-gradient-to-r from-[#FF5211] via-orange-500 to-orange-600 rounded-xl"></div>
         <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
-        <div className={`relative px-6 py-4 text-white font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30 group-hover:shadow-xl group-hover:shadow-orange-500/40 transition-all duration-300 ${
-          isLoading ? "opacity-70" : "group-hover:scale-[1.02]"
-        }`}>
+        <div
+          className={`relative px-6 py-4 text-white font-bold text-base rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-orange-500/30 group-hover:shadow-xl group-hover:shadow-orange-500/40 transition-all duration-300 ${
+            isLoading ? "opacity-70" : "group-hover:scale-[1.02]"
+          }`}
+        >
           {isLoading ? (
             <>
               <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -162,6 +138,6 @@ export default function LoginForm({ onSuccess }) {
           Secure login with end-to-end encryption
         </p>
       </div>
-    </div>
+    </form>
   );
 }

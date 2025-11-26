@@ -2,15 +2,138 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { 
   Phone, PhoneCall, PhoneMissed, PhoneIncoming, PhoneOutgoing, 
-  Search, CheckCircle, Star, Edit3, ArrowUpDown, User 
+  Search, CheckCircle, Star, Edit3, ArrowUpDown, User, Play, Pause, Download
 } from "lucide-react";
 import KPICard from "@/components/ui/KPICard";
 import { toast } from "react-hot-toast";
 import axios from "axios";
 import { 
   Card, Input, Badge, Table, TableHeader, TableBody, 
-  TableRow, TableHead, TableCell 
+  TableRow, TableHead, TableCell, Button
 } from "@/components/ui";
+
+// Audio Player Component
+const AudioPlayer = ({ recordingUrl, callId }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const audioRef = useRef(null);
+
+  const togglePlayPause = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play().catch(error => {
+        console.error("Audio play failed:", error);
+        toast.error("Failed to play recording");
+      });
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      const currentTime = audioRef.current.currentTime;
+      const duration = audioRef.current.duration || 1;
+      setProgress((currentTime / duration) * 100);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleSeek = (e) => {
+    if (!audioRef.current) return;
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const percent = (e.clientX - rect.left) / rect.width;
+    const newTime = percent * duration;
+    
+    audioRef.current.currentTime = newTime;
+    setProgress(percent * 100);
+  };
+
+  const handleDownload = () => {
+    if (recordingUrl) {
+      const link = document.createElement('a');
+      link.href = recordingUrl;
+      link.download = `recording-${callId}.mp3`;
+      link.click();
+    }
+  };
+
+  const formatTime = (time) => {
+    if (!time || isNaN(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
+  if (!recordingUrl) {
+    return (
+      <div className="text-xs text-gray-400 italic">No recording</div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1 w-full max-w-[200px]">
+      {/* Hidden Audio Element */}
+      <audio
+        ref={audioRef}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={() => setIsPlaying(false)}
+        onPause={() => setIsPlaying(false)}
+      >
+        <source src={recordingUrl} type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
+
+      {/* Player Controls */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={togglePlayPause}
+          disabled={!recordingUrl}
+          className="p-1 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPlaying ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+        </button>
+
+        {/* Progress Bar */}
+        <div 
+          className="flex-1 bg-gray-200 rounded-full h-1.5 cursor-pointer"
+          onClick={handleSeek}
+        >
+          <div 
+            className="bg-blue-600 h-1.5 rounded-full transition-all duration-100"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        {/* Download Button */}
+        <button
+          onClick={handleDownload}
+          disabled={!recordingUrl}
+          className="p-1 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+          title="Download Recording"
+        >
+          <Download className="h-3 w-3" />
+        </button>
+      </div>
+
+      {/* Time Display */}
+      <div className="flex justify-between text-xs text-gray-500">
+        <span>{formatTime(audioRef.current?.currentTime || 0)}</span>
+        <span>{formatTime(duration)}</span>
+      </div>
+    </div>
+  );
+};
 
 // StatusBadge Component
 const StatusBadge = ({ answered }) => {
@@ -86,7 +209,6 @@ const CallerDisplay = ({ caller }) => {
 
 // SIMPLE TimeDisplay Component - DIRECT INDIAN TIME
 const TimeDisplay = ({ startTime }) => {
-  // Convert startTime to Indian time
   const indianTime = new Date(startTime);
   
   const timeString = indianTime.toLocaleTimeString('en-IN', {
@@ -148,8 +270,18 @@ const CallTracking = () => {
     { value: "false", label: "Outgoing" },
   ];
 
-  // Data Mapping - SIMPLE AND CLEAN
+  // Data Mapping - WITH RECORDING SUPPORT
   const mapCallData = useCallback((call) => {
+    // Handle recordingUrl - could be string or array
+    let recordingUrl = null;
+    if (call.recordingUrl) {
+      if (Array.isArray(call.recordingUrl) && call.recordingUrl.length > 0) {
+        recordingUrl = call.recordingUrl[0]; // Take first recording
+      } else if (typeof call.recordingUrl === 'string') {
+        recordingUrl = call.recordingUrl;
+      }
+    }
+
     return {
       id: call._id,
       caller: {
@@ -164,10 +296,10 @@ const CallTracking = () => {
       duration: call.duration ? formatSeconds(call.duration) : "0:00",
       answered: call.answered,
       inbound: call.inbound,
-      startTime: call.startTime, // Only this for display
+      startTime: call.startTime,
       notes: call.notes || "",
       isSpam: call.isSpam || false,
-      recordingUrl: call.recordingUrl,
+      recordingUrl: recordingUrl, // Processed recording URL
       followUp: call.followUp || { status: 0, attempts: 0 }
     };
   }, []);
@@ -202,16 +334,16 @@ const CallTracking = () => {
         setLoadingMore(true);
       }
 
-       const params = {
-      page: pageNum,
-      limit: 20,
-      search: debouncedSearchTerm,
-      answered: answeredFilter !== "all" ? answeredFilter : undefined,
-      inbound: inboundFilter !== "all" ? inboundFilter : undefined,
-      agent: agentFilter !== "all" ? agentFilter : undefined,
-      sortBy: sortBy, 
-      sortOrder: sortOrder,
-    };
+      const params = {
+        page: pageNum,
+        limit: 20,
+        search: debouncedSearchTerm,
+        answered: answeredFilter !== "all" ? answeredFilter : undefined,
+        inbound: inboundFilter !== "all" ? inboundFilter : undefined,
+        agent: agentFilter !== "all" ? agentFilter : undefined,
+        sortBy: sortBy, 
+        sortOrder: sortOrder,
+      };
 
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/calls/branch`, {
         params,
@@ -451,6 +583,7 @@ const CallTracking = () => {
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>
+                <TableHead className="whitespace-nowrap">Recording</TableHead>
                 <TableHead className="whitespace-nowrap">Follow-up</TableHead>
                 <TableHead className="whitespace-nowrap">Notes</TableHead>
                 <TableHead className="whitespace-nowrap">Actions</TableHead>
@@ -458,7 +591,7 @@ const CallTracking = () => {
             </TableHeader>
             <TableBody>
               {calls.map((call, index) => (
-                <TableRow key={call._id || index} className="hover:bg-gray-50">
+                <TableRow key={call.id || index} className="hover:bg-gray-50">
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-md bg-gray-100 flex items-center justify-center">
@@ -488,6 +621,12 @@ const CallTracking = () => {
                     <TimeDisplay startTime={call.startTime} />
                   </TableCell>
                   <TableCell>
+                    <AudioPlayer 
+                      recordingUrl={call.recordingUrl} 
+                      callId={call.id} 
+                    />
+                  </TableCell>
+                  <TableCell>
                     <FollowUpBadge followUp={call.followUp} />
                   </TableCell>
                   <TableCell>
@@ -513,15 +652,6 @@ const CallTracking = () => {
                       >
                         <Edit3 className="h-4 w-4" />
                       </button>
-                      {/* {!call.isSpam && (
-                        <button
-                          onClick={() => markAsSpam(call.id)}
-                          className="p-1 sm:p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-md transition-colors"
-                          title="Mark as Spam"
-                        >
-                          <Star className="h-4 w-4" />
-                        </button>
-                      )} */}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -533,8 +663,8 @@ const CallTracking = () => {
         {/* Mobile View */}
         <div className="block sm:hidden space-y-2 p-2">
           {calls.map((call, index) => (
-            <Card key={call._id || index} className="p-3 shadow-sm">
-              <div className="space-y-1">
+            <Card key={call.id || index} className="p-3 shadow-sm">
+              <div className="space-y-2">
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
@@ -552,6 +682,16 @@ const CallTracking = () => {
                   </div>
                   <DirectionBadge inbound={call.inbound} />
                 </div>
+                
+                {/* Recording in Mobile */}
+                <div className="border-t pt-2">
+                  <div className="text-xs font-medium text-gray-700 mb-1">Recording:</div>
+                  <AudioPlayer 
+                    recordingUrl={call.recordingUrl} 
+                    callId={call.id} 
+                  />
+                </div>
+
                 <div className="text-xs text-gray-500 truncate">
                   Notes: {call.notes || "No notes"}
                 </div>
@@ -572,15 +712,6 @@ const CallTracking = () => {
                   >
                     <Edit3 className="h-4 w-4" />
                   </button>
-                  {/* {!call.isSpam && (
-                    <button
-                      onClick={() => markAsSpam(call.id)}
-                      className="p-1 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded transition-colors"
-                      title="Mark as Spam"
-                    >
-                      <Star className="h-4 w-4" />
-                    </button>
-                  )} */}
                 </div>
               </div>
             </Card>

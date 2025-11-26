@@ -6,12 +6,13 @@ import {
   PhoneCall,
   Building2,
   Package,
-  CreditCard
+  CreditCard,
+  Wrench
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
 export const allMenus = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [0,1,2,3,4,6,7] },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: [0,1,2,3,4,6,7,8] },
   { name: "Organizations", href: "/dashboard/organizations", icon: Building2, roles: [0,1,2] },
   { 
     name: "Branches", 
@@ -47,6 +48,7 @@ export const allMenus = [
     ]
   },
   { name: "Teams", href: "/dashboard/teams", icon: Users, roles: [0,3,6] },
+  { name: "Services", href: "/dashboard/services", icon: Wrench, roles: [0] },
   { name: "Subscriptions", href: "/dashboard/service-subscriptions", icon: CreditCard, roles: [0] },
   // { name: "Services", href: "/dashboard/services", icon: Package, roles: [6] },
   // { 
@@ -61,8 +63,8 @@ export const allMenus = [
   // { name: "Applications", href: "/dashboard/applications", icon: FileCheck, roles: [0,1,2] },
   { name: "Contacts", href: "/dashboard/contacts", icon: Users, roles: [0,1,2] },
   { name: "Payload", href: "/dashboard/payload-list", icon: Users, roles: [0,1,2] },
-  { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0] },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [0,3] },
+  // { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0] },
+  // { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [0,3] },
 ];
 
 // ✅ Panel titles/subtitles based on role number

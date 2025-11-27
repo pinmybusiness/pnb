@@ -190,10 +190,10 @@ Focus on US-based video chat alternatives with safety features. Avoid external s
       },
       requirements: {
         meta: {
-          title_chars_min: 50,
+          title_chars_min: 45,
           title_chars_max: 60,
-          meta_chars_min: 140,
-          meta_chars_max: 155,
+          meta_chars_min: 145,
+          meta_chars_max: 160,
           h1_chars_min: 40,
           h1_chars_max: 60,
         },
@@ -241,7 +241,7 @@ Focus on US-based video chat alternatives with safety features. Avoid external s
           paragraph_words_max: 70,
           active_voice: true,
           plain_language: true,
-          readability_score_target: "Flesch-Kincaid Grade Level 7-9 (score 65-75)",
+          readability_score_target: "Flesch-Kincaid Grade Level 7-9 (score 70-85)",
           avoid_jargon_unless_explained: true,
           question_based_headings: true,
           bulleted_lists_for_skimmability: true,
@@ -273,7 +273,7 @@ Focus on US-based video chat alternatives with safety features. Avoid external s
         "Add disclosures if comparing competitors or linking to commercial resources.",
         "Ensure content meets both SEO best practices and readability targets for web publishing.",
         "Always deliver a strong opening hook and a conclusive summary with a final CTA.",
-        "Use Tables to compare features, pros/cons, pricing, etc. where relevant.",
+        "Use Tables to compare features, pros/cons, pricing, etc. where relevant. ",
         "Ensure all internal links use preferred anchors and fit contextually within main content.",
       ],
     };

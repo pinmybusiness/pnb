@@ -348,13 +348,13 @@ const Teams = () => {
 
                   <TableCell>
                     <div className="flex gap-2">
-                      <button
+                      {/* <button
                         onClick={() => router.push(`/dashboard/teams/${member._id}`)}
                         className="p-2 text-gray-600 hover:text-primary hover:bg-gray-100 rounded-md"
                         title="View"
                       >
                         <Eye className="h-4 w-4" />
-                      </button>
+                      </button> */}
 
                       {/* Assign plan only for BRANCH_TEAM */}
                       {isRootAdmin(user.role) && member.role === ROLES.BRANCH_TEAM && (

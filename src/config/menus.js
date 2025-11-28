@@ -7,7 +7,8 @@ import {
   Building2,
   Package,
   CreditCard,
-  Wrench
+  Wrench,
+  AudioLines
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
@@ -62,7 +63,8 @@ export const allMenus = [
   // },
   // { name: "Applications", href: "/dashboard/applications", icon: FileCheck, roles: [0,1,2] },
   { name: "Contacts", href: "/dashboard/contacts", icon: Users, roles: [0,1,2] },
-  { name: "Payload", href: "/dashboard/payload-list", icon: Users, roles: [0,1,2] },
+  { name: "Recordings", href: "/dashboard/trackly/recordings", icon: AudioLines, roles: [0,1] },
+  { name: "Payload", href: "/dashboard/payload-list", icon: Users, roles: [0,1] },
   // { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0] },
   // { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [0,3] },
 ];

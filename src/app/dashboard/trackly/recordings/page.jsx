@@ -10,11 +10,14 @@ import {
   ArrowUpDown,
   Volume2,
   AudioLines,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Clock
 } from "lucide-react";
 import KPICard from "@/components/ui/KPICard";
 
-// Reusable UI Components (same as Teams page)
+// Table Components (same theme)
 const Card = ({ className = "", children }) => (
   <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
     {children}
@@ -35,7 +38,7 @@ const TableRow = ({ children, className = "" }) => <tr className={className}>{ch
 const TableHead = ({ children, className = "", ...props }) => (
   <th
     scope="col"
-    className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer ${className}`}
+    className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${className}`}
     {...props}
   >
     {children}
@@ -57,13 +60,10 @@ export default function RecordingsPage() {
 
   const fetchRecordings = async () => {
     setLoading(true);
-
     try {
       const res = await axios.get(
         `${process.env.NEXT_PUBLIC_API_URL}/api/recordings?page=${page}&limit=50&search=${searchTerm}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setRecordings(res.data.data || []);
@@ -75,7 +75,6 @@ export default function RecordingsPage() {
     }
   };
 
-  // load data
   useEffect(() => {
     fetchRecordings();
   }, [page]);
@@ -96,7 +95,7 @@ export default function RecordingsPage() {
         </div>
       </div>
 
-      {/* Summary */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <KPICard title="Total Records" value={pagination?.total || 0} icon={AudioLines} />
       </div>
@@ -106,7 +105,7 @@ export default function RecordingsPage() {
         <div className="relative max-w-md flex gap-3 items-center">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search by number or userId..."
+            placeholder="Search by user, number, or date..."
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -125,15 +124,11 @@ export default function RecordingsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User ID</TableHead>
+              <TableHead>User</TableHead>
               <TableHead>Number</TableHead>
-              <TableHead>
-                <div className="flex items-center gap-2">
-                  Start Time <ArrowUpDown className="h-4 w-4" />
-                </div>
-              </TableHead>
+              <TableHead>Start Time</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Recording</TableHead>
+              <TableHead>Audio</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -156,38 +151,59 @@ export default function RecordingsPage() {
               </TableRow>
             ) : (
               recordings.map((rec) => (
-                <TableRow key={rec._id} className="hover:bg-gray-50">
+                <TableRow
+                  key={rec._id}
+                  className={`hover:bg-gray-50 ${
+                    rec.status === 2 ? "bg-red-50" : ""
+                  } ${rec.status === 0 ? "bg-blue-50/20" : ""}`}
+                >
+                  {/* USER NAME */}
+                  <TableCell>
+                    <div>
+                      <div className="font-semibold">
+                        {rec.userDetails?.name || "Unknown User"}
+                      </div>
+                      <div className="text-xs text-gray-500">{rec.userId}</div>
+                    </div>
+                  </TableCell>
 
-                  <TableCell>{rec.userId || "—"}</TableCell>
+                  {/* NUMBER */}
                   <TableCell>{rec.fromNumber || "—"}</TableCell>
 
+                  {/* START TIME IST */}
                   <TableCell>
                     {new Date(rec.startTimeIST).toLocaleString("en-IN", {
                       timeZone: "Asia/Kolkata",
                     })}
                   </TableCell>
 
+                  {/* STATUS */}
                   <TableCell>
                     {rec.status === 0 && (
-                      <span className="text-blue-600 font-medium">Pending</span>
+                      <span className="flex items-center gap-1 text-blue-600 font-medium">
+                        <Clock className="h-4 w-4" /> Pending
+                      </span>
                     )}
                     {rec.status === 1 && (
-                      <span className="text-green-600 font-medium">synked</span>
+                      <span className="flex items-center gap-1 text-green-600 font-medium">
+                        <CheckCircle2 className="h-4 w-4" /> Synced
+                      </span>
                     )}
                     {rec.status === 2 && (
-                      <span className="text-red-600 font-medium">Failed</span>
+                      <span className="flex items-center gap-1 text-red-600 font-medium">
+                        <XCircle className="h-4 w-4" /> Failed
+                      </span>
                     )}
                   </TableCell>
 
+                  {/* AUDIO PLAYER */}
                   <TableCell>
                     {rec.recordingUrl ? (
-                      <a
-                        href={rec.recordingUrl}
-                        target="_blank"
-                        className="text-primary underline flex items-center gap-1"
-                      >
-                        <Volume2 className="h-4 w-4" /> Play
-                      </a>
+                      <audio
+                        controls
+                        className="h-8 rounded-md shadow-sm"
+                        src={rec.recordingUrl}
+                      />
                     ) : (
                       "-"
                     )}
@@ -209,7 +225,6 @@ export default function RecordingsPage() {
             Previous
           </button>
         )}
-
         {pagination.totalPages > page && (
           <button
             onClick={() => setPage(page + 1)}
@@ -219,7 +234,6 @@ export default function RecordingsPage() {
           </button>
         )}
       </div>
-
     </div>
   );
 }

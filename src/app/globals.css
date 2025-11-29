@@ -262,6 +262,45 @@ input, textarea {
   text-decoration: underline;
 }
 
+/* Table styling inside main-content */
+.main-content table {
+  width: 100%;
+  border-collapse: separate; /* allows border-radius */
+  border-spacing: 0; /* removes gaps between cells */
+  /* margin: 1rem 0; */
+  border: 1px solid #ff6700; /* outer border */
+}
+
+/* Table cells */
+.main-content table th,
+.main-content table td {
+  border: 1px solid #ff6700;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+/* Header */
+.main-content table th {
+  background: #fef8df;
+  font-weight: 600;
+}
+
+/* Zebra rows */
+.main-content table tr:nth-child(even) {
+  background: #fffcf5;
+}
+
+
+/* Make table scroll on small screens */
+@media (max-width: 768px) {
+  .main-content table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+/* end single blog page */
+
 @media (max-width: 768px) {
    .main-content h1 {
     font-size: 28px;

@@ -25,7 +25,7 @@ export default function Industries() {
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16" data-animate="fade-up">
           <span className="inline-block px-5 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-bold mb-4 border border-[#FF5211]/20 shadow-sm">
             🏢 Universal Solution
           </span>
@@ -37,12 +37,12 @@ export default function Industries() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6" data-stagger-parent data-stagger="0.08" data-stagger-duration="0.6" data-stagger-offset="20">
           {industries.map(({ name, icon: Icon }, i) => (
             <div 
               key={i} 
+              data-stagger-item
               className="group relative bg-white rounded-2xl p-6 shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#FF5211]/30 hover:-translate-y-2 cursor-pointer"
-              style={{ animationDelay: `${i * 50}ms` }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/0 to-orange-500/0 group-hover:from-[#FF5211]/10 group-hover:to-orange-500/5 rounded-2xl transition-all duration-500"></div>
               <div className="relative flex flex-col items-center">
@@ -67,7 +67,7 @@ export default function Industries() {
           ))}
         </div>
 
-        <div className="mt-16 bg-white rounded-3xl p-8 shadow-xl border border-gray-100 max-w-4xl mx-auto">
+        <div className="mt-16 bg-white rounded-3xl p-8 shadow-xl border border-gray-100 max-w-4xl mx-auto" data-animate="fade-up" data-delay="0.4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-200">
             {[
               { icon: "🏢", stat: "100+", label: "Businesses Onboarded" },
@@ -85,7 +85,7 @@ export default function Industries() {
           </div>
         </div>
 
-        <div className="mt-12 text-center">
+        <div className="mt-12 text-center" data-animate="fade-up" data-delay="0.6">
           <p className="text-gray-600 mb-4">Don't see your industry? We've got you covered!</p>
           <CtaButton
             href="/contact"

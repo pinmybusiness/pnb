@@ -7,7 +7,7 @@ const faqs = [
   },
   {
     q: "How does your call tracking software work?",
-    a: "Our app runs in the background on your team's phones and tracks SIM, GSM, and WhatsApp calls in real time. Each call is automatically logged with duration, number, and recording (if enabled) — no VoIP or number change required.",
+    a: "Our app runs in the background on your team's phones and tracks SIM, GSM, and WhatsApp calls in real time. Each call is automatically logged with duration, number, and recording (if enabled) - no VoIP or number change required.",
   },
   {
     q: "Can I record both incoming and outgoing calls?",
@@ -31,7 +31,7 @@ const faqs = [
   },
   {
     q: "How can this help my sales team?",
-    a: "It gives complete visibility into sales calls — helping managers monitor productivity, improve conversions, and coach teams using real call data and analytics.",
+    a: "It gives complete visibility into sales calls - helping managers monitor productivity, improve conversions, and coach teams using real call data and analytics.",
   },
   {
     q: "What about compliance and privacy in India?",
@@ -70,7 +70,7 @@ export default function FAQs() {
 
         <div className="max-w-4xl mx-auto relative z-10">
           {/* Header */}
-          <div className="text-center mb-12 md:mb-16">
+          <div className="text-center mb-12 md:mb-16" data-animate="fade-up">
             <span className="inline-block px-5 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-bold mb-4 border border-[#FF5211]/20 shadow-sm">
               ❓ Got Questions?
             </span>
@@ -86,31 +86,32 @@ export default function FAQs() {
           </div>
 
           {/* FAQ Accordion using <details> */}
-          <div className="space-y-4">
+          <div className="space-y-4" data-stagger-parent data-stagger="0.06" data-stagger-duration="0.5" data-stagger-offset="20">
             {faqs.map((faq, index) => (
-              <details
-                key={index}
-                className="group bg-white rounded-2xl border-2 border-gray-100 transition-all duration-300 overflow-hidden"
-              >
-                <summary className="cursor-pointer list-none p-5 md:p-6 flex items-center justify-between gap-4">
-                  <div className="flex items-start gap-3 md:gap-4 flex-1">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br transition-all duration-300 group-open:bg-gradient-to-br from-[#FF5211] to-orange-600">
-                      <CircleQuestionMark className="w-5 h-5 text-white group-open:hidden " />
-                      <Check className="w-5 h-5 text-white hidden group-open:inline-block" strokeWidth={3} />
+              <div key={index} data-stagger-item>
+                <details
+                  className="group bg-white rounded-2xl border-2 border-gray-100 transition-all duration-300 overflow-hidden"
+                >
+                  <summary className="cursor-pointer list-none p-5 md:p-6 flex items-center justify-between gap-4">
+                    <div className="flex items-start gap-3 md:gap-4 flex-1">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br transition-all duration-300 group-open:bg-gradient-to-br from-[#FF5211] to-orange-600">
+                        <CircleQuestionMark className="w-5 h-5 text-white group-open:hidden " />
+                        <Check className="w-5 h-5 text-white hidden group-open:inline-block" strokeWidth={3} />
+                      </div>
+                      <h3 className="font-bold text-base md:text-lg transition-colors">
+                        {faq.q}
+                      </h3>
                     </div>
-                    <h3 className="font-bold text-base md:text-lg transition-colors">
-                      {faq.q}
-                    </h3>
+                    <ChevronDown className="w-5 h-5 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="px-5 md:px-6 pb-5 md:pb-6 pt-2">
+                    <div className="h-px bg-gradient-to-r from-transparent via-[#FF5211]/20 to-transparent mb-4"></div>
+                    <p className="text-gray-600 leading-relaxed text-sm md:text-base pl-12 md:pl-14">
+                      {faq.a}
+                    </p>
                   </div>
-                  <ChevronDown className="w-5 h-5 transition-transform group-open:rotate-180" />
-                </summary>
-                <div className="px-5 md:px-6 pb-5 md:pb-6 pt-2">
-                  <div className="h-px bg-gradient-to-r from-transparent via-[#FF5211]/20 to-transparent mb-4"></div>
-                  <p className="text-gray-600 leading-relaxed text-sm md:text-base pl-12 md:pl-14">
-                    {faq.a}
-                  </p>
-                </div>
-              </details>
+                </details>
+              </div>
             ))}
           </div>
 

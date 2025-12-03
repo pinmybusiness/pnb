@@ -1,4 +1,3 @@
-
 import Link from "next/link";
 import CtaButton from "./CtaButton";
 
@@ -8,9 +7,9 @@ export default function Hero() {
     <section className="relative bg-gradient-to-br from-[#FFF5EC] via-orange-50/40 to-white py-14 md:py-20 -mt-10 px-6 lg:px-8 overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 -left-20 w-96 h-96 bg-[#FF5211]/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 -right-20 w-[500px] h-[500px] bg-orange-300/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-orange-200/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+        <div className="hero-bg-blob absolute top-20 -left-20 w-96 h-96 bg-[#FF5211]/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="hero-bg-blob absolute bottom-20 -right-20 w-[500px] h-[500px] bg-orange-300/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+        <div className="hero-bg-blob absolute top-1/2 left-1/2 w-64 h-64 bg-orange-200/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
       </div>
 
       {/* Decorative grid pattern */}
@@ -50,7 +49,9 @@ export default function Hero() {
       <div className="max-w-7xl mx-auto relative z-10 grid md:grid-cols-2 gap-16 items-center">
         {/* Left Content */}
         <div className="text-center lg:text-left space-y-6 sm:space-y-8">
-          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-full border border-orange-500/20 shadow-lg mb-4">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-full border border-orange-500/20 shadow-lg mb-4"
+               data-animate="fade-down" data-duration="0.5" data-delay="0.1">
             <span className="flex h-2 w-2 relative">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
@@ -59,21 +60,42 @@ export default function Hero() {
               🇮🇳 Made in India for Growing Sales Teams
             </span>
           </div>
-          <h1 className="!text-4xl lg:!text-6xl font-extrabold leading-tight text-gray-900">
-            Track Every Call.
-            <br />
-            <span className="bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 bg-clip-text text-transparent">
+
+          {/* Heading */}
+          <div className="!text-4xl lg:!text-6xl font-extrabold leading-tight text-gray-900 mb-6">
+
+            {/* FIRST LINE — SOLID COLOR TEXT (NO GRADIENT) */}
+            <span
+              data-split="words"
+              data-delay="0.2"
+              data-nogradient="true"
+              className="inline-block"
+            >
+              Track Every Call.
+            </span>
+
+            {/* SECOND LINE — GRADIENT TEXT WITH ANIMATION */}
+            <span
+              className="bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 bg-clip-text text-transparent inline-block"
+              data-split="words"
+              data-delay="0.5"
+              data-stagger="0.12"
+            >
               Close Every Deal.
             </span>
-          </h1>
-
-<p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-2xl mx-auto lg:mx-0">
-  Trackly automatically logs all your <span className="font-semibold text-gray-900">SIM calls</span> - no VoIP, no number change.  
-  Get complete visibility into your team’s daily calls.
-</p>
+          </div>
 
 
-          <div className="space-y-4 pt-4">
+          {/* Description */}
+          <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8"
+             data-animate="fade-up" data-delay="0.8">
+            Trackly automatically logs all your <span className="font-semibold text-gray-900">SIM calls</span> - no
+            VoIP, no number change. Get complete visibility into your team's daily
+            calls.
+          </p>
+
+          {/* CTAs and Social Proof */}
+          <div className="space-y-4 pt-4" data-animate="fade-up" data-delay="1.0">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
               <Link href='/contact' className="bg-gradient-to-r from-orange-600 to-orange-500 text-white px-6 sm:px-8 py-4 sm:py-5 rounded-full font-bold text-base sm:text-lg hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center justify-center gap-2 sm:gap-3 group shadow-xl">
                 <span>Start for ₹99/month</span>
@@ -86,34 +108,33 @@ export default function Hero() {
                 <span>Watch Demo</span>
               </Link>
             </div>
+
+            <div className="flex items-center gap-4 pt-4 justify-center lg:justify-start">
+              <div className="flex -space-x-3">
+                {[
+                  "/images/trackly/avatars/user3.webp",
+                  "/images/trackly/avatars/user1.webp",
+                  "/images/trackly/avatars/user2.webp",
+                  "/images/trackly/avatars/user4.webp",
+                ].map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt={`User ${i + 1}`}
+                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-md object-cover"
+                  />
+                ))}
+              </div>
+              <div className="text-left">
+                <p className="text-xs sm:text-sm font-bold text-gray-900">200+ sales teams</p>
+                <p className="text-xs text-gray-600">Already tracking smarter</p>
+              </div>
+            </div>
           </div>
-
-<div className="flex items-center gap-4 pt-4 justify-center lg:justify-start">
-  <div className="flex -space-x-3">
-    {[
-      "/images/trackly/avatars/user3.webp",
-      "/images/trackly/avatars/user1.webp",
-      "/images/trackly/avatars/user2.webp",
-      "/images/trackly/avatars/user4.webp",
-    ].map((src, i) => (
-      <img
-        key={i}
-        src={src}
-        alt={`User ${i + 1}`}
-        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white shadow-md object-cover"
-      />
-    ))}
-  </div>
-  <div className="text-left">
-    <p className="text-xs sm:text-sm font-bold text-gray-900">200+ sales teams</p>
-    <p className="text-xs text-gray-600">Already tracking smarter</p>
-  </div>
-</div>
-
         </div>
 
         {/* Right Side Image */}
-        <div className="flex justify-center md:justify-end relative">
+        <div className="flex justify-center md:justify-end relative perspective-1000" style={{ perspective: "1000px" }} data-hero-image>
           <div className="relative group">
             <div className="absolute -top-6 -left-6 bg-white rounded-2xl shadow-2xl px-4 py-3 border border-gray-100 z-20 animate-bounce" style={{animationDuration: '3s'}}>
               <div className="flex items-center gap-2">

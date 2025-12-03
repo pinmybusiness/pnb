@@ -37,7 +37,7 @@ export default function HowItWorks() {
       </div>
       
       <div className="max-w-6xl mx-auto relative z-10">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16" data-animate="fade-up">
           <span className="inline-block px-4 py-2 bg-[#FF5211]/10 text-[#FF5211] rounded-full text-sm font-semibold mb-4">
             Simple Process
           </span>
@@ -52,9 +52,9 @@ export default function HowItWorks() {
         <div className="relative">
           <div className="hidden md:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#FF5211]/20 to-transparent"></div>
           
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-4 gap-8" data-stagger-parent data-stagger="0.1" data-stagger-duration="0.6" data-stagger-offset="24">
             {steps.map((step, i) => (
-              <div key={i} className="relative group">
+              <div key={i} data-stagger-item className="relative group">
                 <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
                   <div className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 transition-transform">
                     {String(step.number).padStart(2, "0")}
@@ -74,7 +74,7 @@ export default function HowItWorks() {
           </div>
         </div>
         
-        <div className="text-center mt-16">
+        <div className="text-center mt-16" data-animate="fade-up" data-delay="0.4">
           <CtaButton
             href="/contact"
             text="Start for ₹99/month"

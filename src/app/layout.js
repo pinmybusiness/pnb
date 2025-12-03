@@ -4,6 +4,10 @@ import { inter, yesteryear } from "@/lib/fonts";
 import { Toaster } from "react-hot-toast";
 import ClientHeaderFooter from "./ClientHeaderFooter";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import LenisClient from "@/components/clients/LenisClient";
+import ScrollProgressClient from "@/components/clients/ScrollProgressClient";
+import RevealClient from "@/components/clients/RevealClient";
+import HeroAnimationClient from "@/components/clients/HeroAnimationClient";
 
 export const metadata = {
   title: "Call Tracking Software India | Track & Record All Sales Calls",
@@ -38,6 +42,11 @@ export default function RootLayout({ children }) {
         <link rel="icon" type="image/png" href="/favicon.png" />
       </head>
       <body>
+        <LenisClient />
+        <ScrollProgressClient />
+        <RevealClient />
+        <HeroAnimationClient />
+
         {/* Move Providers to individual pages or components that need them */}
         <ClientHeaderFooter position="header" />
         {children}

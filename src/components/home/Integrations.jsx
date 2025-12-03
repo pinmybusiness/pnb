@@ -17,7 +17,7 @@ export default function Integrations() {
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="text-center mb-16">
+        <div className="text-center mb-16" data-animate="fade-up">
           <span className="inline-block px-4 py-2 bg-gradient-to-r from-[#FF5211]/10 to-orange-100 text-[#FF5211] rounded-full text-sm font-semibold mb-4 border border-[#FF5211]/20">
             🔗 Powerful Integrations
           </span>
@@ -25,7 +25,7 @@ export default function Integrations() {
             Seamless CRM <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">Integrations</span>
           </h2>
           <p className="text-gray-600 text-lg mb-6 max-w-2xl mx-auto leading-relaxed">
-            Connect Trackly effortlessly with your favorite CRM platforms — from
+            Connect Trackly effortlessly with your favorite CRM platforms - from
             Salesforce to LeadSquared. No setup headaches, just smooth syncing.
           </p>
           <div className="hidden md:flex items-center justify-center gap-6 text-sm text-gray-500">
@@ -44,12 +44,12 @@ export default function Integrations() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6" data-stagger-parent data-stagger="0.08" data-stagger-duration="0.6" data-stagger-offset="24">
           {integrations.map((int, i) => (
             <div
               key={i}
+              data-stagger-item
               className="group relative bg-white p-6 rounded-3xl shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#FF5211]/30 hover:-translate-y-2"
-              style={{ animationDelay: `${i * 100}ms` }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/0 to-orange-500/0 group-hover:from-[#FF5211]/5 group-hover:to-orange-500/5 rounded-3xl transition-all duration-500"></div>
               <div className="absolute -top-2 -right-2 bg-gradient-to-r from-[#FF5211] to-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-lg">
@@ -75,7 +75,7 @@ export default function Integrations() {
           ))}
         </div>
 
-        <div className="mt-16 text-center">
+        <div className="mt-16 text-center" data-animate="fade-up" data-delay="0.4">
           <p className="text-gray-600 mb-6">Don't see your CRM? We're adding more integrations every month.</p>
           <CtaButton
             href="/contact"

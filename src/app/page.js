@@ -24,35 +24,35 @@ export async function generateMetadata() {
 export default function TracklyLanding() {
   return (
     <div className="min-h-screen font-sans">
-    {/* Hero Section */}
-    <Hero />
+      {/* Hero Section */}
+      <Hero />
 
-    {/* Benefits */}
-    <Benefits />
+      {/* Benefits */}
+      <Benefits />
 
-          {/* Industries */}
-    <Industries />
+      {/* Industries */}
+      <Industries />
 
-    {/* How It Works */}
-    <HowItWorks />
+      {/* How It Works */}
+      <HowItWorks />
 
-    {/* Features */}
-    <Features />
+      {/* Features */}
+      <Features />
 
-          {/* Integrations */}
-    <Integrations />
+      {/* Integrations */}
+      <Integrations />
 
-    {/* Testimonials */}
-    <TestimonialsSection />
+      {/* Testimonials */}
+      <TestimonialsSection />
 
-    {/* Pricing */}
-    <Pricing />
+      {/* Pricing */}
+      <Pricing />
 
-          {/* FAQs */}
-    <FAQs />
+      {/* FAQs */}
+      <FAQs />
 
-    {/* Final CTA */}
-    <FinalCTA />
+      {/* Final CTA */}
+      <FinalCTA />
     </div>
   );
 }

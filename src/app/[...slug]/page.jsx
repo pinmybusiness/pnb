@@ -1,6 +1,5 @@
 import Breadcrumbs from "@/components/blog/Breadcrumbs";
 import Sidebar from "@/components/blog/Sidebar";
-import Tabs from "@/components/blog/Tabs";
 import FAQs from "@/components/blog/FAQs";
 import { formatDateWithSuffix } from "@/utils/dateFormat";
 import { Calendar, Clock } from "lucide-react";
@@ -46,7 +45,7 @@ export async function generateMetadata({ params }) {
     openGraph: {
       title: data.article.title,
       description: data.article.description,
-      url: `${process.env.NEXT_PUBLIC_WEBSITE_URL}/${slug}`,
+      url: `https://www.fasterq.in/${slug}`,
     },
   };
 }

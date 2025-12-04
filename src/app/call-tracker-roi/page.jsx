@@ -1,5 +1,6 @@
 // No "use client" here → this page is fully SSR rendered
 
+import CallTrackerRoiContent from "./CallTrackerRoiContent";
 import RoiCalculatorClient from "./RoiCalculatorClient";
 
 export const metadata = {
@@ -70,6 +71,9 @@ export default function CallTrackerRoiPage() {
           </p>
         </div>
       </div>
+
+      {/* content */}
+      <CallTrackerRoiContent />
     </main>
   );
 }

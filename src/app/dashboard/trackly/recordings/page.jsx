@@ -161,7 +161,7 @@ export default function RecordingsPage() {
                   <TableCell>
                     <div>
                       <div className="font-semibold">
-                        {rec.userDetails?.name || "Unknown User"}
+                        {rec.username || "Unknown User"}
                       </div>
                       <div className="text-xs text-gray-500">{rec.userId}</div>
                     </div>
@@ -172,9 +172,7 @@ export default function RecordingsPage() {
 
                   {/* START TIME IST */}
                   <TableCell>
-                    {new Date(rec.startTimeIST).toLocaleString("en-IN", {
-                      timeZone: "Asia/Kolkata",
-                    })}
+                    {new Date(rec.startTimeIST).toLocaleString("en-IN", {     timeZone: "Asia/Kolkata",   })}
                   </TableCell>
 
                   {/* STATUS */}

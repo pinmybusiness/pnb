@@ -43,7 +43,7 @@ const NumberInput = ({
     <div className="relative">
       <input
         type="number"
-        value={Number.isNaN(value) ? "" : value}
+        value={value === undefined || value === null ? "" : value}
         onChange={onChange}
         className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:border-[#FF5211] focus:ring-[#FF5211]/20 transition text-gray-900 text-sm"
       />
@@ -57,98 +57,88 @@ const NumberInput = ({
 );
 
 export default function RoiCalculatorClient() {
+  // USER INPUT STATES
   const [monthlyCalls, setMonthlyCalls] = useState();
   const [avgProfitPerSale, setAvgProfitPerSale] = useState();
   const [conversionRate, setConversionRate] = useState();
-  const [missedRateNow, setMissedRateNow] = useState();
-  const [missedRateWithFasterQ, setMissedRateWithFasterQ] = useState();
-  const [fasterQMonthlyCost, setFasterQMonthlyCost] = useState();
+  const [missedRateNow, setMissedRateNow] = useState(40);
+  const [missedRateWithFasterQ, setMissedRateWithFasterQ] = useState(5);
+  const [fasterQMonthlyCost, setFasterQMonthlyCost] = useState(99);
 
-  // Safe wrapper for all outputs
-  const safe = (n) => (isNaN(n) ? "-" : n);
+  // Check if user filled required inputs
+  const isReady =
+    monthlyCalls !== undefined &&
+    avgProfitPerSale !== undefined &&
+    conversionRate !== undefined;
 
-  // Calculations
-  const missedBefore = (monthlyCalls * missedRateNow) / 100;
-  const missedAfter = (monthlyCalls * missedRateWithFasterQ) / 100;
-  const recoveredCalls = Math.max(missedBefore - missedAfter, 0);
+  const num = (v) =>
+    typeof v === "number" && !Number.isNaN(v) ? v : 0;
 
-  const recoveredSales = (recoveredCalls * conversionRate) / 100;
-  const recoveredProfitMonth = recoveredSales * avgProfitPerSale;
-  const recoveredProfitYear = recoveredProfitMonth * 12;
+  // SAFE NUMBERS
+  const mc = isReady ? num(monthlyCalls) : 0;
+  const aps = isReady ? num(avgProfitPerSale) : 0;
+  const cr = isReady ? num(conversionRate) : 0;
+  const mrNow = num(missedRateNow);
+  const mrFq = num(missedRateWithFasterQ);
+  const fqMonthly = num(fasterQMonthlyCost);
 
-  const fasterQCostYear = fasterQMonthlyCost * 12;
-  const netProfitYear = recoveredProfitYear - fasterQCostYear;
+  // CALCULATIONS
+  const missedBefore = isReady ? (mc * mrNow) / 100 : 0;
+  const missedAfter = isReady ? (mc * mrFq) / 100 : 0;
+  const recoveredCalls = isReady ? Math.max(missedBefore - missedAfter, 0) : 0;
+
+  const recoveredSales = isReady ? (recoveredCalls * cr) / 100 : 0;
+  const recoveredProfitMonth = isReady ? recoveredSales * aps : 0;
+  const recoveredProfitYear = isReady ? recoveredProfitMonth * 12 : 0;
+
+  // YEARLY PRICING LOGIC
+  let fasterQCostYear = isReady ? fqMonthly * 12 : 0;
+  if (isReady && fqMonthly === 99) fasterQCostYear = 999;
+
+  const netProfitYear = isReady ? recoveredProfitYear - fasterQCostYear : 0;
 
   const roiPercent =
-    fasterQCostYear > 0 ? (netProfitYear / fasterQCostYear) * 100 : 0;
+    isReady && fasterQCostYear > 0
+      ? (netProfitYear / fasterQCostYear) * 100
+      : 0;
 
   const barData = [
-    { label: "Missed Calls Now", value: isNaN(missedBefore) ? 0 : missedBefore },
-    { label: "With FasterQ", value: isNaN(missedAfter) ? 0 : missedAfter },
+    { label: "Missed Calls Now", value: isReady ? missedBefore : 0 },
+    { label: "With FasterQ", value: isReady ? missedAfter : 0 },
   ];
 
   const lineData = [
     { month: "Now", profit: 0 },
-    {
-      month: "With FasterQ",
-      profit: isNaN(recoveredProfitYear) ? 0 : recoveredProfitYear,
-    },
+    { month: "With FasterQ", profit: isReady ? recoveredProfitYear : 0 },
   ];
 
   const formatMoney = (n) =>
-    isNaN(n)
-      ? "-"
-      : `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+    `₹${num(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
   const formatPct = (n) =>
-    isNaN(n)
-      ? "-"
-      : `${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}%`;
+    `${num(n).toLocaleString("en-IN", { maximumFractionDigits: 0 })}%`;
 
-  const handle = (setter) => (e) =>
-    setter(parseFloat(e.target.value) || 0);
+  const handle = (setter) => (e) => {
+    const val = e.target.value;
+    if (val === "") {
+      setter(undefined);
+      return;
+    }
+    const parsed = parseFloat(val);
+    setter(Number.isNaN(parsed) ? 0 : parsed);
+  };
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-10">
 
-      {/* ===================== TOP STATS ===================== */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-        <div className="p-4 border border-gray-400 rounded-xl bg-white">
-          <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-            <Phone className="w-3 h-3 text-[#FF5211]"/> Calls Recovered (Monthly)
-          </p>
-          <h3 className="text-2xl font-bold">
-            {safe(recoveredCalls.toFixed(0))}
-          </h3>
-        </div>
-
-        <div className="p-4 border border-gray-400 rounded-xl bg-white">
-          <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-            <DollarSign className="w-3 h-3 text-[#FF5211]" /> Annual Revenue Recovery
-          </p>
-          <h3 className="text-2xl font-bold">
-            {safe(formatMoney(recoveredProfitYear))}
-          </h3>
-        </div>
-
-        <div className="p-4 border border-gray-400 rounded-xl bg-white">
-          <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-            <TrendingUp className="w-3 h-3 text-[#FF5211]"/> ROI %
-          </p>
-          <h3 className="text-2xl font-bold text-[#FF5211]">
-            {safe(formatPct(roiPercent))}
-          </h3>
-        </div>
-      </div> */}
-
-      {/* ===================== 2 COLUMN GRID ===================== */}
+      {/* ===================== GRID ===================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-
-        {/* LEFT: INPUTS */}
+        
+        {/* LEFT INPUTS */}
         <div className="space-y-6">
           <div className="p-6 border border-gray-400 rounded-2xl bg-white space-y-8 h-fit">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900">
-              <Target className="w-5 h-5 text-[#FF5211]"/> Business Inputs
+              <Target className="w-5 h-5 text-[#FF5211]" /> Business Inputs
             </h2>
 
             <div className="space-y-5">
@@ -175,7 +165,7 @@ export default function RoiCalculatorClient() {
                 icon={TrendingUp}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4" id="roi-results-section">
                 <NumberInput
                   label="Current Missed Rate"
                   value={missedRateNow}
@@ -183,9 +173,8 @@ export default function RoiCalculatorClient() {
                   onChange={handle(setMissedRateNow)}
                   icon={Phone}
                 />
-
                 <NumberInput
-                  label="With FasterQR"
+                  label="With FasterQ"
                   value={missedRateWithFasterQ}
                   suffix="%"
                   onChange={handle(setMissedRateWithFasterQ)}
@@ -202,27 +191,43 @@ export default function RoiCalculatorClient() {
               />
             </div>
           </div>
+
+          {/* MOBILE CALCULATE BUTTON */}
+          <div className="lg:hidden sticky bottom-4 w-full flex justify-center z-50">
+            <button
+              onClick={() =>
+                document
+                  .getElementById("roi-results-section")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
+              className="px-6 py-3 bg-[#FF5211] text-white font-bold rounded-full shadow-lg shadow-orange-500/30 hover:scale-105 transition-all"
+            >
+              Calculate ROI
+            </button>
+          </div>
         </div>
 
-        {/* RIGHT: BREAKDOWN */}
-        <div className="flex flex-col gap-3">
+        {/* RIGHT RESULTS */}
+        <div className="flex flex-col gap-3 ">
+          
+          {/* Monthly Breakdown */}
           <div className="p-6 border border-gray-300 rounded-2xl bg-white h-fit">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 mb-4">
-              <BarChart3 className="w-5 h-5 text-[#FF5211]"/> Monthly Breakdown
+              <BarChart3 className="w-5 h-5 text-[#FF5211]" /> Monthly Breakdown
             </h2>
 
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Missed Calls Now</span>
                 <span className="font-semibold text-red-600">
-                  {safe(missedBefore.toFixed(0))}
+                  {isReady ? missedBefore.toFixed(0) : "-"}
                 </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-600">With FasterQ</span>
                 <span className="font-semibold text-green-600">
-                  {safe(missedAfter.toFixed(0))}
+                  {isReady ? missedAfter.toFixed(0) : "-"}
                 </span>
               </div>
 
@@ -231,21 +236,23 @@ export default function RoiCalculatorClient() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Recovered Calls</span>
                 <span className="font-semibold text-[#FF5211]">
-                  {safe(recoveredCalls.toFixed(0))}
+                  {isReady ? recoveredCalls.toFixed(0) : "-"}
                 </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-600">New Sales</span>
                 <span className="font-semibold text-blue-600">
-                  {safe(recoveredSales.toFixed(1))}
+                  {isReady ? recoveredSales.toFixed(1) : "-"}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* ROI CARD */}
-          <div className="p-6 border rounded-2xl bg-gradient-to-b from-orange-50 to-white border-orange-200">
+          {/* Annual Impact */}
+          <div
+            className="p-6 border rounded-2xl bg-gradient-to-b from-orange-50 to-white border-orange-200"
+          >
             <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 mb-4">
               <CheckCircle2 className="w-5 h-5 text-[#FF5211]" /> Annual Impact
             </h2>
@@ -254,28 +261,28 @@ export default function RoiCalculatorClient() {
               <div className="flex justify-between">
                 <span>Revenue Recovery</span>
                 <span className="font-bold">
-                  {safe(formatMoney(recoveredProfitYear))}
+                  {isReady ? formatMoney(recoveredProfitYear) : "-"}
                 </span>
               </div>
 
               <div className="flex justify-between">
-                <span>FasterQ Cost</span>
+                <span>FasterQ Cost (Yearly)</span>
                 <span className="font-bold">
-                  {safe(formatMoney(fasterQCostYear))}
+                  {isReady ? formatMoney(fasterQCostYear) : "-"}
                 </span>
               </div>
 
               <div className="flex justify-between">
                 <span>Net Profit</span>
                 <span className="font-bold">
-                  {safe(formatMoney(netProfitYear))}
+                  {isReady ? formatMoney(netProfitYear) : "-"}
                 </span>
               </div>
 
               <div className="text-center mt-3">
                 <p className="text-xs text-gray-500 mb-1">ROI</p>
                 <p className="text-4xl font-extrabold text-[#FF5211]">
-                  {safe(formatPct(roiPercent))}
+                  {isReady ? formatPct(roiPercent) : "-"}
                 </p>
               </div>
             </div>
@@ -285,7 +292,7 @@ export default function RoiCalculatorClient() {
 
       {/* ===================== GRAPHS ===================== */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
+        
         {/* BAR CHART */}
         <div className="p-6 border border-gray-300 rounded-2xl bg-white">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -311,10 +318,10 @@ export default function RoiCalculatorClient() {
           <div className="w-full h-56">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={lineData}>
-                <CartesianGrid stroke="#eee"/>
-                <XAxis dataKey="month"/>
-                <YAxis/>
-                <Tooltip/>
+                <CartesianGrid stroke="#eee" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
                 <Line
                   type="monotone"
                   dataKey="profit"

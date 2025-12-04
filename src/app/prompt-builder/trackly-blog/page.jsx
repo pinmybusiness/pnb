@@ -118,7 +118,7 @@ export default function PromptBuilder() {
 STRICTLY PROVIDE ONLY RAW RESEARCH DATA IN JSON FORMAT. NO FINAL CONTENT.
 
 Topic: "${topic}"
-Website Context: ${selectedWebsite?.brand || "Trackly by FasterQ"}
+Website Context: ${selectedWebsite?.brand || "FasterQ"}
 
 Generate comprehensive research data for SEO content writing with following structure:
 
@@ -295,7 +295,7 @@ and comparison with competitors like SalesTrail, JustCall, CallHippo, MyOperator
         },
         body: JSON.stringify({
           topic: topic,
-          websiteContext: selectedWebsite?.brand || "Trackly by FasterQ"
+          websiteContext: selectedWebsite?.brand || "FasterQ"
         }),
       });
 
@@ -456,10 +456,10 @@ and comparison with competitors like SalesTrail, JustCall, CallHippo, MyOperator
       const videoChatEntry = {
         url: selectedWebsite.startNowUrl,
         preferred_anchors: [
-        "Request a Trackly demo",
+        "Request a FasterQ.in demo",
         "Connect with our team",
         "Get custom pricing",
-        "Start with Trackly",
+        "Start with FasterQ.in",
         "Speak with a product expert"
         ],
         context_hint: "conversion-focused link",

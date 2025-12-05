@@ -1,7 +1,7 @@
 import TabsCSR from "./TabsCSR";
 
-const API = 'https://datacenter.randomstrangerchats.com';
-const WEBSITE = '8';
+const API = "https://datacenter.randomstrangerchats.com";
+const WEBSITE = "8";
 
 export default async function TabsSSR({ slug, pathname }) {
   let tabs = [];
@@ -12,26 +12,26 @@ export default async function TabsSSR({ slug, pathname }) {
       { cache: "no-store" }
     );
 
-    const data = await res.json();
+    if (res.ok) {
+      const data = await res.json();
 
-    if (data.statusCode === 200 && data.tabs) {
-      tabs = data.tabs
-        .map((tab, index) => ({
-          id: index,
-          label: tab.tab_name,
-          url: tab.tab_url,
-          relativePath: getRelativePath(tab.tab_url),
-          order: tab.tab_order,
-        }))
-        .sort((a, b) => a.order - b.order);
+      if (data.statusCode === 200 && Array.isArray(data.tabs)) {
+        tabs = data.tabs
+          .map((tab, index) => ({
+            id: index,
+            label: tab.tab_name,
+            url: tab.tab_url,
+            relativePath: getRelativePath(tab.tab_url),
+            order: tab.tab_order,
+          }))
+          .sort((a, b) => a.order - b.order);
+      }
     }
   } catch (e) {
     console.error("SSR Tabs Error:", e);
   }
 
-  return (
-    <TabsCSR tabs={tabs} pathname={pathname} />
-  );
+  return <TabsCSR tabs={tabs} pathname={pathname} />;
 }
 
 function getRelativePath(url) {

@@ -253,7 +253,7 @@ input, textarea {
 }
 
 .main-content a {
- color: var(--color-primary);
+ color: #C63E0E;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
   transition: color 0.2s ease;

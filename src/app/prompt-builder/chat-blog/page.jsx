@@ -98,6 +98,11 @@ export default function PromptBuilder() {
     "State Page",
     "City Page",
     "Roundup",
+    "Trust & Safety Hub",
+    "Comparison",
+    "Listicle",
+    "Policy",
+    "Product",
   ];
 
   // Update brand and helpful defaults when website changes

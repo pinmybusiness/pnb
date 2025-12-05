@@ -1,14 +1,13 @@
 import { Home, ChevronRight } from "lucide-react";
 
-const API =  'https://datacenter.randomstrangerchats.com';
-const WEBSITE =  '8';
+const API = "https://datacenter.randomstrangerchats.com";
+const WEBSITE = "8";
 
 export default async function Breadcrumbs({ parts }) {
   const slug = parts.join("/");
 
   let breadcrumbs = [];
 
-  // ---- FETCH FROM API (SSR) ----
   try {
     const res = await fetch(
       `${API}/api/get-breadcrumbs-by-slug?slug=${slug}&website=${WEBSITE}`,
@@ -17,8 +16,7 @@ export default async function Breadcrumbs({ parts }) {
 
     if (res.ok) {
       const data = await res.json();
-
-      if (data.statusCode === 200 && data.breadcrumbs?.length > 0) {
+      if (data.statusCode === 200 && Array.isArray(data.breadcrumbs)) {
         breadcrumbs = data.breadcrumbs;
       }
     }
@@ -26,19 +24,17 @@ export default async function Breadcrumbs({ parts }) {
     console.error("Breadcrumb API (SSR) error:", e);
   }
 
-  // ---- FALLBACK: Generate URL-based breadcrumbs ----
+  // Fallback
   if (breadcrumbs.length === 0) {
     const slugParts = slug.split("/").filter(Boolean);
 
-    breadcrumbs = slugParts.map((part, index) => {
-      const url = `/${slugParts.slice(0, index + 1).join("/")}`;
-      const isLast = index === slugParts.length - 1;
-
-      return {
-        name: part.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-        url: isLast ? null : url,
-      };
-    });
+    breadcrumbs = slugParts.map((part, index) => ({
+      name: part.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+      url:
+        index < slugParts.length - 1
+          ? `/${slugParts.slice(0, index + 1).join("/")}`
+          : null,
+    }));
   }
 
   return (
@@ -55,10 +51,8 @@ export default async function Breadcrumbs({ parts }) {
           </a>
         </li>
 
-        {/* Dynamic Breadcrumbs */}
         {breadcrumbs.map((crumb, index) => {
           const isLast = index === breadcrumbs.length - 1;
-
           return (
             <li key={index} className="flex items-center gap-2">
               <ChevronRight className="w-4 h-4 text-gray-400" />

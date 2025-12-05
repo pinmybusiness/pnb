@@ -13,8 +13,8 @@ export default function LatestBlogs({
   // Shuffle image indices
   const imageIndices = useMemo(() => {
     const count = Math.min(articles.length, pageSize);
-    const arr = Array.from({ length: 5 }, (_, i) => i + 1);
-    return arr.sort(() => Math.random() - 0.5).slice(0, count);
+    const arr = Array.from({ length: 6 }, (_, i) => i + 1);
+    return arr.sort(() => Math.random() - 0.6).slice(0, count);
   }, [articles, pageSize]);
 
   const displayArticles = articles.slice(0, pageSize);

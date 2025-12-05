@@ -43,7 +43,7 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <LenisClient />
-        <ScrollProgressClient />
+        {/* <ScrollProgressClient /> */}
         <RevealClient />
         <HeroAnimationClient />
 

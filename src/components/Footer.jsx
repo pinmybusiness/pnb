@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Facebook, Instagram, Heart, Mail, Phone } from "lucide-react";
+import { Facebook, Instagram, Heart, Mail, Phone, Linkedin } from "lucide-react";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -46,6 +46,7 @@ export default function Footer() {
             <ul className="space-y-2">
               {[
                 { name: "Download App", href: "/download" },
+                { name: "Blog", href: "/blog" },
                 { name: "About Us", href: "/about" },
                 { name: "Contact", href: "/contact" },
               ].map((link, index) => (
@@ -84,8 +85,9 @@ export default function Footer() {
             {/* Social Media */}
             <div className="flex gap-3">
               {[
-                { Icon: Facebook, href: "https://www.facebook.com/fasterqin", label: "Facebook" },
+                { Icon: Linkedin, href: "https://www.linkedin.com/company/fasterq", label: "linkedin" },
                 { Icon: Instagram, href: "https://www.instagram.com/fasterq.in", label: "Instagram" },
+                { Icon: Facebook, href: "https://www.facebook.com/fasterqin", label: "Facebook" },
               ].map(({ Icon, href, label }, index) => (
                 <a
                   key={index}
@@ -108,7 +110,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
           <p className="text-gray-500 flex items-center gap-2 flex-wrap justify-center">
-            <span>&copy; {currentYear} Trackly by FasterQ.</span>
+            <span>&copy; {currentYear} FasterQ</span>
             <span className="hidden md:inline">•</span>
             <span className="flex items-center gap-1">
               Built with <Heart className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" /> in Bengaluru
@@ -117,11 +119,11 @@ export default function Footer() {
           
           <div className="flex items-center gap-4 text-xs text-gray-500">
             <Link href="/privacy-policy" className="hover:text-[#FF5211] transition-colors">Privacy</Link>
-            <Link href="/terms-of-service" className="hover:text-[#FF5211] transition-colors">Terms</Link>
+            <Link href="/terms-and-conditions" className="hover:text-[#FF5211] transition-colors">Terms</Link>
             <Link href="/faq" className="hover:text-[#FF5211] transition-colors">FAQ</Link>
           </div>
         </div>
       </div>
     </footer>
   );
-}
+} 

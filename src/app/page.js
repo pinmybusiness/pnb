@@ -1,3 +1,7 @@
+import HeroAnimationClient from "@/components/clients/HeroAnimationClient";
+import LenisClient from "@/components/clients/LenisClient";
+import RevealClient from "@/components/clients/RevealClient";
+import ScrollProgressClient from "@/components/clients/ScrollProgressClient";
 import Benefits from "@/components/home/Benefits";
 import FAQs from "@/components/home/FAQs";
 import Features from "@/components/home/Features";
@@ -23,36 +27,42 @@ export async function generateMetadata() {
 
 export default function TracklyLanding() {
   return (
-    <div className="min-h-screen font-sans">
-      {/* Hero Section */}
-      <Hero />
+      <>
+          <LenisClient />
+          <ScrollProgressClient />
+          <RevealClient />
+          <HeroAnimationClient />
+          <div className="min-h-screen font-sans">
+            {/* Hero Section */}
+            <Hero />
 
-      {/* Benefits */}
-      <Benefits />
+            {/* Benefits */}
+            <Benefits />
 
-      {/* Industries */}
-      <Industries />
+            {/* Industries */}
+            <Industries />
 
-      {/* How It Works */}
-      <HowItWorks />
+            {/* How It Works */}
+            <HowItWorks />
 
-      {/* Features */}
-      <Features />
+            {/* Features */}
+            <Features />
 
-      {/* Integrations */}
-      <Integrations />
+            {/* Integrations */}
+            <Integrations />
 
-      {/* Testimonials */}
-      <TestimonialsSection />
+            {/* Testimonials */}
+            <TestimonialsSection />
 
-      {/* Pricing */}
-      <Pricing />
+            {/* Pricing */}
+            <Pricing />
 
-      {/* FAQs */}
-      <FAQs />
+            {/* FAQs */}
+            <FAQs />
 
-      {/* Final CTA */}
-      <FinalCTA />
-    </div>
+            {/* Final CTA */}
+            <FinalCTA />
+          </div>
+      </>
   );
 }

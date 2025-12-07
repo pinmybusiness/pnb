@@ -41,18 +41,12 @@ export default function Header({ activeLink = "" }) {
   const router = useRouter();
   const { user } = useSelector((state) => state.auth);
 
-  // CORRECTED ORDER: Home, Call Tracker, ROI Calculator, About
+  // CORRECTED ORDER: Call Tracker, ROI Calculator
   const links = [
-    { name: "Home", path: "/", icon: <Home className="w-4 h-4" /> },
     { 
       name: "ROI Calculator", 
       path: "/call-tracker-roi", 
       icon: <Calculator className="w-4 h-4" /> 
-    },
-    { 
-      name: "About", 
-      path: "/about", 
-      icon: <Info className="w-4 h-4" /> 
     },
   ];
 
@@ -106,7 +100,7 @@ export default function Header({ activeLink = "" }) {
       items: [
         {
           label: "Real Estate Call Tracking",
-          path: "/call-tracker/real-estate-call-tracking",
+          path: "/industries/real-estate-call-tracking",
           description: "Track calls from property portals & campaigns.",
           icon: <Building2 className="w-4 h-4 text-gray-500" />,
         },
@@ -165,22 +159,7 @@ export default function Header({ activeLink = "" }) {
 
             {/* Desktop Navigation - FIXED ORDER */}
             <nav className="hidden md:flex items-center space-x-2">
-              {/* Home Link */}
-              <div className="relative group">
-                <Link
-                  href="/"
-                  className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                    activeLink === "/"
-                      ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-500/30"
-                      : "text-gray-700 hover:text-[#FF5211] hover:bg-orange-50/80"
-                  }`}
-                >
-                  <Home className="w-4 h-4" />
-                  Home
-                </Link>
-              </div>
-
-              {/* Call Tracker Mega Menu - SECOND POSITION */}
+              {/* Call Tracker Mega Menu - FIRST POSITION */}
               <div className="relative" ref={megaMenuRef}>
                 <button
                   onMouseEnter={() => setMegaMenuOpen(true)}
@@ -271,8 +250,8 @@ export default function Header({ activeLink = "" }) {
                 )}
               </div>
 
-              {/* Other Links - ROI Calculator, About */}
-              {links.slice(1).map((link) => (
+              {/* ROI Calculator Link - FIXED: remove .slice(1) */}
+              {links.map((link) => (
                 <div key={link.name} className="relative group">
                   <Link
                     href={link.path}
@@ -399,21 +378,7 @@ export default function Header({ activeLink = "" }) {
           <nav className="flex flex-col p-4 space-y-2">
             {/* Mobile Links in Correct Order */}
             
-            {/* 1. Home */}
-            <Link
-              href="/"
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                activeLink === "/"
-                  ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-500/30"
-                  : "text-gray-700 hover:text-[#FF5211] hover:bg-orange-50"
-              }`}
-            >
-              <Home className="w-4 h-4" />
-              Home
-            </Link>
-
-            {/* 2. Call Tracker Mega Menu */}
+            {/* 1. Call Tracker Mega Menu */}
             <div className="mt-2">
               {/* Call Tracker Toggle */}
               <button
@@ -497,7 +462,7 @@ export default function Header({ activeLink = "" }) {
               )}
             </div>
 
-            {/* 3. ROI Calculator */}
+            {/* 2. ROI Calculator */}
             <Link
               href="/call-tracker-roi"
               onClick={() => setMobileOpen(false)}
@@ -509,20 +474,6 @@ export default function Header({ activeLink = "" }) {
             >
               <Calculator className="w-4 h-4" />
               ROI Calculator
-            </Link>
-
-            {/* 4. About */}
-            <Link
-              href="/about"
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                activeLink === "/about"
-                  ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-500/30"
-                  : "text-gray-700 hover:text-[#FF5211] hover:bg-orange-50"
-              }`}
-            >
-              <Info className="w-4 h-4" />
-              About
             </Link>
 
             {/* User Actions Mobile */}

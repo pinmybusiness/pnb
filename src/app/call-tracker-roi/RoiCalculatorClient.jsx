@@ -23,6 +23,8 @@ import {
   CartesianGrid,
 } from "recharts";
 
+/* ------------------ NUMBER INPUT COMPONENT ------------------ */
+
 const NumberInput = ({
   label,
   value,
@@ -30,6 +32,7 @@ const NumberInput = ({
   onChange,
   icon: Icon,
   description,
+  disabled = false,
 }) => (
   <div className="space-y-1">
     <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
@@ -45,7 +48,14 @@ const NumberInput = ({
         type="number"
         value={value === undefined || value === null ? "" : value}
         onChange={onChange}
-        className="w-full px-3 py-2 border rounded-lg border-gray-300 focus:border-[#FF5211] focus:ring-[#FF5211]/20 transition text-gray-900 text-sm"
+        disabled={disabled}
+        className={`w-full px-3 py-2 border rounded-lg text-gray-900 text-sm transition
+          ${
+            disabled
+              ? "bg-gray-100 border-gray-300 text-gray-500 cursor-not-allowed"
+              : "border-gray-300 focus:border-[#FF5211] focus:ring-[#FF5211]/20"
+          }
+        `}
       />
       {suffix && (
         <span className="absolute right-3 top-2.5 text-sm text-gray-500 font-semibold">
@@ -56,14 +66,19 @@ const NumberInput = ({
   </div>
 );
 
+/* ------------------ MAIN COMPONENT ------------------ */
+
 export default function RoiCalculatorClient() {
   // USER INPUT STATES
   const [monthlyCalls, setMonthlyCalls] = useState();
   const [avgProfitPerSale, setAvgProfitPerSale] = useState();
   const [conversionRate, setConversionRate] = useState();
+
   const [missedRateNow, setMissedRateNow] = useState(40);
-  const [missedRateWithFasterQ, setMissedRateWithFasterQ] = useState(5);
-  const [fasterQMonthlyCost, setFasterQMonthlyCost] = useState(99);
+
+  // FIXED → USER CANNOT CHANGE
+  const [missedRateWithFasterQ] = useState(5);
+  const [fasterQMonthlyCost] = useState(999 / 12); // = ₹83.25/month
 
   // Check if user filled required inputs
   const isReady =
@@ -91,9 +106,8 @@ export default function RoiCalculatorClient() {
   const recoveredProfitMonth = isReady ? recoveredSales * aps : 0;
   const recoveredProfitYear = isReady ? recoveredProfitMonth * 12 : 0;
 
-  // YEARLY PRICING LOGIC
-  let fasterQCostYear = isReady ? fqMonthly * 12 : 0;
-  if (isReady && fqMonthly === 99) fasterQCostYear = 999;
+  // YEARLY PRICING
+  const fasterQCostYear = fqMonthly * 12; // 999/year
 
   const netProfitYear = isReady ? recoveredProfitYear - fasterQCostYear : 0;
 
@@ -173,26 +187,31 @@ export default function RoiCalculatorClient() {
                   onChange={handle(setMissedRateNow)}
                   icon={Phone}
                 />
+
+                {/* FIXED → DISABLED */}
                 <NumberInput
                   label="With FasterQ"
                   value={missedRateWithFasterQ}
                   suffix="%"
-                  onChange={handle(setMissedRateWithFasterQ)}
                   icon={Zap}
+                  onChange={() => {}}
+                  disabled={true}
                 />
               </div>
 
+              {/* FIXED → DISABLED */}
               <NumberInput
                 label="FasterQ Monthly Cost"
-                value={fasterQMonthlyCost}
+                value={fasterQMonthlyCost.toFixed(2)}
                 suffix="₹"
-                onChange={handle(setFasterQMonthlyCost)}
                 icon={DollarSign}
+                onChange={() => {}}
+                disabled={true}
               />
             </div>
           </div>
 
-          {/* MOBILE CALCULATE BUTTON */}
+          {/* MOBILE BUTTON */}
           <div className="lg:hidden sticky bottom-4 w-full flex justify-center z-50">
             <button
               onClick={() =>
@@ -243,16 +262,14 @@ export default function RoiCalculatorClient() {
               <div className="flex justify-between">
                 <span className="text-gray-600">New Sales</span>
                 <span className="font-semibold text-blue-600">
-                  {isReady ? recoveredSales.toFixed(1) : "-"}
+                  {isReady ? recoveredSales.toFixed(0) : "-"}
                 </span>
               </div>
             </div>
           </div>
 
           {/* Annual Impact */}
-          <div
-            className="p-6 border rounded-2xl bg-gradient-to-b from-orange-50 to-white border-orange-200"
-          >
+          <div className="p-6 border rounded-2xl bg-gradient-to-b from-orange-50 to-white border-orange-200">
             <h2 className="text-lg font-semibold flex items-center gap-2 text-gray-900 mb-4">
               <CheckCircle2 className="w-5 h-5 text-[#FF5211]" /> Annual Impact
             </h2>

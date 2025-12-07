@@ -591,7 +591,7 @@ const CallTracking = () => {
             </TableHeader>
             <TableBody>
               {calls.map((call, index) => (
-                <TableRow key={call.id || index} className="hover:bg-gray-50">
+                <TableRow key={call._id || index} className="hover:bg-gray-50">
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center gap-3">
                       <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-md bg-gray-100 flex items-center justify-center">

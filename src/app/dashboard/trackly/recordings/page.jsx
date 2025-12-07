@@ -44,8 +44,10 @@ const TableHead = ({ children, className = "", ...props }) => (
     {children}
   </th>
 );
-const TableCell = ({ children, className = "" }) => (
-  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-700 ${className}`}>{children}</td>
+const TableCell = ({ children, className = "", ...props }) => (
+  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-700 ${className}`} {...props}>
+    {children}
+  </td>
 );
 
 export default function RecordingsPage() {
@@ -153,9 +155,11 @@ export default function RecordingsPage() {
               recordings.map((rec) => (
                 <TableRow
                   key={rec._id}
-                  className={`hover:bg-gray-50 ${
-                    rec.status === 2 ? "bg-red-50" : ""
-                  } ${rec.status === 0 ? "bg-blue-50/20" : ""}`}
+                  className={`hover:bg-gray-50
+                    ${rec.status === 0 ? "bg-blue-50/40" : ""}      /* Pending */
+                    ${rec.status === 2 ? "bg-yellow-50" : ""}       /* Processing */
+                    ${rec.status === 3 ? "bg-red-50" : ""}          /* Failed */
+                  `}
                 >
                   {/* USER NAME */}
                   <TableCell>
@@ -172,22 +176,32 @@ export default function RecordingsPage() {
 
                   {/* START TIME IST */}
                   <TableCell>
-                    {new Date(rec.startTimeIST).toLocaleString("en-IN", {     timeZone: "Asia/Kolkata",   })}
+                    {new Date(rec.startTimeIST).toLocaleString("en-IN", {
+                      timeZone: "Asia/Kolkata",
+                    })}
                   </TableCell>
 
-                  {/* STATUS */}
+                  {/* STATUS (UPDATED) */}
                   <TableCell>
                     {rec.status === 0 && (
                       <span className="flex items-center gap-1 text-blue-600 font-medium">
                         <Clock className="h-4 w-4" /> Pending
                       </span>
                     )}
+
                     {rec.status === 1 && (
                       <span className="flex items-center gap-1 text-green-600 font-medium">
                         <CheckCircle2 className="h-4 w-4" /> Synced
                       </span>
                     )}
+
                     {rec.status === 2 && (
+                      <span className="flex items-center gap-1 text-yellow-600 font-medium">
+                        <Loader2 className="h-4 w-4 animate-spin" /> Processing
+                      </span>
+                    )}
+
+                    {rec.status === 3 && (
                       <span className="flex items-center gap-1 text-red-600 font-medium">
                         <XCircle className="h-4 w-4" /> Failed
                       </span>
@@ -197,11 +211,7 @@ export default function RecordingsPage() {
                   {/* AUDIO PLAYER */}
                   <TableCell>
                     {rec.recordingUrl ? (
-                      <audio
-                        controls
-                        className="h-8 rounded-md shadow-sm"
-                        src={rec.recordingUrl}
-                      />
+                      <audio controls className="h-8 rounded-md shadow-sm" src={rec.recordingUrl} />
                     ) : (
                       "-"
                     )}

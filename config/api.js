@@ -1,6 +1,6 @@
 // src/config/api.js
 export const API_CONFIG = {
-  baseUrl: process.env.NEXT_PUBLIC_API_BLOG_BASE_URL || 'https://datacenter.randomstrangerchats.com',
+  baseUrl: 'https://datacenter.randomstrangerchats.com',
   endpoints: {
     getArticles: '/api/get-website-articles',
     getLatestArticles: '/api/get-latest-website-articles',
@@ -8,5 +8,5 @@ export const API_CONFIG = {
     getBreadcrumbs: '/api/get-post-breadcrumbs',
     getAllSlugs: '/api/get-website-articles-slug'
   },
-  websiteId: process.env.NEXT_PUBLIC_WEBSITE_ID || '8'
+  websiteId: '8'
 };

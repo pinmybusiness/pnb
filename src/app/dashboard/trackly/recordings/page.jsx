@@ -176,7 +176,7 @@ export default function RecordingsPage() {
 
                   {/* START TIME IST */}
                   <TableCell>
-                    {new Date(rec.startTimeIST).toLocaleString("en-IN", {
+                    {new Date(rec.startTime).toLocaleString("en-IN", {
                       timeZone: "Asia/Kolkata",
                     })}
                   </TableCell>

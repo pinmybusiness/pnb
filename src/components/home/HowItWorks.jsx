@@ -17,7 +17,7 @@ const steps = [
   {
     number: 3,
     title: "Install the App",
-    description: "Install on team phones for SIM & WhatsApp tracking.",
+    description: "Install on team phones for SIM call tracking.",
     icon: Zap,
   },
   {

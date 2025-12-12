@@ -11,126 +11,84 @@ import {
   Card, Input, Badge, Table, TableHeader, TableBody, 
   TableRow, TableHead, TableCell, Button
 } from "@/components/ui";
+import { useSelector } from "react-redux";
 
 // Audio Player Component
+// Audio Player Component (Screenshot Style)
 const AudioPlayer = ({ recordingUrl, callId }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
   const audioRef = useRef(null);
 
   const togglePlayPause = () => {
-    if (!audioRef.current) return;
+    if (!recordingUrl) return;
 
     if (isPlaying) {
       audioRef.current.pause();
+      setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(error => {
-        console.error("Audio play failed:", error);
-        toast.error("Failed to play recording");
-      });
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => toast.error("Failed to play recording"));
     }
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleTimeUpdate = () => {
-    if (audioRef.current) {
-      const currentTime = audioRef.current.currentTime;
-      const duration = audioRef.current.duration || 1;
-      setProgress((currentTime / duration) * 100);
-    }
-  };
-
-  const handleLoadedMetadata = () => {
-    if (audioRef.current) {
-      setDuration(audioRef.current.duration);
-    }
-  };
-
-  const handleSeek = (e) => {
-    if (!audioRef.current) return;
-    
-    const rect = e.currentTarget.getBoundingClientRect();
-    const percent = (e.clientX - rect.left) / rect.width;
-    const newTime = percent * duration;
-    
-    audioRef.current.currentTime = newTime;
-    setProgress(percent * 100);
   };
 
   const handleDownload = () => {
-    if (recordingUrl) {
-      const link = document.createElement('a');
-      link.href = recordingUrl;
-      link.download = `recording-${callId}.mp3`;
-      link.click();
-    }
-  };
+    if (!recordingUrl) return;
 
-  const formatTime = (time) => {
-    if (!time || isNaN(time)) return "0:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    const link = document.createElement('a');
+    link.href = recordingUrl;
+    link.download = `recording-${callId}.mp3`;
+    link.click();
   };
-
-  if (!recordingUrl) {
-    return (
-      <div className="text-xs text-gray-400 italic">No recording</div>
-    );
-  }
 
   return (
-    <div className="flex flex-col gap-1 w-full max-w-[200px]">
-      {/* Hidden Audio Element */}
+    <div className="flex items-center gap-1 justify-between w-[160px]">
+
+      {/* hidden audio element */}
       <audio
         ref={audioRef}
-        onTimeUpdate={handleTimeUpdate}
-        onLoadedMetadata={handleLoadedMetadata}
         onEnded={() => setIsPlaying(false)}
         onPause={() => setIsPlaying(false)}
       >
         <source src={recordingUrl} type="audio/mpeg" />
-        Your browser does not support the audio element.
       </audio>
 
-      {/* Player Controls */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={togglePlayPause}
-          disabled={!recordingUrl}
-          className="p-1 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isPlaying ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
-        </button>
+      {/* LEFT SIDE: Play Button + Text */}
+      <button
+        onClick={togglePlayPause}
+        disabled={!recordingUrl}
+        className={`flex items-center gap-1 px-2 py-1 rounded-md border 
+          transition-all text-sm
+          ${recordingUrl
+            ? isPlaying
+              ? "text-orange-600 border-orange-300 bg-orange-50"
+              : "text-gray-700 border-gray-300 bg-white hover:bg-gray-100"
+            : "text-gray-400 border-gray-200 bg-gray-100 cursor-not-allowed"
+          }
+        `}
+      >
+        {isPlaying ? (
+          <Pause className="h-4 w-4" />
+        ) : (
+          <Play className="h-4 w-4" />
+        )}
+        <span>{recordingUrl ? "Play Recording" : "Play Recording"}</span>
+      </button>
 
-        {/* Progress Bar */}
-        <div 
-          className="flex-1 bg-gray-200 rounded-full h-1.5 cursor-pointer"
-          onClick={handleSeek}
-        >
-          <div 
-            className="bg-blue-600 h-1.5 rounded-full transition-all duration-100"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+      {/* RIGHT SIDE: Download */}
+      <button
+        onClick={handleDownload}
+        disabled={!recordingUrl}
+        className={`px-2 py-[6px] rounded-md border transition 
+          ${recordingUrl
+            ? "border-gray-300 hover:bg-gray-100 text-gray-600"
+            : "border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+          }
+        `}
+      >
+        <Download className="h-4 w-4" />
+      </button>
 
-        {/* Download Button */}
-        <button
-          onClick={handleDownload}
-          disabled={!recordingUrl}
-          className="p-1 text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
-          title="Download Recording"
-        >
-          <Download className="h-3 w-3" />
-        </button>
-      </div>
-
-      {/* Time Display */}
-      <div className="flex justify-between text-xs text-gray-500">
-        <span>{formatTime(audioRef.current?.currentTime || 0)}</span>
-        <span>{formatTime(duration)}</span>
-      </div>
     </div>
   );
 };
@@ -190,18 +148,41 @@ const FollowUpBadge = ({ followUp }) => {
   );
 };
 
-// CallerDisplay Component
+// CallerDisplay Component (Updated with character limit)
 const CallerDisplay = ({ caller }) => {
   const { name, phone, formattedPhone } = caller;
-  
-  const displayName = name || formattedPhone || phone || "Unknown Caller";
-  const displayPhone = formattedPhone || phone;
+
+  const cleanName = name?.trim() || "";
+  const displayName = cleanName !== "" && cleanName !== phone ? cleanName : null;
+
+  // LIMIT name length to 20 characters
+  const MAX_LEN = 20;
+  const shortName =
+    displayName && displayName.length > MAX_LEN
+      ? displayName.substring(0, MAX_LEN) + "..."
+      : displayName;
 
   return (
-    <div className="flex flex-col items-start">
-      <div className="text-sm font-medium text-gray-900">{displayName}</div>
-      {displayPhone && (
-        <div className="text-xs text-gray-500">{displayPhone}</div>
+    <div className="flex flex-col items-start max-w-[150px] md:max-w-[90px]">
+
+      {/* Display Name Only If Valid */}
+      {displayName && (
+        <div
+          className="text-sm font-medium text-gray-900 truncate"
+          title={displayName} // full tooltip
+        >
+          {shortName}
+        </div>
+      )}
+
+      {/* Phone Number */}
+      {formattedPhone && (
+        <div
+          className={`${displayName ? "text-xs text-gray-500" : "text-sm text-gray-900"} truncate`}
+          title={formattedPhone}
+        >
+          {formattedPhone}
+        </div>
       )}
     </div>
   );
@@ -253,6 +234,11 @@ const CallTracking = () => {
     answeredCalls: 0,
     resolvedCalls: 0
   });
+  // EXPORT state
+  const [showExport, setShowExport] = useState(false);
+const [customStart, setCustomStart] = useState("");
+const [customEnd, setCustomEnd] = useState("");
+ const { user, token } = useSelector((state) => state.auth);
 
   // Refs
   const debounceTimerRef = useRef(null);
@@ -484,23 +470,164 @@ const CallTracking = () => {
     );
   }
 
+  // ====================== EXPORT HELPERS ======================
+const formatDate = (date) => date.toISOString().split("T")[0];
+
+const getDateRange = (type) => {
+  const today = new Date();
+  let start, end;
+
+  switch (type) {
+    case "today":
+      start = end = today;
+      break;
+
+    case "week":
+      start = new Date(today);
+      start.setDate(today.getDate() - today.getDay());
+      end = today;
+      break;
+
+    case "month":
+      start = new Date(today.getFullYear(), today.getMonth(), 1);
+      end = today;
+      break;
+
+    case "last_month":
+      start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      end = new Date(today.getFullYear(), today.getMonth(), 0);
+      break;
+
+    default:
+      start = end = today;
+  }
+
+  return {
+    startDate: formatDate(start),
+    endDate: formatDate(end),
+  };
+};
+
+const downloadExcel = (startDate, endDate) => {
+  try {
+    const branchId = user?.branch;
+    if (!branchId) {
+      return toast.error("Branch ID missing (user.branch)");
+    }
+
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/api/calls/export/excel?branchId=${branchId}&startDate=${startDate}&endDate=${endDate}`;
+
+    window.open(url, "_blank");
+  } catch (err) {
+    console.log(err);
+    toast.error("Export failed");
+  }
+};
+
+
   return (
     <div className="space-y-4 animate-fade-in p-4 sm:p-6 md:p-8">
       {/* Header */}
-      <div className="flex flex-col justify-between items-start gap-2">
+      <div className="flex justify-between items-start gap-2">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Call Tracking Dashboard</h1>
           <p className="text-sm text-gray-500">Monitor and manage all restaurant calls</p>
         </div>
+
+        {/* Toggle Export Button */}
+        <div className="flex justify-end mt-2">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowExport(!showExport)}
+          >
+            {showExport ? "Hide Export Options" : "Show Export Options"}
+          </Button>
+        </div>
+
       </div>
 
       {/* KPI Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 sm:gap-4">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-4 gap-2 sm:gap-4">
         <KPICard title="Total Calls" value={kpiStats.totalCalls} icon={PhoneCall} />
         <KPICard title="Missed Calls" value={kpiStats.missedCalls} icon={PhoneMissed} />
         <KPICard title="Answered Calls" value={kpiStats.answeredCalls} icon={Phone} />
         <KPICard title="Resolved Calls" value={kpiStats.resolvedCalls} icon={CheckCircle} />
-      </div>
+      </div> */}
+
+      {/* ================= Export Options UI ================= */}
+      {showExport && (
+        <Card className="p-3 sm:p-4 mt-4 animate-fade-in">
+          <h2 className="text-md font-semibold mb-3">Export Calls</h2>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                const { startDate, endDate } = getDateRange("today");
+                downloadExcel(startDate, endDate);
+              }}
+            >
+              Today
+            </Button>
+
+            <Button 
+              variant="outline"
+              onClick={() => {
+                const { startDate, endDate } = getDateRange("week");
+                downloadExcel(startDate, endDate);
+              }}
+            >
+              This Week
+            </Button>
+
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                const { startDate, endDate } = getDateRange("month");
+                downloadExcel(startDate, endDate);
+              }}
+            >
+              This Month
+            </Button>
+
+            <Button 
+              variant="outline"
+              onClick={() => {
+                const { startDate, endDate } = getDateRange("last_month");
+                downloadExcel(startDate, endDate);
+              }}
+            >
+              Last Month
+            </Button>
+          </div>
+
+          {/* Custom Date Range */}
+          <div className="mt-4 flex flex-col sm:flex-row gap-2">
+            <Input
+              type="date"
+              className="flex-1"
+              value={customStart}
+              onChange={(e) => setCustomStart(e.target.value)}
+            />
+            <Input
+              type="date"
+              className="flex-1"
+              value={customEnd}
+              onChange={(e) => setCustomEnd(e.target.value)}
+            />
+            <Button 
+              onClick={() => {
+                if (!customStart || !customEnd) {
+                  return toast.error("Please select both dates");
+                }
+                downloadExcel(customStart, customEnd);
+              }}
+            >
+              Export
+            </Button>
+          </div>
+        </Card>
+      )}
 
       {/* Filters */}
       <Card className="p-3 sm:p-4">
@@ -579,12 +706,12 @@ const CallTracking = () => {
                 <TableHead className="whitespace-nowrap">Direction</TableHead>
                 <TableHead className="cursor-pointer whitespace-nowrap">
                   <div className="flex items-center gap-2">
-                    Time
+                    Call At
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>
                 <TableHead className="whitespace-nowrap">Recording</TableHead>
-                <TableHead className="whitespace-nowrap">Follow-up</TableHead>
+                {/* <TableHead className="whitespace-nowrap">Follow-up</TableHead> */}
                 <TableHead className="whitespace-nowrap">Notes</TableHead>
                 <TableHead className="whitespace-nowrap">Actions</TableHead>
               </TableRow>
@@ -593,12 +720,7 @@ const CallTracking = () => {
               {calls.map((call, index) => (
                 <TableRow key={call._id || index} className="hover:bg-gray-50">
                   <TableCell className="whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-md bg-gray-100 flex items-center justify-center">
-                        <User className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                      </div>
                       <CallerDisplay caller={call.caller} />
-                    </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     <div className="flex items-center gap-2">
@@ -626,9 +748,9 @@ const CallTracking = () => {
                       callId={call.id} 
                     />
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <FollowUpBadge followUp={call.followUp} />
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell>
                     <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[150px] sm:max-w-[200px]">
                       {call.notes || "No notes"}
@@ -636,7 +758,7 @@ const CallTracking = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 sm:gap-2">
-                      {!call.answered && call.inbound && call.followUp.status === 1 && (
+                      {/* {!call.answered && call.inbound && call.followUp.status === 1 && (
                         <button
                           onClick={() => handleUpdateFollowUp(call.id, 2)}
                           className="p-1 sm:p-2 text-green-600 hover:text-green-800 hover:bg-gray-100 rounded-md transition-colors"
@@ -644,7 +766,7 @@ const CallTracking = () => {
                         >
                           <CheckCircle className="h-4 w-4" />
                         </button>
-                      )}
+                      )} */}
                       <button
                         onClick={() => addNote(call.id, prompt("Enter note:") || "New note")}
                         className="p-1 sm:p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md transition-colors"
@@ -663,7 +785,7 @@ const CallTracking = () => {
         {/* Mobile View */}
         <div className="block sm:hidden space-y-2 p-2">
           {calls.map((call, index) => (
-            <Card key={call.id || index} className="p-3 shadow-sm">
+            <Card key={call._id || index} className="p-3 shadow-sm">
               <div className="space-y-2">
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col gap-1">

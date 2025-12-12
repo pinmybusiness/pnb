@@ -8,5 +8,5 @@ export const TableHead = ({ children, className = "", ...props }) => (
   </th>
 );
 export const TableCell = ({ children, className = "" }) => (
-  <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-700 ${className}`}>{children}</td>
+  <td className={`px-6 py-3 whitespace-nowrap text-sm text-gray-700 ${className}`}>{children}</td>
 );

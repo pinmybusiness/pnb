@@ -2,7 +2,7 @@
 import { FileText, Shield, AlertTriangle, Lock, Check, Mail, MapPin, Copyright, Scale } from 'lucide-react';
 
 export const metadata = {
-  title: "Terms & Conditions - FasterQ",
+  title: "Terms & Conditions | FasterQ Call Tracking Software",
   description: "Read the official Terms & Conditions for using FasterQ services.",
 };
 

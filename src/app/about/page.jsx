@@ -2,7 +2,7 @@
 import { ArrowRight, Users, Zap, Shield, Heart, Target, Rocket, Phone, Mail, MessageSquare } from "lucide-react";
 
 export const metadata = {
-  title: "About Trackly by FasterQ | SIM-Based Call Tracking for Indian Startups",
+  title: "About Trackly by FasterQ | SIM-Based Call Tracking in India",
   description:
     "Trackly is India's SIM-based call tracking tool for SMBs. Real-time dashboards, missed call alerts, WhatsApp summaries, and India-hosted secure analytics.",
 };

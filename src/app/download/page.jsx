@@ -96,7 +96,7 @@ export default function DownloadPage() {
                     className="w-full bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-5 rounded-full font-bold text-lg hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center justify-center gap-3 group/btn shadow-xl mb-4"
                   >
                     <Download className="w-6 h-6 group-hover/btn:animate-bounce" />
-                    <span>Download APK Now</span>
+                    <span>Download APK</span>
                     <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                   </a>
 

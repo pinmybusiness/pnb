@@ -1,30 +1,13 @@
 // src/components/blog/BlogListing.jsx
-'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import Pagination from './Pagination';
 import companyInfo from '../../../config/companyInfo';
 import { ArrowRight, Clock, Calendar } from 'lucide-react';
+import { calculatePostedTime } from '@/utils/dateFormat';
 
 export default function BlogListing({ posts, currentPage, hasNextPage, totalPages }) {
-  // Function to get reading time estimate (optional)
-  const getReadingTime = (description) => {
-    const wordsPerMinute = 200;
-    const wordCount = description?.split(' ').length || 0;
-    const readingTime = Math.ceil(wordCount / wordsPerMinute);
-    return readingTime > 0 ? `${readingTime} min read` : '5 min read';
-  };
-
-  // Function to format date (optional - if you have date field)
-  const formatDate = (date) => {
-    if (!date) return 'Recent';
-    return new Date(date).toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
-    });
-  };
 
   return (
     <div>
@@ -69,11 +52,7 @@ export default function BlogListing({ posts, currentPage, hasNextPage, totalPage
                 <div className="flex items-center gap-4 mb-4 text-xs text-gray-600">
                   <div className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-[#FF5211]" />
-                    <span>{formatDate(post.created_at)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5 text-[#FF5211]" />
-                    <span>{getReadingTime(post.description)}</span>
+                    <span>{calculatePostedTime(post.updated_on)}</span>
                   </div>
                 </div>
 

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { 
   PhoneMissed, 
   Search, 
@@ -12,85 +12,108 @@ import {
   Users, 
   Filter,
   Check,
-  X,
   Shield,
-  Ban
+  Ban,
+  Clock,
+  MessageSquare,
+  AlertCircle,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+  X,
+  Loader2,
+  CheckCheck
 } from "lucide-react";
-import KPICard from "@/components/ui/KPICard";
 import { toast } from "react-hot-toast";
 import axios from "axios";
-import { 
-  Card, 
-  Button, 
-  Input, 
-  Badge, 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableRow, 
-  TableHead, 
-  TableCell 
-} from "@/components/ui";
 
-// Custom Components
-const CustomSelect = ({ value, onValueChange, children, className }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  const selectedChild = Array.isArray(children) 
-    ? children.find(child => child?.props?.value === value)
-    : null;
-  
-  const displayText = selectedChild ? selectedChild.props.children : "Filter by team member";
+// ---------- CUSTOM HOOKS ----------
+const useTeamMembers = () => {
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  return (
-    <div className={`relative ${className}`}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-      >
-        <div className="flex items-center gap-2 truncate">
-          <Filter className="h-4 w-4 flex-shrink-0" />
-          <span className="text-sm truncate">
-            {typeof displayText === 'string' ? displayText : "Filter by team member"}
-          </span>
-        </div>
-        <svg 
-          className={`h-4 w-4 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
-          fill="none" 
-          viewBox="0 0 24 24" 
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
+  const fetchTeamMembers = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
       
-      {isOpen && (
-        <>
-          <div 
-            className="fixed inset-0 z-10"
-            onClick={() => setIsOpen(false)}
-          />
-          <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
-            {children}
-          </div>
-        </>
-      )}
-    </div>
-  );
+      if (!token) {
+        console.error("No token found");
+        setMembers([]);
+        return;
+      }
+      
+      // Try both endpoints
+      const endpoints = [
+        `${process.env.NEXT_PUBLIC_API_URL || ''}/api/calls/team/performance?period=today`,
+        `${process.env.NEXT_PUBLIC_API_URL || ''}/api/calls/team/member-stats?period=today`
+      ];
+      
+      let teamData = [];
+      
+      for (const endpoint of endpoints) {
+        try {
+          const response = await axios.get(endpoint, { 
+            headers: { 
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            withCredentials: true 
+          });
+          
+          console.log("Team members response:", response.data);
+          
+          if (response.data?.success) {
+            const data = response.data.data;
+            if (Array.isArray(data)) {
+              teamData = data.map(m => ({
+                userId: m.userId || m._id,
+                userName: m.userName || m.name || 'Unknown',
+                userRole: m.userRole || 'Team Member'
+              }));
+              break;
+            } else if (data?.teamStats && Array.isArray(data.teamStats)) {
+              teamData = data.teamStats.map(m => ({
+                userId: m.userId || m._id,
+                userName: m.userName || m.name || 'Unknown',
+                userRole: m.userRole || 'Team Member'
+              }));
+              break;
+            }
+          }
+        } catch (err) {
+          console.log(`Endpoint ${endpoint} failed:`, err.message);
+          continue;
+        }
+      }
+      
+      setMembers(teamData);
+    } catch (error) {
+      console.error("Team members fetch error:", error);
+      setMembers([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTeamMembers();
+  }, [fetchTeamMembers]);
+
+  return { members, loading, refetch: fetchTeamMembers };
 };
 
-const CustomSelectItem = ({ value, children, onSelect }) => {
-  const handleClick = () => {
-    onSelect(value);
-  };
+// ---------- CUSTOM COMPONENTS ----------
+const LoadingSpinner = ({ size = "md" }) => {
+  const sizeClass = {
+    sm: "h-4 w-4",
+    md: "h-6 w-6",
+    lg: "h-8 w-8",
+    xl: "h-12 w-12"
+  }[size];
 
   return (
-    <div
-      onClick={handleClick}
-      className="px-3 py-2 text-sm hover:bg-gray-100 cursor-pointer flex items-center gap-2"
-    >
-      {children}
-    </div>
+    <div className={`${sizeClass} border-2 border-blue-600 border-t-transparent rounded-full animate-spin`} />
   );
 };
 
@@ -106,34 +129,53 @@ const CallStatusIcon = ({ answered, inbound }) => {
 
 const UserAvatar = ({ name, className = "w-8 h-8" }) => (
   <div className={`flex-shrink-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold ${className}`}>
-    {name?.charAt(0)?.toUpperCase() || 'U'}
+    {(name || 'U').charAt(0).toUpperCase()}
   </div>
 );
 
-// FollowUp Badge Component - SIMPLIFIED (Only shows attempts count)
 const FollowUpBadge = ({ followUp }) => {
   const attempts = followUp?.attempts || 0;
+  const status = followUp?.status || 0;
   
-  // if (attempts === 0) {
-  //   return null; 
-  // }
-
-  return (
-    <Badge className="bg-orange-100 text-orange-800 px-2 py-1 text-xs font-medium">
-      {attempts} attempt{attempts !== 1 ? 's' : ''}
-    </Badge>
-  );
+  if (status === 3) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+        <CheckCheck className="h-3 w-3" />
+        Resolved
+      </span>
+    );
+  }
+  
+  if (attempts === 0 && status === 1) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
+        <AlertCircle className="h-3 w-3" />
+        Needs Follow-up
+      </span>
+    );
+  }
+  
+  if (attempts > 0) {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+        <Clock className="h-3 w-3" />
+        {attempts} attempt{attempts !== 1 ? 's' : ''}
+      </span>
+    );
+  }
+  
+  return null;
 };
 
-// Compact Resolve Button Component
 const ResolveButton = ({ callId, followUpStatus, onResolve, loading }) => {
   const isResolved = followUpStatus === 3;
   
   if (isResolved) {
     return (
-      <Badge className="bg-green-100 text-green-800 px-2 py-1 text-xs">
-        <Check className="h-3 w-3" />
-      </Badge>
+      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-green-100 text-green-800 border border-green-300">
+        <CheckCheck className="h-4 w-4" />
+        Resolved
+      </span>
     );
   }
 
@@ -141,275 +183,435 @@ const ResolveButton = ({ callId, followUpStatus, onResolve, loading }) => {
     <button
       onClick={() => onResolve(callId)}
       disabled={loading}
-      className="p-1.5 px-2 text-blue-600 rounded-full hover:bg-blue-50 border border-blue-200 transition-colors disabled:opacity-50"
-      title="Mark as resolved"
+      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
     >
-      {loading ? (
-        <div className="h-3 w-3 border-2 border-blue-600 rounded-full animate-spin" />
-      ) : (
-        <Check className="h-4 w-4" />
-      )}
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+      Resolve
     </button>
   );
 };
 
-// Spam Button with Confirmation
-const SpamButton = ({ callId, isSpam, onMarkSpam }) => {
-  const handleClick = () => {
-    if (window.confirm('Are you sure you want to mark this number as spam? This will mark all calls from this number as spam.')) {
-      onMarkSpam(callId);
-    }
-  };
+const NoteButton = ({ onAddNote }) => (
+  <button
+    onClick={onAddNote}
+    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 hover:from-gray-200 hover:to-gray-300 border border-gray-300 transition-all"
+  >
+    <MessageSquare className="h-4 w-4" />
+    Note
+  </button>
+);
 
+const SpamButton = ({ isSpam, onMarkSpam }) => {
   if (isSpam) {
     return (
-      <Badge className="bg-red-100 text-red-800 px-2 py-1 text-xs">
-        <Shield className="h-5 w-5" />
-      </Badge>
+      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium bg-red-100 text-red-800 border border-red-300">
+        <Shield className="h-4 w-4" />
+        Spam
+      </span>
     );
   }
 
   return (
     <button
-      onClick={handleClick}
-      className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-md transition-colors"
-      title="Mark as Spam"
+      onClick={onMarkSpam}
+      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border border-red-300 transition-all"
     >
-      <Ban className="h-5 w-5" />
+      <Ban className="h-4 w-4" />
+      Spam
     </button>
   );
 };
 
-// TimeDisplay Component
 const TimeDisplay = ({ startTime }) => {
-  const displayDate = new Date(startTime);
+  if (!startTime) return <span className="text-gray-400 text-sm">N/A</span>;
   
-  const timeString = displayDate.toLocaleTimeString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
-  
-  const dateString = displayDate.toLocaleDateString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit'
-  });
+  try {
+    const date = new Date(startTime);
+    
+    const timeString = date.toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    
+    const dateString = date.toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    });
 
-  return (
-    <div className="text-xs sm:text-sm">
-      <div className="font-medium text-gray-900">{timeString}</div>
-      <div className="text-xs text-gray-500">{dateString}</div>
-    </div>
-  );
+    return (
+      <div className="flex flex-col">
+        <div className="font-medium text-gray-900 text-sm">{timeString}</div>
+        <div className="text-xs text-gray-500">{dateString}</div>
+      </div>
+    );
+  } catch {
+    return <span className="text-gray-400 text-sm">Invalid</span>;
+  }
 };
 
-// CallerDisplay component
 const CallerDisplay = ({ caller }) => {
-  const { name, phone, formattedPhone } = caller;
+  const { name, phone, formattedPhone } = caller || {};
   
   const displayName = name || formattedPhone || phone || "Unknown Caller";
   const displayPhone = formattedPhone || phone;
 
   const isDuplicate = name === phone || 
                      name === "Unknown Caller" || 
-                     name?.includes(phone) || 
-                     phone?.includes(name);
+                     (name && phone && (name.includes(phone) || phone.includes(name)));
 
   return (
-    <div className="flex flex-col items-start">
-      <div className="text-sm font-medium text-gray-900">
+    <div className="flex flex-col">
+      <div className="font-medium text-gray-900 text-sm">
         {displayName}
       </div>
       {!isDuplicate && displayPhone && (
-        <div className="text-xs text-gray-500">{displayPhone}</div>
+        <div className="text-xs text-gray-500 font-mono">{displayPhone}</div>
       )}
     </div>
   );
 };
 
-// Main Component
+// ---------- CUSTOM SELECT ----------
+const CustomSelect = ({ value, onValueChange, children, className }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectRef = useRef(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
+  const selectedChild = Array.isArray(children) 
+    ? children.find(child => child?.props?.value === value)
+    : null;
+  
+  const displayText = selectedChild ? selectedChild.props.children : "Filter by team member";
+
+  return (
+    <div className={`relative ${className}`} ref={selectRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-3 py-2.5 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all"
+      >
+        <div className="flex items-center gap-2 truncate">
+          <Filter className="h-4 w-4 flex-shrink-0 text-gray-500" />
+          <span className="truncate text-gray-700">
+            {typeof displayText === 'string' ? displayText : "Filter by team member"}
+          </span>
+        </div>
+        <ChevronDown className={`h-4 w-4 flex-shrink-0 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CustomSelectItem = ({ value, children, onSelect }) => {
+  const handleClick = () => {
+    onSelect(value);
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      className="px-3 py-2.5 text-sm hover:bg-gray-100 cursor-pointer flex items-center gap-2 transition-colors"
+    >
+      {children}
+    </div>
+  );
+};
+
+// ---------- MAIN COMPONENT ----------
 const MissedCalls = () => {
   const [calls, setCalls] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTeamMember, setSelectedTeamMember] = useState("all");
   const [sortBy, setSortBy] = useState("startTime");
   const [sortOrder, setSortOrder] = useState("desc");
   const [loading, setLoading] = useState(true);
-  const [teamLoading, setTeamLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [resolvingCallId, setResolvingCallId] = useState(null);
+  const [editingNoteId, setEditingNoteId] = useState(null);
+  const [noteText, setNoteText] = useState("");
 
-  // Data mapping function
-  const mapCallData = useCallback((call) => ({
-    id: call._id,
-    caller: {
-      name: call.phonebookName,
-      phone: call.fromNumber,
-      formattedPhone: call.fromFormattedNumber
-    },
-    receiver: {
-      name: call.userId?.name || "Unassigned",
-      id: call.userId?._id || "unassigned",
-    },
-    duration: call.duration ? formatSeconds(call.duration) : "0:00",
-    answered: call.answered,
-    inbound: call.inbound,
-    startTime: call.startTime,
-    notes: call.notes || "",
-    isSpam: call.isSpam || false,
-    followUp: call.followUp || { status: 0, attempts: 0 }
-  }), []);
+  const { members: teamMembers, loading: teamLoading, refetch: refetchTeam } = useTeamMembers();
 
-  // Format seconds to MM:SS
-  const formatSeconds = (seconds) => {
+  // Format seconds
+  const formatSeconds = useCallback((seconds) => {
     if (!seconds || seconds <= 0) return '0:00';
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-  };
+  }, []);
 
-  // Safe team members array
-  const safeTeamMembers = useMemo(() => {
-    if (!teamMembers) return [];
-    if (Array.isArray(teamMembers)) return teamMembers;
-    if (typeof teamMembers === 'object') return [teamMembers];
-    return [];
-  }, [teamMembers]);
-
-  // API calls
-  const fetchTeamMembers = useCallback(async () => {
+  // Map call data from backend
+  const mapCallData = useCallback((call) => {
     try {
-      setTeamLoading(true);
-      let members = [];
-      
-      console.log("Fetching team members...");
-
-      // Try multiple API endpoints
-      try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/calls/team/performance?period=today`,
-          { withCredentials: true }
-        );
-        members = response.data?.data || [];
-      } catch (performanceError) {
-        try {
-          const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/calls/team/member-stats?period=today`,
-            { withCredentials: true }
-          );
-          members = response.data?.data?.teamStats || [];
-        } catch (memberStatsError) {
-          console.log("Member-stats API also failed");
-        }
-      }
-
-      // Agar APIs fail hui ya data nahi mila, toh calls se extract karo
-      if (!members || members.length === 0) {
-        const receiverMap = new Map();
-        calls.forEach(call => {
-          if (call.receiver && call.receiver.id && call.receiver.id !== "unassigned" && !receiverMap.has(call.receiver.id)) {
-            receiverMap.set(call.receiver.id, true);
-            members.push({
-              userId: call.receiver.id,
-              userName: call.receiver.name,
-              userRole: 'Team Member'
-            });
-          }
-        });
-      }
-
-      // Final safety check - ensure it's an array
-      if (!Array.isArray(members)) {
-        members = members ? [members] : [];
-      }
-
-      setTeamMembers(members);
-      
+      return {
+        id: call._id || call.id,
+        caller: {
+          name: call.phonebookName || call.callerName || "Unknown Caller",
+          phone: call.fromNumber || call.phoneNumber,
+          formattedPhone: call.fromFormattedNumber || call.formattedPhone
+        },
+        receiver: {
+          name: call.userId?.name || call.userInfo?.name || call.assignedTo || "Unassigned",
+          id: call.userId?._id || call.userId || call.assignedToId || "unassigned",
+        },
+        duration: call.duration ? formatSeconds(call.duration) : "0:00",
+        answered: call.answered || false,
+        inbound: call.inbound || false,
+        startTime: call.startTime || call.startTimeIST || call.createdAt,
+        notes: call.notes || "",
+        isSpam: call.isSpam || false,
+        followUp: call.followUp || { status: 0, attempts: 0 }
+      };
     } catch (error) {
-      console.error("Error fetching team members:", error);
-      toast.error("Failed to load team members");
-      setTeamMembers([]);
-    } finally {
-      setTeamLoading(false);
+      console.error("Error mapping call:", error, call);
+      return null;
     }
-  }, [calls]);
+  }, [formatSeconds]);
 
-  const fetchMissedCalls = useCallback(async () => {
+  // Fetch missed calls from backend
+  const fetchMissedCalls = useCallback(async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
+      else setRefreshing(true);
+      
+      const token = localStorage.getItem("token");
+      
+      if (!token) {
+        toast.error("Please login again");
+        return;
+      }
+      
+      console.log("Fetching missed calls from:", `${process.env.NEXT_PUBLIC_API_URL}/api/calls/branch-followup-calls`);
+      
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/branch-followup-calls`,
-        { withCredentials: true }
+        `${process.env.NEXT_PUBLIC_API_URL || ''}/api/calls/branch-followup-calls`,
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true,
+          params: { 
+            limit: 100,
+            page: 1
+          }
+        }
       );
       
+      console.log("Missed calls response:", response.data);
+      
       if (response.data.success) {
-        const mappedCalls = response.data.data.map(mapCallData);
+        const callsData = response.data.data || [];
+        const mappedCalls = callsData.map(mapCallData).filter(call => call !== null);
         setCalls(mappedCalls);
+        toast.success(`Loaded ${mappedCalls.length} missed calls`);
       } else {
         toast.error(response.data.message || "Failed to fetch missed calls");
         setCalls([]);
       }
     } catch (error) {
-      console.error("Fetch error:", error);
-      toast.error(error.response?.data?.message || "Failed to fetch missed calls");
+      console.error("Fetch error details:", error);
+      console.error("Error response:", error.response?.data);
+      
+      let message = "Failed to fetch missed calls";
+      if (error.response?.status === 401) {
+        message = "Please login again";
+      } else if (error.response?.status === 403) {
+        message = "Access denied";
+      } else if (error.response?.data?.message) {
+        message = error.response.data.message;
+      }
+      
+      toast.error(message);
       setCalls([]);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
+      setRefreshing(false);
     }
   }, [mapCallData]);
 
-  // Mark call as resolved
+  // Refresh data
+  const handleRefresh = useCallback(() => {
+    fetchMissedCalls(false);
+    refetchTeam();
+  }, [fetchMissedCalls, refetchTeam]);
+
+  // Mark as resolved - CORRECTED API CALL
   const markAsResolved = useCallback(async (callId) => {
     try {
       setResolvingCallId(callId);
       
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login again");
+        return;
+      }
+      
+      console.log("Marking as resolved:", callId);
+      
       const response = await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/followup`,
         { 
-          status: 3, // 3 = resolved in followup status
+          status: 3, // 3 = resolved
           notes: "Marked as resolved from dashboard",
           updateAll: true 
         },
-        { withCredentials: true }
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true 
+        }
       );
+      
+      console.log("Resolve response:", response.data);
 
-      if (response.data.success) {        
-        toast.success("Call marked as resolved successfully!");
-        fetchMissedCalls();
+      if (response.data.success) {
+        const updatedCount = response.data.data?.updatedCount || 1;
+        toast.success(`✓ Resolved ${updatedCount} call${updatedCount > 1 ? 's' : ''}`);
+        
+        // Update local state
+        setCalls(prev => prev.map(call => 
+          call.id === callId 
+            ? { 
+                ...call, 
+                followUp: { 
+                  ...call.followUp, 
+                  status: 3,
+                  attempts: call.followUp.attempts || 0
+                } 
+              }
+            : call
+        ));
+        
       } else {
-        toast.error(response.data.message || "Failed to mark as resolved");
+        toast.error(response.data.message || "Failed to resolve");
       }
     } catch (error) {
-      console.error("Resolve error:", error);
-      toast.error(error.response?.data?.message || "Failed to mark call as resolved");
+      console.error("Resolve error details:", error);
+      console.error("Error response:", error.response?.data);
+      
+      let message = "Failed to resolve call";
+      if (error.response?.status === 404) {
+        message = "Call not found";
+      } else if (error.response?.data?.message) {
+        message = error.response.data.message;
+      }
+      
+      toast.error(message);
     } finally {
       setResolvingCallId(null);
     }
-  }, [fetchMissedCalls]);
+  }, []);
 
-  // Mark as spam with confirmation
+  // Mark as spam - CORRECTED API CALL
   const markAsSpam = useCallback(async (callId) => {
+    if (!window.confirm('Are you sure you want to mark this number as spam? This will mark ALL calls from this number as spam.')) {
+      return;
+    }
+    
     try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login again");
+        return;
+      }
+      
       const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/spam`,
+        `${process.env.NEXT_PUBLIC_API_URL || ''}/api/calls/${callId}/spam`,
         {},
-        { withCredentials: true }
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true 
+        }
       );
       
       if (response.data.success) {
         setCalls(prev => prev.map(call => 
           call.id === callId ? { ...call, isSpam: true } : call
         ));
-        toast.success("Call marked as spam successfully!");
+        toast.success("✓ Marked as spam");
       } else {
         toast.error(response.data.message || "Failed to mark as spam");
       }
     } catch (error) {
-      toast.error("Failed to mark as spam");
+      console.error("Spam error:", error);
+      toast.error(error.response?.data?.message || "Failed to mark as spam");
     }
+  }, []);
+
+  // Add note - CORRECTED API CALL
+  const addNote = useCallback(async (callId, note) => {
+    if (!note.trim()) return;
+    
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login again");
+        return;
+      }
+      
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL || ''}/api/calls/${callId}/notes`,
+        { notes: note },
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true 
+        }
+      );
+      
+      if (response.data.success) {
+        setCalls(prev => prev.map(call => 
+          call.id === callId ? { ...call, notes: note } : call
+        ));
+        toast.success("✓ Note saved");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to save note");
+    }
+  }, []);
+
+  // Note editing functions
+  const startNoteEditing = useCallback((callId, currentNote = "") => {
+    setEditingNoteId(callId);
+    setNoteText(currentNote);
+  }, []);
+
+  const saveNote = useCallback((callId) => {
+    addNote(callId, noteText);
+    setEditingNoteId(null);
+    setNoteText("");
+  }, [addNote, noteText]);
+
+  const cancelNoteEditing = useCallback(() => {
+    setEditingNoteId(null);
+    setNoteText("");
   }, []);
 
   // Effects
@@ -417,348 +619,549 @@ const MissedCalls = () => {
     fetchMissedCalls();
   }, [fetchMissedCalls]);
 
-  useEffect(() => {
-    if (calls.length > 0) {
-      fetchTeamMembers();
-    } else {
-      setTeamMembers([]);
-      setTeamLoading(false);
-    }
-  }, [calls, fetchTeamMembers]);
-
   // Filter and sort logic
   const filteredAndSortedCalls = useMemo(() => {
-    if (!calls || !Array.isArray(calls)) return [];
+    if (!Array.isArray(calls)) return [];
     
-    return calls
-      .filter((call) => {
-        const matchesTeamMember = selectedTeamMember === "all" || call.receiver.id === selectedTeamMember;
-        
-        const searchLower = searchTerm.toLowerCase();
-        const matchesSearch = 
-          call.caller.phone?.includes(searchTerm) ||
-          call.caller.name?.toLowerCase().includes(searchLower) ||
-          call.notes?.toLowerCase().includes(searchLower) ||
-          call.receiver.name?.toLowerCase().includes(searchLower);
-
-        return matchesTeamMember && matchesSearch;
-      })
-      .sort((a, b) => {
-        const getSortValue = (item) => {
-          switch (sortBy) {
-            case "startTime": return new Date(item.startTime).getTime();
-            case "receiver": return item.receiver.name;
-            case "followUpAttempts": return item.followUp.attempts;
-            default: return 0;
-          }
-        };
-
-        const aValue = getSortValue(a);
-        const bValue = getSortValue(b);
-
-        if (typeof aValue === "string") {
-          return sortOrder === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-        }
-        return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-      });
+    const filtered = calls.filter((call) => {
+      // Filter by team member
+      if (selectedTeamMember !== "all" && call.receiver.id !== selectedTeamMember) {
+        return false;
+      }
+      
+      // Filter by search
+      if (!searchTerm.trim()) return true;
+      
+      const term = searchTerm.toLowerCase();
+      return (
+        (call.caller.name || "").toLowerCase().includes(term) ||
+        (call.caller.phone || "").includes(term) ||
+        (call.caller.formattedPhone || "").includes(term) ||
+        (call.receiver.name || "").toLowerCase().includes(term) ||
+        (call.notes || "").toLowerCase().includes(term)
+      );
+    });
+    
+    // Sort
+    return filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortBy) {
+        case "startTime":
+          aValue = new Date(a.startTime).getTime();
+          bValue = new Date(b.startTime).getTime();
+          break;
+        case "receiver":
+          aValue = a.receiver.name.toLowerCase();
+          bValue = b.receiver.name.toLowerCase();
+          break;
+        case "followUpAttempts":
+          aValue = a.followUp.attempts || 0;
+          bValue = b.followUp.attempts || 0;
+          break;
+        case "caller":
+          aValue = a.caller.name?.toLowerCase() || "";
+          bValue = b.caller.name?.toLowerCase() || "";
+          break;
+        default:
+          return 0;
+      }
+      
+      if (typeof aValue === "string") {
+        return sortOrder === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+      }
+      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
+    });
   }, [calls, searchTerm, selectedTeamMember, sortBy, sortOrder]);
 
-  // KPI calculation
+  // KPI data
   const kpiData = useMemo(() => {
-    if (!calls || !Array.isArray(calls)) return { 
-      missedCalls: 0, 
-      pendingFollowups: 0,
-      teamMemberCalls: null 
-    };
+    const total = filteredAndSortedCalls.length;
+    const pending = filteredAndSortedCalls.filter(call => call.followUp.status === 1).length;
+    const resolved = filteredAndSortedCalls.filter(call => call.followUp.status === 3).length;
+    const spam = filteredAndSortedCalls.filter(call => call.isSpam).length;
     
-    const filteredCalls = calls.filter(call => 
-      selectedTeamMember === "all" || call.receiver.id === selectedTeamMember
-    );
-    
-    return { 
-      missedCalls: filteredCalls.filter(call => !call.answered && call.inbound).length,
-      pendingFollowups: filteredCalls.filter(call => call.followUp.status === 1).length,
-      teamMemberCalls: selectedTeamMember !== "all" ? filteredCalls.length : null
-    };
-  }, [calls, selectedTeamMember]);
+    return { total, pending, resolved, spam };
+  }, [filteredAndSortedCalls]);
 
-  // Helper functions
-  const getSelectedMemberName = useCallback(() => {
-    if (selectedTeamMember === "all") return "All Team Members";
-    if (selectedTeamMember === "unassigned") return "Unassigned Calls";
-    
-    const member = safeTeamMembers.find(m => m.userId === selectedTeamMember);
-    return member ? member.userName : "Selected Member";
-  }, [selectedTeamMember, safeTeamMembers]);
-
-  const handleTeamMemberSelect = useCallback((value) => {
+  // Handlers
+  const handleTeamMemberSelect = (value) => {
     setSelectedTeamMember(value);
-  }, []);
+  };
 
-  const handleSort = useCallback((key) => {
-    setSortBy(key);
-    setSortOrder(prev => sortBy === key ? (prev === "asc" ? "desc" : "asc") : "desc");
-  }, [sortBy]);
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortOrder(prev => prev === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortOrder("desc");
+    }
+  };
 
-  const clearFilters = useCallback(() => {
+  const clearFilters = () => {
     setSearchTerm("");
     setSelectedTeamMember("all");
-  }, []);
-
-  // Action handlers
-  const addNote = useCallback(async (callId, note) => {
-    try {
-      await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/notes`,
-        { notes: note },
-        { withCredentials: true }
-      );
-      setCalls(prev => prev.map(call => 
-        call.id === callId ? { ...call, notes: note } : call
-      ));
-      toast.success("Note added successfully");
-    } catch (error) {
-      toast.error("Failed to add note");
-    }
-  }, []);
+  };
 
   // Loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="flex flex-col items-center justify-center min-h-[500px] gap-4">
+        <div className="relative">
+          <div className="w-24 h-24 border-4 border-blue-100 rounded-full"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="h-12 w-12 text-blue-600 animate-spin" />
+          </div>
+        </div>
+        <p className="text-gray-600 text-lg">Loading missed calls...</p>
+        <p className="text-gray-500 text-sm">Fetching data from server</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 animate-fade-in p-4 sm:p-6">
-      {/* Header */}
-      <div className="flex flex-col justify-between items-start gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Missed Calls Dashboard</h1>
-          <p className="text-sm sm:text-base text-gray-500">
-            {selectedTeamMember === "all" 
-              ? "Monitor and manage all missed restaurant calls" 
-              : `Missed calls for ${getSelectedMemberName()}`
-            }
-          </p>
-        </div>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <KPICard 
-          title="Pending Followups" 
-          value={kpiData.pendingFollowups} 
-          icon={PhoneMissed}
-          className="border-l-4 border-l-yellow-500"
-        />
-        {selectedTeamMember !== "all" && selectedTeamMember !== "unassigned" && (
-          <KPICard 
-            title="Team Member" 
-            value={getSelectedMemberName()} 
-            icon={Users}
-            subtitle="Assigned to"
-          />
-        )}
-      </div>
-
-      {/* Filters */}
-      <Card className="p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search caller names, numbers, notes, team members..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+    <div className="min-h-screen  p-4 md:p-6">
+      <div className="">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Missed Calls Dashboard</h1>
+            <p className="text-gray-600 mt-2">
+              {selectedTeamMember === "all" 
+                ? "Track and manage all missed calls requiring follow-up" 
+                : `Missed calls assigned to ${teamMembers.find(m => m.userId === selectedTeamMember)?.userName || "selected team member"}`
+              }
+            </p>
           </div>
           
-          <div className="flex gap-2">
-            <CustomSelect 
-              value={selectedTeamMember} 
-              onValueChange={handleTeamMemberSelect}
-              className="w-[200px]"
-            >
-              <CustomSelectItem value="all" onSelect={handleTeamMemberSelect}>
-                <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  All Team Members
-                </div>
-              </CustomSelectItem>
-              
-              <CustomSelectItem value="unassigned" onSelect={handleTeamMemberSelect}>
-                <div className="flex items-center gap-2">
-                  <User className="h-4 w-4" />
-                  Unassigned Calls
-                </div>
-              </CustomSelectItem>
-              
-              {safeTeamMembers.map((member) => (
-                <CustomSelectItem key={member.userId} value={member.userId} onSelect={handleTeamMemberSelect}>
-                  <div className="flex items-center gap-2">
-                    <UserAvatar name={member.userName} />
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="inline-flex items-center gap-3 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-500/20"
+          >
+            <RefreshCw className={`h-5 w-5 ${refreshing ? "animate-spin" : ""}`} />
+            <span className="font-medium">Refresh Data</span>
+          </button>
+        </div>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          {/* <div className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center">
+                <PhoneMissed className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{kpiData.total}</div>
+                <div className="text-sm text-gray-500">Total Calls</div>
+              </div>
+            </div>
+          </div> */}
+          
+          <div className="bg-gradient-to-br from-white to-gray-50 border border-yellow-200 rounded-2xl p-5 shadow-sm border-l-4 border-l-yellow-500">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl flex items-center justify-center">
+                <AlertCircle className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{kpiData.pending}</div>
+                <div className="text-sm text-gray-500">Pending Follow-up</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* <div className="bg-gradient-to-br from-white to-gray-50 border border-green-200 rounded-2xl p-5 shadow-sm border-l-4 border-l-green-500">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-xl flex items-center justify-center">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{kpiData.resolved}</div>
+                <div className="text-sm text-gray-500">Resolved</div>
+              </div>
+            </div>
+          </div> */}
+          
+          {/* <div className="bg-gradient-to-br from-white to-gray-50 border border-red-200 rounded-2xl p-5 shadow-sm border-l-4 border-l-red-500">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-red-100 to-red-200 rounded-xl flex items-center justify-center">
+                <Shield className="h-6 w-6 text-red-600" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{kpiData.spam}</div>
+                <div className="text-sm text-gray-500">Spam Calls</div>
+              </div>
+            </div>
+          </div> */}
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm mb-8 border border-gray-200">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="text"
+                placeholder="Search by caller name, phone number, notes, or team member..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+            </div>
+            
+            <div className="flex flex-col md:flex-row gap-3 md:items-center">
+              <CustomSelect 
+                value={selectedTeamMember} 
+                onValueChange={handleTeamMemberSelect} 
+                className="w-full md:w-[240px]"
+              >
+                <CustomSelectItem value="all" onSelect={handleTeamMemberSelect}>
+                  <div className="flex items-center gap-3">
+                    <Users className="h-4 w-4 text-gray-500" />
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium">{member.userName || 'Unknown Member'}</span>
-                      <span className="text-xs text-gray-500">{member.userRole || 'Team Member'}</span>
+                      <span className="font-medium">All Team Members</span>
+                      <span className="text-xs text-gray-500">Show all calls</span>
                     </div>
                   </div>
                 </CustomSelectItem>
-              ))}
-            </CustomSelect>
+                
+                <CustomSelectItem value="unassigned" onSelect={handleTeamMemberSelect}>
+                  <div className="flex items-center gap-3">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <div className="flex flex-col">
+                      <span className="font-medium">Unassigned Calls</span>
+                      <span className="text-xs text-gray-500">No team member assigned</span>
+                    </div>
+                  </div>
+                </CustomSelectItem>
+                
+                {teamMembers.map((member) => (
+                  <CustomSelectItem key={member.userId} value={member.userId} onSelect={handleTeamMemberSelect}>
+                    <div className="flex items-center gap-3">
+                      <UserAvatar name={member.userName} className="w-8 h-8" />
+                      <div className="flex flex-col">
+                        <span className="font-medium">{member.userName}</span>
+                        <span className="text-xs text-gray-500">{member.userRole}</span>
+                      </div>
+                    </div>
+                  </CustomSelectItem>
+                ))}
+              </CustomSelect>
 
-            {(searchTerm || selectedTeamMember !== "all") && (
-              <Button variant="outline" onClick={clearFilters} className="whitespace-nowrap">
-                Clear Filters
-              </Button>
-            )}
+              {(searchTerm || selectedTeamMember !== "all") && (
+                <button 
+                  onClick={clearFilters} 
+                  className="px-4 py-3 rounded-xl border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 font-medium transition-all"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </Card>
 
-      {/* Calls Table - SIMPLIFIED (No Status column, Only Follow-up attempts) */}
-      <Card>
-        <div className="hidden sm:block">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Caller</TableHead>
-                <TableHead onClick={() => handleSort("receiver")} className="cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    Assigned To
-                    <ArrowUpDown className="h-4 w-4" />
+        {/* Main Table Area */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Desktop Table */}
+          <div className="hidden lg:block overflow-x-auto">
+            <div className="min-w-full">
+              {/* Table Header */}
+              <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                <div className="grid grid-cols-12 gap-4 px-6 py-4">
+                  <div className="col-span-3">
+                    <button
+                      onClick={() => handleSort("caller")}
+                      className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    >
+                      Caller Information
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
                   </div>
-                </TableHead>
-                <TableHead onClick={() => handleSort("startTime")} className="cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    Time
-                    <ArrowUpDown className="h-4 w-4" />
+                  <div className="col-span-2">
+                    <button
+                      onClick={() => handleSort("receiver")}
+                      className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    >
+                      Assigned To
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
                   </div>
-                </TableHead>
-                <TableHead onClick={() => handleSort("followUpAttempts")} className="cursor-pointer">
-                  <div className="flex items-center gap-2">
-                    Follow-up
-                    <ArrowUpDown className="h-4 w-4" />
+                  <div className="col-span-2">
+                    <button
+                      onClick={() => handleSort("startTime")}
+                      className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    >
+                      Call Time
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
                   </div>
-                </TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+                  <div className="col-span-2">
+                    <button
+                      onClick={() => handleSort("followUpAttempts")}
+                      className="flex items-center gap-2 font-semibold text-gray-700 hover:text-gray-900"
+                    >
+                      Follow-up Status
+                      <ArrowUpDown className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="col-span-3 text-right font-semibold text-gray-700">
+                    Actions
+                  </div>
+                </div>
+              </div>
+
+              {/* Table Body */}
+              <div className="divide-y divide-gray-100">
+                {filteredAndSortedCalls.map((call) => (
+                  <div key={call.id} className="hover:bg-gray-50/50 transition-colors">
+                    <div className="grid grid-cols-12 gap-4 px-6 py-4 items-center">
+                      {/* Caller Column */}
+                      <div className="col-span-3">
+                        <div className="flex items-center gap-3">
+                          <CallStatusIcon answered={call.answered} inbound={call.inbound} />
+                          <CallerDisplay caller={call.caller} />
+                        </div>
+                      </div>
+
+                      {/* Assigned To Column */}
+                      <div className="col-span-2">
+                        <div className="flex items-center gap-2">
+                          <UserAvatar name={call.receiver.name} />
+                          <div>
+                            <div className="font-medium text-gray-900 text-sm">{call.receiver.name}</div>
+                            {call.duration !== "0:00" && (
+                              <div className="text-xs text-gray-500">Duration: {call.duration}</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Time Column */}
+                      <div className="col-span-2">
+                        <TimeDisplay startTime={call.startTime} />
+                      </div>
+
+                      {/* Status Column */}
+                      <div className="col-span-2">
+                        <FollowUpBadge followUp={call.followUp} />
+                      </div>
+
+                      {/* Actions Column */}
+                      <div className="col-span-3">
+                        <div className="flex items-center gap-2 justify-end">
+                          {/* <ResolveButton 
+                            callId={call.id}
+                            followUpStatus={call.followUp.status}
+                            onResolve={markAsResolved}
+                            loading={resolvingCallId === call.id}
+                          /> */}
+                          
+                          {editingNoteId === call.id ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                value={noteText}
+                                onChange={(e) => setNoteText(e.target.value)}
+                                placeholder="Type note..."
+                                className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm w-32"
+                                autoFocus
+                              />
+                              <button 
+                                onClick={() => saveNote(call.id)} 
+                                className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700"
+                              >
+                                Save
+                              </button>
+                              <button 
+                                onClick={cancelNoteEditing}
+                                className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <NoteButton 
+                              onAddNote={() => startNoteEditing(call.id, call.notes)}
+                            />
+                          )}
+                          
+                          <SpamButton 
+                            isSpam={call.isSpam}
+                            onMarkSpam={() => markAsSpam(call.id)}
+                          />
+                        </div>
+                        
+                        {/* Notes display */}
+                        {call.notes && !editingNoteId && (
+                          <div className="mt-2 text-xs text-gray-600 bg-gray-50 p-2 rounded-lg">
+                            <div className="flex items-center gap-1 mb-1">
+                              <MessageSquare className="h-3 w-3" />
+                              <span className="font-medium">Note:</span>
+                            </div>
+                            <p className="truncate">{call.notes}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="lg:hidden">
+            <div className="p-4 space-y-4">
               {filteredAndSortedCalls.map((call) => (
-                <TableRow key={call.id} className="hover:bg-gray-50">
-                  <TableCell>
+                <div key={call.id} className="bg-gradient-to-br from-white to-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm">
+                  {/* Card Header */}
+                  <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
                       <CallStatusIcon answered={call.answered} inbound={call.inbound} />
                       <CallerDisplay caller={call.caller} />
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <UserAvatar name={call.receiver.name} />
-                      <span className="text-sm font-medium text-gray-900">{call.receiver.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <TimeDisplay startTime={call.startTime} />
-                  </TableCell>
-                  <TableCell>
                     <FollowUpBadge followUp={call.followUp} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <ResolveButton 
-                        callId={call.id}
-                        followUpStatus={call.followUp.status}
-                        onResolve={markAsResolved}
-                        loading={resolvingCallId === call.id}
-                      />
-                      
-                      <button
-                        onClick={() => addNote(call.id, prompt("Enter note:") || "New note")}
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md transition-colors"
-                        title="Add Note"
-                      >
-                        <Edit3 className="h-5 w-5" />
-                      </button>
-                      
-                      <SpamButton 
-                        callId={call.id}
-                        isSpam={call.isSpam}
-                        onMarkSpam={markAsSpam}
-                      />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Mobile View - SIMPLIFIED */}
-        <div className="sm:hidden space-y-3 p-4">
-          {filteredAndSortedCalls.map((call) => (
-            <Card key={call.id} className="p-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-2">
-                    <CallStatusIcon answered={call.answered} inbound={call.inbound} />
-                    <CallerDisplay caller={call.caller} />
                   </div>
-                  <FollowUpBadge followUp={call.followUp} />
-                </div>
 
-                <div className="flex items-center gap-2 text-sm">
-                  <UserAvatar name={call.receiver.name} className="w-6 h-6" />
-                  <span className="text-gray-600">Assigned to: {call.receiver.name}</span>
-                </div>
+                  {/* Details Grid */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <User className="h-4 w-4" />
+                        <span className="text-sm font-medium">Assigned To</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <UserAvatar name={call.receiver.name} className="w-6 h-6" />
+                        <span className="font-medium text-gray-900">{call.receiver.name}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-gray-600">
+                        <Clock className="h-4 w-4" />
+                        <span className="text-sm font-medium">Call Time</span>
+                      </div>
+                      <TimeDisplay startTime={call.startTime} />
+                    </div>
+                  </div>
 
-                <div className="text-sm">
-                  <TimeDisplay startTime={call.startTime} />
-                </div>
+                  {/* Duration */}
+                  {call.duration !== "0:00" && (
+                    <div className="mb-4">
+                      <div className="inline-flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm">
+                        <Clock className="h-3 w-3" />
+                        Duration: {call.duration}
+                      </div>
+                    </div>
+                  )}
 
-                <div className="flex gap-2 pt-2 border-t">
-                  <ResolveButton 
-                    callId={call.id}
-                    followUpStatus={call.followUp.status}
-                    onResolve={markAsResolved}
-                    loading={resolvingCallId === call.id}
-                  />
-                  
-                  <button
-                    onClick={() => addNote(call.id, prompt("Enter note:") || "New note")}
-                    className="flex-1 flex items-center justify-center gap-1 p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md transition-colors"
-                  >
-                    <Edit3 className="h-4 w-4" />
-                    <span className="text-sm">Note</span>
-                  </button>
-                  
-                  <SpamButton 
-                    callId={call.id}
-                    isSpam={call.isSpam}
-                    onMarkSpam={markAsSpam}
-                  />
+                  {/* Notes */}
+                  {call.notes && !editingNoteId && (
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-2 text-gray-600 mb-1">
+                        <MessageSquare className="h-4 w-4" />
+                        <span className="text-sm font-medium">Note</span>
+                      </div>
+                      <p className="text-gray-700">{call.notes}</p>
+                    </div>
+                  )}
+
+                  {/* Note Editing */}
+                  {editingNoteId === call.id && (
+                    <div className="mb-4 space-y-2">
+                      <textarea
+                        value={noteText}
+                        onChange={(e) => setNoteText(e.target.value)}
+                        placeholder="Type your note here..."
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        rows="2"
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => saveNote(call.id)} 
+                          className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700"
+                        >
+                          Save Note
+                        </button>
+                        <button 
+                          onClick={cancelNoteEditing}
+                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-300"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex flex-wrap gap-2 pt-4 border-t">
+                    <ResolveButton 
+                      callId={call.id}
+                      followUpStatus={call.followUp.status}
+                      onResolve={markAsResolved}
+                      loading={resolvingCallId === call.id}
+                    />
+                    
+                    {!editingNoteId && (
+                      <NoteButton 
+                        onAddNote={() => startNoteEditing(call.id, call.notes)}
+                      />
+                    )}
+                    
+                    <SpamButton 
+                      isSpam={call.isSpam}
+                      onMarkSpam={() => markAsSpam(call.id)}
+                    />
+                  </div>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Empty State */}
+          {filteredAndSortedCalls.length === 0 && !loading && (
+            <div className="py-16 text-center">
+              <div className="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                <PhoneMissed className="h-16 w-16 text-gray-400" />
               </div>
-            </Card>
-          ))}
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No missed calls found</h3>
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                {searchTerm || selectedTeamMember !== "all" 
+                  ? "No calls match your current search or filter criteria"
+                  : "Great job! All missed calls have been followed up or there are no pending calls."
+                }
+              </p>
+              {(searchTerm || selectedTeamMember !== "all") && (
+                <button 
+                  onClick={clearFilters}
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium hover:from-blue-600 hover:to-blue-700 transition-all"
+                >
+                  Clear filters to see all calls
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Loading Overlay */}
+          {refreshing && (
+            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="h-12 w-12 text-blue-600 animate-spin mx-auto mb-4" />
+                <p className="text-gray-700 font-medium">Refreshing data...</p>
+                <p className="text-gray-500 text-sm">Updating from server</p>
+              </div>
+            </div>
+          )}
         </div>
 
-        {filteredAndSortedCalls.length === 0 && !loading && (
-          <div className="p-8 text-center text-gray-500">
-            <PhoneMissed className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <p>No missed calls found</p>
-            {(searchTerm || selectedTeamMember !== "all") && (
-              <Button variant="outline" onClick={clearFilters} className="mt-2">
-                Clear filters to see all calls
-              </Button>
-            )}
+        {/* Footer Stats */}
+        {filteredAndSortedCalls.length > 0 && (
+          <div className="mt-6 text-center text-gray-500 text-sm">
+            Showing {filteredAndSortedCalls.length} of {calls.length} missed calls
+            {selectedTeamMember !== "all" && ` for selected team member`}
           </div>
         )}
-      </Card>
+      </div>
     </div>
   );
 };

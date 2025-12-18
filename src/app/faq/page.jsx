@@ -2,7 +2,7 @@
 import FAQClient from "./FAQClient";
 
 export const metadata = {
-  title: "FAQs - FasterQ",
+  title: "FAQs | FasterQ Call Tracking Software Questions & Answers",
   description:
     "Find answers to common questions about FasterQ, including features, call history, recording, privacy, security, billing, and troubleshooting.",
 };

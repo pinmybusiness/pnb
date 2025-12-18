@@ -4,6 +4,54 @@ import { notFound } from 'next/navigation';
 import BlogListing from './BlogListing';
 import BlogSchema from './BlogSchema';
 
+export async function generateMetadata({ searchParams }) {
+  const params = await searchParams; // ✅ Next.js 15 required
+  const currentPage = parseInt(params?.page || "1", 10);
+
+  const baseTitle = "Blog | FasterQ Call Tracking Software";
+  const title =
+    currentPage > 1
+      ? `Blog - Page ${currentPage} | FasterQ Call Tracking Software`
+      : baseTitle;
+
+  const description =
+    "Read expert insights, tips, and updates on SIM-based call tracking, sales productivity, and business growth by FasterQ.";
+
+  const canonicalUrl =
+    currentPage > 1
+      ? `https://www.fasterq.in/blog?page=${currentPage}`
+      : `https://www.fasterq.in/blog`;
+
+  return {
+    title,
+    description,
+
+    alternates: {
+      canonical: canonicalUrl,
+    },
+
+    robots: {
+      index: true,
+      follow: true,
+    },
+
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      siteName: "FasterQ",
+      type: "website",
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
+
+
 async function getBlogPosts(page = 1, pageSize = 6) {
   const url = `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.getArticles}?website=${API_CONFIG.websiteId}&page=${page}&pageSize=${pageSize}`;
   
@@ -28,11 +76,13 @@ async function getBlogPosts(page = 1, pageSize = 6) {
 }
 
 export default async function BlogPage({ searchParams }) {
-  const currentPage = parseInt(searchParams.page || '1', 10);
-   // ❌ If page is 0, -1, NaN → return 404
+ const params = await searchParams; // ✅ REQUIRED in Next 15
+  const currentPage = parseInt(params?.page || "1", 10);
+
   if (isNaN(currentPage) || currentPage < 1) {
     notFound();
   }
+
   const { posts, pagination } = await getBlogPosts(currentPage);
   const hasNextPage = pagination ? currentPage < pagination.totalPages : false;
 

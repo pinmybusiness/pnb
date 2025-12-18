@@ -4,7 +4,7 @@ import CtaButton from "./CtaButton";
 export default function Hero() {
 
   return (
-    <section className="relative bg-gradient-to-br from-[#FFF5EC] via-orange-50/40 to-white py-14 md:py-20 -mt-10 px-6 lg:px-8 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-[#FFF5EC] via-orange-50/40 to-white py-14 md:py-20 -mt-10 md:pt-25 px-6 lg:px-8 overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="hero-bg-blob absolute top-20 -left-20 w-96 h-96 bg-[#FF5211]/10 rounded-full blur-3xl animate-pulse"></div>
@@ -62,7 +62,7 @@ export default function Hero() {
           </div>
 
           {/* Heading */}
-          <div className="!text-4xl lg:!text-6xl font-extrabold leading-tight text-gray-900 mb-6">
+          <h1 className="!text-4xl lg:!text-6xl font-extrabold leading-tight text-gray-900 mb-6">
 
             {/* FIRST LINE — SOLID COLOR TEXT (NO GRADIENT) */}
             <span
@@ -83,7 +83,7 @@ export default function Hero() {
             >
               Close Every Deal.
             </span>
-          </div>
+          </h1>
 
 
           {/* Description */}

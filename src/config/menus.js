@@ -35,7 +35,7 @@ export const allMenus = [
     children: [
       { name: "FollowUp Calls", href: "/dashboard/trackly/followup-calls", roles: [6,7,8] },
       { name: "Calls History", href: "/dashboard/trackly", roles: [6,7,8] },
-      // { name: "Spam Calls", href: "/dashboard/trackly/spam-numbers", roles: [6,7,8] },
+      { name: "Customer Intelligence", href: "/dashboard/trackly/customer-intelligence", roles: [6,7,8] },
     ]
   },
   // { 

@@ -3,14 +3,14 @@ import React, { useMemo, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
 const WEBSITES = [
-  {
-    id: 1,
-    label: "Pride Location",
-    brand: "PrideLocation.com",
-    baseUrl: "https://www.pridelocation.com",
-    videoChatUrl: "https://www.pridelocation.com/video-chat-app",
-    apiWebsiteParam: 1,
-  },
+  // {
+  //   id: 1,
+  //   label: "Pride Location",
+  //   brand: "PrideLocation.com",
+  //   baseUrl: "https://www.pridelocation.com",
+  //   videoChatUrl: "https://www.pridelocation.com/video-chat-app",
+  //   apiWebsiteParam: 1,
+  // },
   {
     id: 2,
     label: "ChatUSA.club",

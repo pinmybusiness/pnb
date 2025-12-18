@@ -9,7 +9,6 @@ import {
   BarChart3,
   Settings,
   X,
-  Briefcase,
 } from 'lucide-react';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'react-hot-toast';
@@ -19,7 +18,6 @@ import Link from 'next/link';
 import OverviewTab from '@/components/BranchView/OverviewTab';
 import PerformanceTab from '@/components/BranchView/PerformanceTab';
 import TeamTab from '@/components/BranchView/TeamTab';
-import OpportunitiesTab from '@/components/BranchView/OpportunitiesTab';
 import SettingsTab from '@/components/BranchView/SettingsTab';
 
 const Button = ({ children, className = '', ...props }) => (
@@ -136,7 +134,6 @@ const BranchView = () => {
             { id: 'overview', name: 'Overview', icon: Eye },
             { id: 'performance', name: 'Performance', icon: BarChart3 },
             { id: 'team', name: 'Team', icon: Users },
-            { id: 'opportunities', name: 'Opportunities', icon: Briefcase },
             { id: 'settings', name: 'Settings', icon: Settings },
           ].map((tab) => {
             const IconComponent = tab.icon;
@@ -168,7 +165,6 @@ const BranchView = () => {
         {activeTab === 'overview' && <OverviewTab branch={branch} />}
         {activeTab === 'performance' && <PerformanceTab />}
         {activeTab === 'team' && <TeamTab branchId={id} teamMembers={teamMembers} setTeamMembers={setTeamMembers} />}
-        {activeTab === 'opportunities' && <OpportunitiesTab branchId={id} />}
         {activeTab === 'settings' && <SettingsTab />}
       </div>
     </div>

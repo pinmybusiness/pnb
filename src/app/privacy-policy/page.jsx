@@ -2,7 +2,7 @@
 import { Shield, Mail, MapPin, Check, FileText, AlertCircle } from 'lucide-react';
 
 export const metadata = {
-  title: "Privacy Policy - FasterQ",
+  title: "Privacy Policy | FasterQ Call Tracking Software",
   description: "Read the privacy policy for FasterQ, including data usage, storage, and user rights.",
 };
 

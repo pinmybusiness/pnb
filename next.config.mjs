@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: false, // Disable for MediaPipe to work
   images: {
-    domains: ['lh3.googleusercontent.com', 'localhost', 'www.fasterq.in', 'api.fasterq.in'],
+    domains: ['lh3.googleusercontent.com', 'localhost', 'www.fasterq.in', 'www.pridelocation.com', 'api.fasterq.in'],
   },
   output: 'standalone', // For AWS Amplify serverful deployment
   async rewrites() {

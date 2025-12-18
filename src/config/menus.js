@@ -38,16 +38,16 @@ export const allMenus = [
       // { name: "Spam Calls", href: "/dashboard/trackly/spam-numbers", roles: [6,7,8] },
     ]
   },
-  { 
-    name: "WaitPro", 
-    icon: ClipboardList, 
-    roles: [6,7,8], 
-    children: [
-      { name: "Entry", href: "/dashboard/entry", roles: [6,7,8] },
-      { name: "Waiting List", href: "/dashboard/waiting-list", roles: [6,7,8] },
-      { name: "Analytics", href: "/dashboard/analytics", roles: [6,7] },
-    ]
-  },
+  // { 
+  //   name: "WaitPro", 
+  //   icon: ClipboardList, 
+  //   roles: [6,7,8], 
+  //   children: [
+  //     { name: "Entry", href: "/dashboard/entry", roles: [6,7,8] },
+  //     { name: "Waiting List", href: "/dashboard/waiting-list", roles: [6,7,8] },
+  //     { name: "Analytics", href: "/dashboard/analytics", roles: [6,7] },
+  //   ]
+  // },
   { name: "Teams", href: "/dashboard/teams", icon: Users, roles: [0,3,6] },
   { name: "Services", href: "/dashboard/services", icon: Wrench, roles: [0] },
   { name: "Subscriptions", href: "/dashboard/service-subscriptions", icon: CreditCard, roles: [0] },

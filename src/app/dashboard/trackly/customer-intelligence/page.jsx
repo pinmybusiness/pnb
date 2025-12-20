@@ -5,7 +5,7 @@ import {
   Users, Repeat, UserMinus, Calendar, X, Phone, Clock, TrendingUp,
   Search, PhoneCall, PhoneMissed, PhoneIncoming, PhoneOutgoing, UserPlus,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-  Loader2, CalendarDays, History, BarChart3, MessageSquare, User, Activity
+  Loader2, CalendarDays, History, BarChart3, User, Activity
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
@@ -588,26 +588,30 @@ const CustomerIntelligence = () => {
 
         {/* KPI GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KPICard 
-            title="Unique Customers" 
-            value={overview?.uniqueCustomers || 0} 
-            icon={Users}
-          />
-          <KPICard 
-            title="New Customers" 
-            value={overview?.newCustomers || 0} 
-            icon={UserPlus}
-          />
-          <KPICard 
-            title="Repeat Customers" 
-            value={overview?.repeatCustomers || 0} 
-            icon={Repeat}
-          />
-          <KPICard 
-            title="Lost Customers" 
-            value={lostCustomers.length} 
-            icon={UserMinus}
-          />
+           <KPICard 
+                title="Active Customers" 
+                value={overview?.totalCustomers || 0} 
+                icon={Users}
+                description="Total customers who contacted"
+            />
+            <KPICard 
+                title="New Customers" 
+                value={overview?.newCustomers || 0} 
+                icon={UserPlus}
+                description="First time callers"
+            />
+            <KPICard 
+                title="Repeat Customers" 
+                value={overview?.repeatCustomers || 0} 
+                icon={Repeat}
+                description="Returning customers"
+            />
+            <KPICard 
+                title="Lost Customers" 
+                value={lostCustomers.length} 
+                icon={UserMinus}
+                description="No contact in 15+ days"
+            />
         </div>
 
         {/* CUSTOMER LIST */}

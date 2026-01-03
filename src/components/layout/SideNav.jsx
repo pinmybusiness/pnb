@@ -19,16 +19,32 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
+  // const handleLogout = async () => {
+  //   try {
+  //     await dispatch(logoutUser()).unwrap();
+  //     toast.success("Logged out successfully!");
+  //     router.push("/login");
+  //   } catch (error) {
+  //     console.error("Logout error:", error);
+  //     toast.error(error.message || "Logout failed. Please try again.");
+  //   }
+  // };
+
   const handleLogout = async () => {
-    try {
-      await dispatch(logoutUser()).unwrap();
-      toast.success("Logged out successfully!");
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout error:", error);
-      toast.error(error.message || "Logout failed. Please try again.");
-    }
-  };
+  try {
+    // await dispatch(logoutUser()).unwrap();
+
+    // ✅ Clear all localStorage data
+    router.push("/login");
+    localStorage.clear();
+
+    toast.success("Logged out successfully!");
+  } catch (error) {
+    console.error("Logout error:", error);
+    toast.error(error?.message || "Logout failed. Please try again.");
+  }
+};
+
 
   const toggleSubMenu = (name) => {
     setOpenMenus((prev) => ({ ...prev, [name]: !prev[name] }));

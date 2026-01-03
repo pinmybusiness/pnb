@@ -31,16 +31,16 @@ export default function TopNav({ navigation, setSidebarOpen }) {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
-        <button className="relative p-3 rounded hover:bg-gray-100 cursor-pointer">
+      <div className="flex items-center gap-3 md:pr-4">
+        {/* <button className="relative p-3 rounded hover:bg-gray-100 cursor-pointer">
           <Bell className="h-6 w-6 text-gray-600" />
           <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
-        </button>
+        </button> */}
         <Link
           href="/dashboard/branch"
           className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 cursor-pointer"
         >
-          Branch
+          Profile
         </Link>
       </div>
     </header>

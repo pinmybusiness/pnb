@@ -10,7 +10,8 @@ import {
   Search,
   UserPlus,
   ArrowUpDown,
-  Eye
+  Eye,
+  Pen
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -18,7 +19,7 @@ import KPICard from '@/components/ui/KPICard';
 
 // 🔹 Import Roles + Helpers
 import { ROLES } from '@/constants/roles';
-import { isBranchUser as checkBranchUser, isRootAdmin } from '@/constants/roleHelpers';
+import { canEditTeamMember, isBranchUser as checkBranchUser, getRoleLabel, isRootAdmin } from '@/constants/roleHelpers';
 
 // 🔹 Reusable components (same as original design)
 const Card = ({ className = "", children }) => (
@@ -161,9 +162,9 @@ const Teams = () => {
           bValue = b.name || '';
           break;
         case 'role':
-          aValue = a.roleLabel || '';
-          bValue = b.roleLabel || '';
-          break;
+        aValue = getRoleLabel(a.role);
+        bValue = getRoleLabel(b.role);
+        break;
         default:
           return 0;
       }
@@ -280,7 +281,7 @@ const Teams = () => {
 
               <TableHead>Mobile</TableHead>
 
-              {!isBranchUser && <TableHead>Restaurant</TableHead>}
+              {!isBranchUser && <TableHead>Organization</TableHead>}
               {!isBranchUser && <TableHead>Branch</TableHead>}
 
               <TableHead onClick={() => handleSort('role')}>
@@ -342,8 +343,8 @@ const Teams = () => {
                     </TableCell>
                   )}
 
-                  <TableCell className="capitalize">
-                    {member.roleLabel || '—'}
+                  <TableCell>
+                    {getRoleLabel(member.role)}
                   </TableCell>
 
                   <TableCell>
@@ -355,6 +356,16 @@ const Teams = () => {
                       >
                         <Eye className="h-4 w-4" />
                       </button> */}
+
+                      {canEditTeamMember(user) && (
+                        <button
+                          onClick={() => router.push(`/dashboard/teams/${member._id}/edit`)}
+                          className="p-2 text-blue-600 hover:text-white hover:bg-blue-600 rounded-md"
+                          title="Edit Team Member"
+                        >
+                          <Pen className="h-4 w-4" />
+                        </button>
+                      )}
 
                       {/* Assign plan only for BRANCH_TEAM */}
                       {isRootAdmin(user.role) && member.role === ROLES.BRANCH_TEAM && (

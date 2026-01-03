@@ -99,12 +99,12 @@ const BranchProfile = () => {
                 <p className="text-sm font-medium text-gray-700">Parent Organization</p>
                 <p className="text-gray-900">{branch.parentRestaurant?.name || 'N/A'}</p>
               </div>
-              <div>
+              {/* <div>
                 <p className="text-sm font-medium text-gray-700">Status</p>
                 <p className="text-gray-900">
                   {formatStatus(branch.statusText)} {branch.statusReason ? `(${formatStatus(branch.statusReason)})` : ''}
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -178,7 +178,7 @@ const BranchProfile = () => {
 
           {/* Edit Button */}
          {canEdit && (
-  <div className="flex justify-between items-center mt-6">
+  <div className="flex flex-col md:flex-row gap-4  md:justify-between md:items-center mt-6">
     
     {/* Change Password Button */}
     <button

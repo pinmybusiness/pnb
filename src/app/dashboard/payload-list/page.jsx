@@ -2,36 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useSelector } from "react-redux";
+import apiClient from "@/lib/apiClient";
 
 export default function PayloadList() {
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState("all"); // 'all', 'json', 'non-json'
-  const { token } = useSelector((state) => state.auth);
 
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
-
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/contact`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.message || 'Failed to fetch contacts');
-        }
-
-        const data = await response.json();
-        setContacts(data);
+        const response = await apiClient.get('/api/contact');
+        setContacts(response.data);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -40,7 +23,7 @@ export default function PayloadList() {
     };
 
     fetchContacts();
-  }, [token]);
+  }, []);
 
   const formatDateTime = (date) => {
     return new Intl.DateTimeFormat('en-IN', {

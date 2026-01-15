@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { api } from '@/lib/api';
+import apiClient from '@/lib/apiClient';
 import { ArrowLeft, Package, Calendar, DollarSign, Sparkles, Check, Crown, Zap, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
@@ -15,8 +15,8 @@ export default function ServiceDetail() {
     const fetchData = async () => {
       try {
         const [serviceRes, plansRes] = await Promise.all([
-          api.get('/api/services'),
-          api.get(`/api/services/plans/${id}`)
+          apiClient.get('/api/services'),
+          apiClient.get(`/api/services/plans/${id}`)
         ]);
         
         const s = serviceRes.data.data.find(s => s._id === id);

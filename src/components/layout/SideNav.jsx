@@ -24,19 +24,13 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
   //     await dispatch(logoutUser()).unwrap();
   //     toast.success("Logged out successfully!");
   //     router.push("/login");
-  //   } catch (error) {
-  //     console.error("Logout error:", error);
-  //     toast.error(error.message || "Logout failed. Please try again.");
-  //   }
-  // };
-
   const handleLogout = async () => {
   try {
     // await dispatch(logoutUser()).unwrap();
 
-    // ✅ Clear all localStorage data
+    // ✅ Clear all localStorage data (only for non-auth data)
     router.push("/login");
-    localStorage.clear();
+    // localStorage.clear(); // Removed - cookies handle auth automatically
 
     toast.success("Logged out successfully!");
   } catch (error) {
@@ -44,7 +38,6 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
     toast.error(error?.message || "Logout failed. Please try again.");
   }
 };
-
 
   const toggleSubMenu = (name) => {
     setOpenMenus((prev) => ({ ...prev, [name]: !prev[name] }));

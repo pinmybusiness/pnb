@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import apiClient from '@/lib/apiClient';
 import { 
   User, 
   X, 
@@ -82,7 +82,7 @@ const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
     }
     setLoading(true);
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`, formData);
+      const response = await apiClient.post('/api/auth/register', formData);
       toast.success('User created successfully!');
       onSuccess?.(response.data.data);
       onClose?.();

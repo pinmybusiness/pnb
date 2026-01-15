@@ -2,19 +2,17 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 import { 
   Store, 
   MapPin, 
   X
 } from "lucide-react";
-import { useSelector } from "react-redux";
 
 const RestaurantForm = () => {
   const router = useRouter();
   const params = useParams();
   const isEditMode = !!params.id;
-  const { token } = useSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -29,26 +27,13 @@ const RestaurantForm = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Create Axios instance
-  const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL
-  });
-
-  // Add auth token to requests
-  api.interceptors.request.use(config => {
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  });
-
   // Fetch restaurant data if in edit mode
 useEffect(() => {
   if (isEditMode) {
     const fetchRestaurant = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/api/organizations/${params.id}`);
+        const response = await apiClient.get(`/api/organizations/${params.id}`);
         const restaurantData = response.data.data;
         
         // Ensure contact object exists
@@ -110,17 +95,13 @@ useEffect(() => {
       
       const submissionData = {
         ...formData,
-        // location: {
-        //   ...formData.location,
-        //   coordinates: formData.location.coordinates.map(Number)
-        // }
       };
 
       if (isEditMode) {
-        await api.put(`/api/organizations/${params.id}`, submissionData);
+        await apiClient.put(`/api/organizations/${params.id}`, submissionData);
         toast.success('Organization updated successfully!');
       } else {
-        await api.post('/api/organizations', submissionData);
+        await apiClient.post('/api/organizations', submissionData);
         toast.success('Organization created successfully!');
       }
       

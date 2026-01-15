@@ -4,7 +4,7 @@ import { MapPin, Search, Plus, DollarSign, Star, TrendingUp, ArrowUpDown, Eye, E
 import StatusBadge from "@/components/ui/StatusBadge";
 import KPICard from "@/components/ui/KPICard";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, Button, Input, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
@@ -13,7 +13,7 @@ import { useDebounce } from 'use-debounce';
 
 const Branches = () => {
   const router = useRouter();
-  const { user, token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,12 +54,7 @@ const Branches = () => {
           search: debouncedSearchTerm || undefined,
         };
 
-        const branchesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params,
-        });
+        const branchesRes = await apiClient.get('/api/branches', { params });
 
         setBranches(branchesRes.data.data);
         setPagination({
@@ -75,10 +70,8 @@ const Branches = () => {
       }
     };
 
-    if (token) {
-      fetchData();
-    }
-  }, [token, sortBy, sortOrder, statusFilter, debouncedSearchTerm, pagination.current]);
+    fetchData();
+  }, [sortBy, sortOrder, statusFilter, debouncedSearchTerm, pagination.current]);
 
   const getRestaurantName = (branch) => {
     // Handle both parentRestaurant and parentRestaurantData (from aggregation)

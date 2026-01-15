@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import apiClient from '@/lib/apiClient';
 import { useSelector } from 'react-redux';
 
 export default function MySubscriptions() {
@@ -12,7 +12,7 @@ export default function MySubscriptions() {
   useEffect(() => {
     const fetchSubs = async () => {
       try {
-        const res = await api.get(`/api/services/my/${userId}`);
+        const res = await apiClient.get(`/api/services/my/${userId}`);
         setSubs(res.data.data);
       } catch (err) { console.error(err); }
     };

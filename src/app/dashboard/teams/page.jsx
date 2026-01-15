@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
+import apiClient from "@/lib/apiClient";
 import {
   Loader2,
   Users,
@@ -86,9 +86,7 @@ const Teams = () => {
 
     if (plans.length === 0) {
       try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/services/plans`
-        );
+        const res = await apiClient.get('/api/services/plans');
         setPlans(res.data.data || []);
       } catch (err) {
         toast.error('Failed to load plans');
@@ -103,9 +101,7 @@ const Teams = () => {
     }
 
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/services/subscribe`,
-        {
+      const res = await apiClient.post('/api/services/subscribe', {
           userId: selectedMember,
           planId: selectedPlan,
           addons: [],
@@ -126,12 +122,7 @@ const Teams = () => {
   const fetchTeamMembers = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/teams`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const res = await apiClient.get(`/api/teams`);
       setTeamMembers(res.data.data || []);
     } catch (error) {
       console.error(error);

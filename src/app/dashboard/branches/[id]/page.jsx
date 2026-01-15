@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import apiClient from '@/lib/apiClient';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import OverviewTab from '@/components/BranchView/OverviewTab';
@@ -46,7 +46,7 @@ const BranchView = () => {
     const fetchBranch = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${id}`);
+        const res = await apiClient.get(`/api/branches/${id}`);
         setBranch(res.data.data);
       } catch (error) {
         toast.error('Failed to fetch branch details');

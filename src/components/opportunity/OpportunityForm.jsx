@@ -17,7 +17,7 @@ import {
   Globe,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import apiClient from '@/lib/apiClient';
 import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import Select from 'react-select';
@@ -81,7 +81,7 @@ const OpportunityForm = ({ editData = null, branchId }) => {
   useEffect(() => {
     const loadWorkTypes = async () => {
       try {
-        const fetchedWorkTypes = await fetchWorkTypes(token);
+        const fetchedWorkTypes = await fetchWorkTypes();
         setWorkTypes(fetchedWorkTypes);
       } catch (error) {
         console.error('Error fetching work types:', error);
@@ -89,7 +89,7 @@ const OpportunityForm = ({ editData = null, branchId }) => {
       }
     };
     loadWorkTypes();
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     if (editData) {
@@ -449,11 +449,8 @@ const OpportunityForm = ({ editData = null, branchId }) => {
   };
 
   useEffect(() => {
-    if (!token && !authLoading) {
-      toast.error('Please login first');
-      router.push('/auth/login');
-    }
-  }, [token, user, authLoading, router]);
+    // No need to check token - cookie-based auth handles this
+  }, [authLoading, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -502,25 +499,9 @@ const OpportunityForm = ({ editData = null, branchId }) => {
     try {
       let response;
       if (isEdit) {
-        response = await axios.put(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities/${editData._id}`,
-          submitData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        response = await apiClient.put(`/api/opportunities/${editData._id}`, submitData);
       } else {
-        response = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities`,
-          submitData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        response = await apiClient.post('/api/opportunities', submitData);
       }
 
       if (response.data.success) {

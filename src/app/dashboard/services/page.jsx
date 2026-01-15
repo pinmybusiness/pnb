@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import apiClient from '@/lib/apiClient';
 import { Package, Plus, Sparkles, ArrowRight, Layers, Zap } from 'lucide-react';
 import Link from 'next/link';
 
@@ -11,7 +11,7 @@ export default function ServicesPage() {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await api.get('/api/services');
+        const res = await apiClient.get('/api/services');
         setServices(res.data.data);
       } catch (err) {
         console.error(err);

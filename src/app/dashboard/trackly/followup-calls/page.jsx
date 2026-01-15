@@ -25,7 +25,7 @@ import {
   CheckCheck
 } from "lucide-react";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 
 // ---------- CUSTOM HOOKS ----------
 const useTeamMembers = () => {
@@ -35,31 +35,18 @@ const useTeamMembers = () => {
   const fetchTeamMembers = useCallback(async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("token");
-      
-      if (!token) {
-        console.error("No token found");
-        setMembers([]);
-        return;
-      }
       
       // Try both endpoints
       const endpoints = [
-        `${process.env.NEXT_PUBLIC_API_URL || ''}/api/calls/team/performance?period=today`,
-        `${process.env.NEXT_PUBLIC_API_URL || ''}/api/calls/team/member-stats?period=today`
+        `/api/calls/team/performance?period=today`,
+        `/api/calls/team/member-stats?period=today`
       ];
       
       let teamData = [];
       
       for (const endpoint of endpoints) {
         try {
-          const response = await axios.get(endpoint, { 
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            withCredentials: true 
-          });
+          const response = await apiClient.get(endpoint);
           
           console.log("Team members response:", response.data);
           
@@ -393,29 +380,14 @@ const MissedCalls = () => {
       if (showLoading) setLoading(true);
       else setRefreshing(true);
       
-      const token = localStorage.getItem("token");
+      console.log("Fetching missed calls from:", `/api/calls/branch-followup-calls`);
       
-      if (!token) {
-        toast.error("Please login again");
-        return;
-      }
-      
-      console.log("Fetching missed calls from:", `${process.env.NEXT_PUBLIC_API_URL}/api/calls/branch-followup-calls`);
-      
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL || ''}/api/calls/branch-followup-calls`,
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          withCredentials: true,
-          params: { 
-            limit: 100,
-            page: 1
-          }
+      const response = await apiClient.get(`/api/calls/branch-followup-calls`, {
+        params: { 
+          limit: 100,
+          page: 1
         }
-      );
+      });
       
       console.log("Missed calls response:", response.data);
       
@@ -460,29 +432,13 @@ const MissedCalls = () => {
     try {
       setResolvingCallId(callId);
       
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Please login again");
-        return;
-      }
-      
       console.log("Marking as resolved:", callId);
       
-      const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/followup`,
-        { 
-          status: 3, // 3 = resolved
-          notes: "Marked as resolved from dashboard",
-          updateAll: true 
-        },
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          withCredentials: true 
-        }
-      );
+      const response = await apiClient.patch(`/api/calls/${callId}/followup`, {
+        status: 3, // 3 = resolved
+        notes: "Marked as resolved from dashboard",
+        updateAll: true 
+      });
       
       console.log("Resolve response:", response.data);
 
@@ -511,7 +467,7 @@ const MissedCalls = () => {
       console.error("Resolve error details:", error);
       console.error("Error response:", error.response?.data);
       
-      let message = "Failed to resolve call";
+      let message = "Failed to resolve";
       if (error.response?.status === 404) {
         message = "Call not found";
       } else if (error.response?.data?.message) {
@@ -531,23 +487,7 @@ const MissedCalls = () => {
     }
     
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Please login again");
-        return;
-      }
-      
-      const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL || ''}/api/calls/${callId}/spam`,
-        {},
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          withCredentials: true 
-        }
-      );
+      const response = await apiClient.patch(`/api/calls/${callId}/spam`, {});
       
       if (response.data.success) {
         setCalls(prev => prev.map(call => 
@@ -568,23 +508,9 @@ const MissedCalls = () => {
     if (!note.trim()) return;
     
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Please login again");
-        return;
-      }
-      
-      const response = await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL || ''}/api/calls/${callId}/notes`,
-        { notes: note },
-        { 
-          headers: { 
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          withCredentials: true 
-        }
-      );
+      const response = await apiClient.patch(`/api/calls/${callId}/notes`, {
+        notes: note
+      });
       
       if (response.data.success) {
         setCalls(prev => prev.map(call => 

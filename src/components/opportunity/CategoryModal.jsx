@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, Plus, Edit } from 'lucide-react';
-import axios from 'axios';
+import apiClient from '@/lib/apiClient';
 import { toast } from 'react-hot-toast';
 import Select from 'react-select';
 import { Card, Button, Input } from '@/components/ui';
@@ -49,30 +49,21 @@ export default function CategoryModal({ onClose, onSave, selectedCategory, selec
       if (isCategoryMode) {
         if (selectedCategory) {
           // Update category
-          await axios.put(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/work-categories/category/${encodeURIComponent(selectedCategory.label)}`,
-            { newLabel: categoryLabel }
-          );
+          await apiClient.put(`/api/work-categories/category/${encodeURIComponent(selectedCategory.label)}`, { newLabel: categoryLabel });
           toast.success('Category updated successfully');
         } else {
           // Create category
-          await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/work-categories/category`, { label: categoryLabel });
+          await apiClient.post('/api/work-categories/category', { label: categoryLabel });
           toast.success('Category created successfully');
         }
       } else {
         if (selectedOption) {
           // Update option
-          await axios.put(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/work-categories/option/${selectedOption.id}`,
-            { label: optionLabel }
-          );
+          await apiClient.put(`/api/work-categories/option/${selectedOption.id}`, { label: optionLabel });
           toast.success('Option updated successfully');
         } else {
           // Create option
-          await axios.post(
-            `${process.env.NEXT_PUBLIC_API_URL}/api/work-categories/category/${encodeURIComponent(selectedCategoryForOption.value)}/option`,
-            { label: optionLabel }
-          );
+          await apiClient.post(`/api/work-categories/category/${encodeURIComponent(selectedCategoryForOption.value)}/option`, { label: optionLabel });
           toast.success('Option created successfully');
         }
       }

@@ -5,11 +5,11 @@ import authReducer from './authSlice';
 import customerReducer from './customerSlice';
 import analyticsReducer from './analyticsSlice';
 
-// Configuration for auth persistence
+// Configuration for auth persistence - NO TOKEN STORAGE
 const authPersistConfig = {
   key: 'auth',
   storage,
-  whitelist: ['token', 'user'], // Persist only token and user
+  whitelist: ['user', 'isAuthenticated'], // Persist only user state and auth status, NO tokens
   serialize: (data) => JSON.stringify(data),
   deserialize: (data) => JSON.parse(data),
 };
@@ -18,7 +18,7 @@ const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 
 // Factory function to create a new store for each request
 export const makeStore = (initialState = {}) => {
-  return configureStore({
+  const store = configureStore({
     reducer: {
       auth: persistedAuthReducer,
       customers: customerReducer,
@@ -34,6 +34,13 @@ export const makeStore = (initialState = {}) => {
       }),
     devTools: process.env.NODE_ENV !== 'production', // Enable DevTools in development
   });
+
+  // Make store available globally for API client access
+  if (typeof window !== 'undefined') {
+    window.store = store;
+  }
+
+  return store;
 };
 
 // Client-side singleton store (optional, for client-side use)

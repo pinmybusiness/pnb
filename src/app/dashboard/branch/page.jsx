@@ -2,15 +2,15 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import apiClient from "@/lib/apiClient";
 import { MapPin, Store, Clock } from 'lucide-react';
 import BranchForm from '@/components/BranchForm';
 import { useSelector } from 'react-redux';
 
 const BranchProfile = () => {
   const router = useRouter();
-  const { user, token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [branch, setBranch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -26,12 +26,7 @@ const BranchProfile = () => {
 
     const fetchBranch = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/branches/${branchId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await apiClient.get(`/api/branches/${branchId}`);
         setBranch(response.data.data);
         // Temporary logging to inspect branch data
         console.log('Branch data:', response.data.data);
@@ -50,7 +45,7 @@ const BranchProfile = () => {
     };
 
     fetchBranch();
-  }, [branchId, token]);
+  }, [branchId]);
 
   const handleUpdateSuccess = () => {
     setIsEditing(false);

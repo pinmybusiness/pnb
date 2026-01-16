@@ -4,7 +4,7 @@ import { Store, Search, Plus, DollarSign, Star, TrendingUp, ArrowUpDown, Eye, Ed
 import StatusBadge from "@/components/ui/StatusBadge";
 import KPICard from "@/components/ui/KPICard";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -25,8 +25,8 @@ const Organizations = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const organizationsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/organizations`);
-        const branchesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`);
+        const organizationsRes = await apiClient.get('/api/organizations');
+        const branchesRes = await apiClient.get('/api/branches');
         
         setOrganizations(organizationsRes.data.data || []);
         setBranches(branchesRes.data.data || []);
@@ -56,7 +56,7 @@ const Organizations = () => {
 
   const handleUpdateStatus = async (organizationId, status) => {
     try {
-      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/organizations/${organizationId}/status`, {
+      await apiClient.patch(`/api/organizations/${organizationId}/status`, {
         status,
         reason: "Updated via admin panel"
       });

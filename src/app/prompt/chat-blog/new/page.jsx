@@ -212,6 +212,7 @@ export default function PromptBuilder() {
     "State Page",
     "City Page",
     "Roundup",
+    "Feature Guide",
     "Trust & Safety Hub",
     "Comparison",
     "Listicle",

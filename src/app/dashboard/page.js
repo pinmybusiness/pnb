@@ -5,7 +5,25 @@ import { useSelector } from "react-redux";
 
 function DashboardPage() {
   // Get user from Redux state (auth slice)
-  const { user } = useSelector((state) => state.auth);
+  const { user, isAuthenticated, isLoading } = useSelector((state) => state.auth);
+
+  // Show loading while auth is being checked
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Show message for non-branch-manager roles
+  if (!isAuthenticated) {
+    return (
+      <div className="text-center mt-10 text-xl font-semibold">
+        Please log in to access the dashboard.
+      </div>
+    );
+  }
 
   return (
     <>

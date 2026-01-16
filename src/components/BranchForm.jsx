@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import apiClient from '@/lib/apiClient';
 import { MapPin, Navigation, X, Store, Phone, Link } from 'lucide-react';
 import Select from 'react-select';
 
@@ -32,14 +32,14 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
     console.log('BranchForm mounted', new Date().toISOString());
     const fetchData = async () => {
       try {
-        const restaurantsRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/organizations`);
+        const restaurantsRes = await apiClient.get('/api/organizations');
         setRestaurants(restaurantsRes.data.data);
 
-        const citiesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/cities`);
+        const citiesRes = await apiClient.get('/api/cities');
         setCities(citiesRes.data.data);
 
         if (effectiveBranchId) {
-          const branchRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${effectiveBranchId}`);
+          const branchRes = await apiClient.get(`/api/branches/${effectiveBranchId}`);
           const branchData = branchRes.data.data;
 
           const cityExists = branchData.cityDetails?._id
@@ -249,11 +249,11 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
 
       try {
         if (effectiveBranchId) {
-          await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${effectiveBranchId}`, payload);
+          await apiClient.put(`/api/branches/${effectiveBranchId}`, payload);
           console.log('Showing update toast');
           toast.success('Branch updated successfully', { id: 'branch-update' });
         } else {
-          await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/branches`, payload);
+          await apiClient.post('/api/branches', payload);
           console.log('Showing create toast');
           toast.success('Branch created successfully', { id: 'branch-create' });
         }

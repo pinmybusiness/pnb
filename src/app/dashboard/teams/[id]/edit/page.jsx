@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
+import apiClient from "@/lib/apiClient";
 import { ArrowLeft, Save, UserCircle, Phone, Shield, AlertCircle, CheckCircle2, X } from 'lucide-react';
 
 import { ROLES } from '@/constants/roles';
@@ -28,13 +28,7 @@ const EditTeamMember = () => {
   // 🔹 Fetch member details
   const fetchMember = async () => {
     try {
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/teams/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
+      const res = await apiClient.get(`/api/teams/${id}`);
       const data = res.data.data;
       setMember(data);
 
@@ -68,14 +62,8 @@ const EditTeamMember = () => {
     setSaving(true);
 
     try {
-      const res = await axios.put(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/teams/${id}`,
-        form,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
+      const res = await apiClient.put(`/api/teams/${id}`, form);
+      
       if (res.data.success) {
         toast.success('Team member updated successfully');
         router.push('/dashboard/teams');

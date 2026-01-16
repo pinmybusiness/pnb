@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import KPICard from "@/components/ui/KPICard";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 import { 
   Card, Input, Badge, Table, TableHeader, TableBody, 
   TableRow, TableHead, TableCell, Button
@@ -331,9 +331,8 @@ const [customEnd, setCustomEnd] = useState("");
         sortOrder: sortOrder,
       };
 
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/calls/branch`, {
+      const response = await apiClient.get('/api/calls/branch', {
         params,
-        withCredentials: true,
       });
 
       const { data: callsData, stats, total, currentPage, totalPages } = response.data;
@@ -369,11 +368,7 @@ const [customEnd, setCustomEnd] = useState("");
   // Action Handlers
   const handleUpdateFollowUp = useCallback(async (callId, status) => {
     try {
-      await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/followup`,
-        { status },
-        { withCredentials: true }
-      );
+      await apiClient.patch(`/api/calls/${callId}/followup`, { status });
       setCalls(prev => prev.map(call => 
         call.id === callId ? { 
           ...call, 
@@ -388,11 +383,7 @@ const [customEnd, setCustomEnd] = useState("");
 
   const addNote = useCallback(async (callId, note) => {
     try {
-      await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/notes`,
-        { notes: note },
-        { withCredentials: true }
-      );
+      await apiClient.patch(`/api/calls/${callId}/notes`, { notes: note });
       setCalls(prev => prev.map(call => 
         call.id === callId ? { ...call, notes: note } : call
       ));
@@ -404,11 +395,7 @@ const [customEnd, setCustomEnd] = useState("");
 
   const markAsSpam = useCallback(async (callId) => {
     try {
-      await axios.patch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/${callId}/spam`,
-        {},
-        { withCredentials: true }
-      );
+      await apiClient.patch(`/api/calls/${callId}/spam`, {});
       setCalls(prev => prev.map(call => 
         call.id === callId ? { ...call, isSpam: true } : call
       ));

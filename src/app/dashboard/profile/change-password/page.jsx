@@ -1,7 +1,7 @@
 "use client";
-
 import { useState } from "react";
 import { Lock, Eye, EyeOff, Shield, Check, AlertCircle, ArrowRight } from "lucide-react";
+import apiClient from "@/lib/apiClient";
 
 export default function ChangePasswordPage() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -34,7 +34,7 @@ export default function ChangePasswordPage() {
 
   const passwordStrength = getPasswordStrength(newPassword);
 
-  // 🟧 REAL API CALL (IMPORTANT)
+  // 🟢 REAL API CALL (IMPORTANT)
   const handleChangePassword = async () => {
     setError("");
     setMsg("");
@@ -54,20 +54,10 @@ export default function ChangePasswordPage() {
     try {
       setLoading(true);
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/auth/change-password`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({
-            currentPassword,
-            newPassword,
-          }),
-        }
-      );
+      const res = await apiClient.put("/api/auth/change-password", {
+        currentPassword,
+        newPassword,
+      });
 
       const data = await res.json();
       setLoading(false);

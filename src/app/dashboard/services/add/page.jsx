@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '@/lib/apiClient';
 import { toast } from 'react-hot-toast';
 
 export default function CreateServicePage() {
@@ -17,7 +17,7 @@ export default function CreateServicePage() {
   // 🧩 Fetch all existing services for parent dropdown
   const fetchServices = async () => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/services`);
+      const res = await apiClient.get('/api/services');
       setServices(res.data.data || []);
     } catch (err) {
       toast.error('Failed to load services');
@@ -40,7 +40,7 @@ export default function CreateServicePage() {
     }
     setLoading(true);
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/services/create`, form);
+      await apiClient.post('/api/services/create', form);
       toast.success('Service created successfully 🎉');
       setForm({
         name: '',

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Shield, Search, Phone, User, Calendar, Users } from "lucide-react";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 
 const SpamNumbers = () => {
   const [spamNumbers, setSpamNumbers] = useState([]);
@@ -12,10 +12,7 @@ const SpamNumbers = () => {
   const fetchSpamNumbers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/calls/spam-numbers`,
-        { withCredentials: true }
-      );
+      const response = await apiClient.get('/api/calls/spam-numbers');
       
       if (response.data.success) {
         setSpamNumbers(response.data.data || []);

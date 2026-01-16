@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '@/lib/apiClient';
 import { Loader2, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -21,7 +21,7 @@ export default function AdminSubscriptionsPage() {
   const fetchAllSubscriptions = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/services/subscriptions/all`);
+      const res = await apiClient.get('/api/services/subscriptions/all');
       setSubscriptions(res.data.data || []);
     } catch (err) {
       console.error(err);
@@ -38,7 +38,7 @@ export default function AdminSubscriptionsPage() {
   // ✅ Update status
   const updateStatus = async (subscriptionId, newStatus) => {
     try {
-      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/services/subscriptions/status`, {
+      await apiClient.put('/api/services/subscriptions/status', {
         subscriptionId,
         status: newStatus,
       });

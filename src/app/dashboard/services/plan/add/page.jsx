@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import apiClient from '@/lib/apiClient';
 import { toast } from 'react-hot-toast';
 import { Package, DollarSign, Calendar, Tag, List, Sparkles, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
@@ -20,7 +20,7 @@ export default function CreatePlanPage() {
   // 🔹 Fetch all services for dropdown
   const fetchServices = async () => {
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/services`);
+      const res = await apiClient.get('/api/services');
       setServices(res.data.data || []);
     } catch (err) {
       toast.error('Failed to load services');
@@ -43,7 +43,7 @@ export default function CreatePlanPage() {
     }
     setLoading(true);
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/services/plans/create`, {
+      await apiClient.post('/api/services/plans/create', {
         ...form,
         features: form.features
           ? form.features.split(',').map((f) => f.trim()).filter((f) => f)

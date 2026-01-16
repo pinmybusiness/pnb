@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import apiClient from '@/lib/apiClient';
 import { formatDateWithSuffix } from '@/utils/dateFormat';
 
 const Card = ({ className = '', children }) => (
@@ -64,11 +64,7 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
   const fetchTeamMembers = async () => {
     try {
       setTeamLoading(true);
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/teams?branch=${branchId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
+      const res = await apiClient.get(`/api/teams?branch=${branchId}`);
 
       if (res.data.success) {
         let filteredMembers = res.data.data;
@@ -105,68 +101,50 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
     }
   };
 
-const handleAddMember = async (e) => {
-  e.preventDefault();
-  setAddLoading(true);
-  try {
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/auth/register`,
-      addMemberForm,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
+  const handleAddMember = async (e) => {
+    e.preventDefault();
+    setAddLoading(true);
+    try {
+      const res = await apiClient.post('/api/auth/register', addMemberForm);
+
+      if (res.data.success) {
+        toast.success('Team member added successfully');
+        setShowAddMemberModal(false);
+        setAddMemberForm({
+          name: '',
+          mobile: '',
+          email: '',
+          password: '',
+          role: 8,
+          branch: branchId,
+        });
+        fetchTeamMembers();
       }
-    );
-
-    if (res.data.success) {
-      toast.success('Team member added successfully');
-      setShowAddMemberModal(false);
-      setAddMemberForm({
-        name: '',
-        mobile: '',
-        email: '',
-        password: '',
-        role: 8,
-        branch: branchId,
-      });
-      fetchTeamMembers();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to add team member');
+    } finally {
+      setAddLoading(false);
     }
-  } catch (error) {
-    toast.error(error.response?.data?.message || 'Failed to add team member');
-  } finally {
-    setAddLoading(false);
-  }
-};
+  };
 
+  const handleEditMember = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    try {
+      const res = await apiClient.put(`/api/teams/${selectedMember._id}`, editMemberForm);
 
-const handleEditMember = async (e) => {
-  e.preventDefault();
-  setEditLoading(true);
-  try {
-    const res = await axios.put(
-      `${process.env.NEXT_PUBLIC_API_URL}/api/teams/${selectedMember._id}`,
-      editMemberForm,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
+      if (res.data.success) {
+        toast.success('Team member updated successfully');
+        setShowEditMemberModal(false);
+        setSelectedMember(null);
+        fetchTeamMembers();
       }
-    );
-
-    if (res.data.success) {
-      toast.success('Team member updated successfully');
-      setShowEditMemberModal(false);
-      setSelectedMember(null);
-      fetchTeamMembers();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update team member');
+    } finally {
+      setEditLoading(false);
     }
-  } catch (error) {
-    toast.error(error.response?.data?.message || 'Failed to update team member');
-  } finally {
-    setEditLoading(false);
-  }
-};
-
+  };
 
   const openEditModal = (member) => {
     setSelectedMember(member);

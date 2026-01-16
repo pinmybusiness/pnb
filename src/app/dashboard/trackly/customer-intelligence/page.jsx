@@ -7,15 +7,9 @@ import {
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
   Loader2, CalendarDays, History, BarChart3, User, Activity
 } from "lucide-react";
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 import { toast } from "react-hot-toast";
 import KPICard from "@/components/ui/KPICard";
-
-/* ================= AXIOS ================= */
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
-  withCredentials: true,
-});
 
 /* ================= UTILS ================= */
 const formatDateTime = (date) => {
@@ -358,7 +352,7 @@ const CustomerIntelligence = () => {
         params.append('search', searchQuery.trim());
       }
       
-      const res = await api.get(`/api/customer-intelligence/list?${params}`);
+      const res = await apiClient.get(`/api/customer-intelligence/list?${params}`);
       
       if (res.data.success) {
         setCustomers(res.data.data.customers || []);
@@ -385,9 +379,9 @@ const CustomerIntelligence = () => {
       setLoading(true);
       
       const [overviewRes, heatmapRes, lostRes] = await Promise.all([
-        api.get(`/api/customer-intelligence/overview?period=${period}`),
-        api.get(`/api/customer-intelligence/heatmap?period=${period}`),
-        api.get(`/api/customer-intelligence/lost?days=15`)
+        apiClient.get(`/api/customer-intelligence/overview?period=${period}`),
+        apiClient.get(`/api/customer-intelligence/heatmap?period=${period}`),
+        apiClient.get(`/api/customer-intelligence/lost?days=15`)
       ]);
 
       if (overviewRes.data.success) setOverview(overviewRes.data.data);
@@ -434,9 +428,9 @@ const CustomerIntelligence = () => {
     setSearchQuery("");
     
     Promise.all([
-      api.get(`/api/customer-intelligence/overview?period=${newPeriod}`),
-      api.get(`/api/customer-intelligence/list?period=${newPeriod}&page=1&limit=${pagination.limit}`),
-      api.get(`/api/customer-intelligence/heatmap?period=${newPeriod}`)
+      apiClient.get(`/api/customer-intelligence/overview?period=${newPeriod}`),
+      apiClient.get(`/api/customer-intelligence/list?period=${newPeriod}&page=1&limit=${pagination.limit}`),
+      apiClient.get(`/api/customer-intelligence/heatmap?period=${newPeriod}`)
     ]).then(([overviewRes, listRes, heatmapRes]) => {
       if (overviewRes.data.success) setOverview(overviewRes.data.data);
       if (listRes.data.success) {
@@ -468,7 +462,7 @@ const CustomerIntelligence = () => {
       // Show immediate loading state
       setTimeout(async () => {
         try {
-          const res = await api.get(`/api/customer-intelligence/timeline/${phone}`);
+          const res = await apiClient.get(`/api/customer-intelligence/timeline/${phone}`);
           
           if (res.data.success) {
             setTimeline(res.data.data.calls || []);

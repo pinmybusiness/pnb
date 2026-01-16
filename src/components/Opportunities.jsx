@@ -18,7 +18,7 @@ import {
 import StatusBadge from '@/components/ui/StatusBadge';
 import KPICard from '@/components/ui/KPICard';
 import { toast } from 'react-hot-toast';
-import axios from 'axios';
+import apiClient from '@/lib/apiClient';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useSelector } from 'react-redux';
@@ -43,7 +43,7 @@ const Button = ({ children, className = '', ...props }) => (
 
 const Opportunities = ({ branchId }) => {
   const router = useRouter();
-  const { user, token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const [opportunities, setOpportunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -57,16 +57,9 @@ const Opportunities = ({ branchId }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!token) return;
-
       try {
         setLoading(true);
-        const url = `${process.env.NEXT_PUBLIC_API_URL}/api/opportunities?branch=${branchId}`;
-        const response = await axios.get(url, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await apiClient.get(`/api/opportunities?branch=${branchId}`);
 
         if (response.data.success) {
           setOpportunities(response.data.data);
@@ -80,7 +73,7 @@ const Opportunities = ({ branchId }) => {
     };
 
     fetchData();
-  }, [token, branchId]);
+  }, [branchId]);
 
   const workTypeOptions = [
     { value: '', label: 'All Work Types' },

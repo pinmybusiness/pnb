@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 import {
   Phone,
   PhoneMissed,
@@ -102,14 +102,9 @@ const useUser = () => {
   const [user, setUser] = useState(null);
   
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      try {
-        setUser(JSON.parse(userStr));
-      } catch (e) {
-        console.error("Error parsing user:", e);
-      }
-    }
+    // User data now comes from Redux, not localStorage
+    // This hook can be removed or simplified
+    setUser(null);
   }, []);
   
   return { user, isBranchManager: user?.role === 6 };
@@ -122,16 +117,11 @@ const usePendingFollowups = () => {
     queryKey: ["pending-followups"],
     queryFn: async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) throw new Error("No authentication token");
-        
         const endpoint = isBranchManager 
           ? "/api/calls/branch-followup-calls?limit=1"
           : "/api/calls/missed?limit=1";
         
-        const { data } = await axios.get(`${API_BASE}${endpoint}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const { data } = await apiClient.get(endpoint);
         
         if (!data.success) throw new Error(data.message || "Failed to fetch followups");
         
@@ -156,11 +146,7 @@ const useDashboardData = (period) => {
   return useQuery({
     queryKey: ["dashboard-stats", period],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
-      const { data } = await axios.get(
-        `${API_BASE}/api/calls/stats?period=${period}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const { data } = await apiClient.get(`/api/calls/stats?period=${period}`);
       
       if (!data.success) throw new Error(data.message || "Failed to fetch dashboard stats");
       return data.data;
@@ -175,16 +161,10 @@ const useTeamData = (period) => {
   return useQuery({
     queryKey: ["team-data", period],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
-      
       // Fetch both team performance and member stats in parallel
       const [teamRes, memberRes] = await Promise.all([
-        axios.get(`${API_BASE}/api/calls/team/performance?period=${period}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${API_BASE}/api/calls/team/member-stats?period=${period}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        apiClient.get(`/api/calls/team/performance?period=${period}`),
+        apiClient.get(`/api/calls/team/member-stats?period=${period}`)
       ]);
       
       if (!teamRes.data.success || !memberRes.data.success) {
@@ -440,11 +420,7 @@ const IndividualMemberView = ({ member, onBack, period }) => {
   const { data: memberStats, isLoading } = useQuery({
     queryKey: ["member-details", member.userId, period],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
-      const { data } = await axios.get(
-        `${API_BASE}/api/calls/team/member-stats?period=${period}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const { data } = await apiClient.get(`/api/calls/team/member-stats?period=${period}`);
       
       if (data.success) {
         return data.data.teamStats?.find(m => m.userId === member.userId) || member;

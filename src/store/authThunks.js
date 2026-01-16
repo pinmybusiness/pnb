@@ -1,7 +1,7 @@
 // authThunks.js
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { authService } from '../services/authService';
-import { setCredentials, logout, setLoading, setError } from './authSlice';
+import { setCredentials, logout, setLoading, setError, setInitialized } from './authSlice';
 
 // Register user
 export const registerUser = createAsyncThunk(
@@ -10,15 +10,13 @@ export const registerUser = createAsyncThunk(
     try {
       dispatch(setLoading(true));
       const response = await authService.register(userData);
-      const userDataResponse = response.data; // { success: true, data: { user, token } }
       if (!response.success) {
         throw new Error(response.message || 'Registration failed');
       }
       dispatch(setCredentials({ 
-        user: userDataResponse.user, 
-        token: userDataResponse.token 
+        user: response.data
       }));
-      return userDataResponse.user;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
     } finally {
@@ -47,10 +45,8 @@ export const registerCandidate = createAsyncThunk(
           role: data.role,
           roleName: data.roleName,
           candidateProfile: data.candidateProfile,
-        },
-        token: data.token,
+        }
       }));
-      localStorage.setItem('token', data.token); // Store token
       return data; // Return full data for flexibility
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || error.message);
@@ -60,7 +56,6 @@ export const registerCandidate = createAsyncThunk(
   }
 );
 
-// Login user
 // Login user
 export const loginUser = createAsyncThunk(
   'auth/login',
@@ -82,8 +77,7 @@ export const loginUser = createAsyncThunk(
         mobile: userDataResponse.mobile,
         email: userDataResponse.email,
         role: userDataResponse.role,
-        roleName: userDataResponse.roleName,
-        token: userDataResponse.token
+        roleName: userDataResponse.roleName
       };
 
       // Add role-specific data
@@ -96,8 +90,7 @@ export const loginUser = createAsyncThunk(
       // Add more role-specific conditions as needed
 
       return {
-        user: commonUserData,
-        token: userDataResponse.token
+        user: commonUserData
       };
     } catch (error) {
       return rejectWithValue(error.response?.data?.message || 'Login failed');
@@ -105,22 +98,43 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// Load user
+// Initialize auth state (check if user is authenticated via cookies)
+export const initializeAuth = createAsyncThunk(
+  'auth/initialize',
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      // Try to get current user using cookies
+      const response = await authService.getMe();
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to fetch user');
+      }
+      
+      dispatch(setCredentials({
+        user: response.data
+      }));
+      
+      return response.data;
+    } catch (error) {
+      // Don't treat as error - user might not be logged in
+      dispatch(setInitialized());
+      return null;
+    }
+  }
+);
+
+// Load user (legacy - for backward compatibility)
 export const loadUser = createAsyncThunk(
   'auth/loadUser',
-  async (_, { getState, rejectWithValue, dispatch }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
-      const { token } = getState().auth;
-      if (!token) throw new Error('No token found');
       dispatch(setLoading(true));
       const response = await authService.getMe();
       if (!response.success) {
         throw new Error(response.message || 'Failed to fetch user');
       }
-      const userDataResponse = response.data.user;
+      const userDataResponse = response.data;
       dispatch(setCredentials({
-        user: userDataResponse,
-        token // Keep existing token
+        user: userDataResponse
       }));
       return userDataResponse;
     } catch (error) {
@@ -135,21 +149,17 @@ export const loadUser = createAsyncThunk(
 // Logout user
 export const logoutUser = createAsyncThunk(
   'auth/logout',
-  async (_, { rejectWithValue, dispatch, getState }) => {
+  async (_, { rejectWithValue, dispatch }) => {
     try {
       dispatch(setLoading(true));
-      const state = getState();
-      const token = state.auth.token; // Get token from Redux
-      if (!token) {
-        throw new Error('No token found in Redux');
-      }
-      const response = await authService.logout(token);
-      localStorage.removeItem('token');
+      const response = await authService.logout();
       dispatch(logout());
       return response;
     } catch (error) {
       console.error('Logout error:', error);
       dispatch(setError(error.message || 'Logout failed'));
+      // Still logout locally even if server call fails
+      dispatch(logout());
       return rejectWithValue(error.response?.data?.message || 'Logout failed');
     } finally {
       dispatch(setLoading(false));
@@ -168,9 +178,8 @@ export const googleLoginUser = createAsyncThunk(
         throw new Error(response.message || 'Google login failed');
       }
       const user = response.data; // User is directly in response.data
-      const token = response.token; // Token is in response.token
-      dispatch(setCredentials({ user, token }));
-      return { user, token };
+      dispatch(setCredentials({ user }));
+      return { user };
     } catch (error) {
       console.error('Google login error:', error);
       return rejectWithValue(error.response?.data?.message || 'Google login failed');

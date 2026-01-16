@@ -1,20 +1,13 @@
-// store/authSlice.js (partial)
+// store/authSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 import { loginUser, googleLoginUser, registerCandidate } from './authThunks';
 
-// Get token safely for SSR
-const getInitialToken = () => {
-  if (typeof window !== 'undefined') {
-    return localStorage.getItem('token');
-  }
-  return null;
-};
-
 const initialState = {
   user: null,
-  token: getInitialToken(),
+  isAuthenticated: false,
   isLoading: false,
   error: null,
+  isInitialized: false,
 };
 
 const authSlice = createSlice({
@@ -23,11 +16,17 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (state, action) => {
       state.user = action.payload.user;
-      state.token = action.payload.token;
+      state.isAuthenticated = true;
+      state.error = null;
     },
     logout: (state) => {
       state.user = null;
-      state.token = null;
+      state.isAuthenticated = false;
+      state.error = null;
+      // Clear localStorage token (migration cleanup)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+      }
     },
     setLoading: (state, action) => {
       state.isLoading = action.payload;
@@ -38,6 +37,16 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setInitialized: (state) => {
+      state.isInitialized = true;
+    },
+    // Migration helper to clear old token storage
+    clearLegacyTokens: (state) => {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -47,10 +56,10 @@ const authSlice = createSlice({
       state.error = null;
     })
     .addCase(registerCandidate.fulfilled, (state, action) => {
-      // state.user = action.payload.user;
-      // state.token = action.payload.token;
-      // localStorage.setItem('token', action.payload.token);
+      state.user = action.payload.data;
+      state.isAuthenticated = true;
       state.isLoading = false;
+      state.error = null;
     })
     .addCase(registerCandidate.rejected, (state, action) => {
       state.isLoading = false;
@@ -62,9 +71,13 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
-        state.token = action.payload.token;
-         localStorage.setItem('token', action.payload.token); 
+        state.isAuthenticated = true;
         state.isLoading = false;
+        state.error = null;
+        // Clear legacy tokens on successful login
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+        }
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -76,8 +89,13 @@ const authSlice = createSlice({
       })
       .addCase(googleLoginUser.fulfilled, (state, action) => {
         state.user = action.payload.user;
-        state.token = action.payload.token;
+        state.isAuthenticated = true;
         state.isLoading = false;
+        state.error = null;
+        // Clear legacy tokens on successful login
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('token');
+        }
       })
       .addCase(googleLoginUser.rejected, (state, action) => {
         state.isLoading = false;
@@ -86,5 +104,14 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, logout, setLoading, setError, clearError } = authSlice.actions;
+export const { 
+  setCredentials, 
+  logout, 
+  setLoading, 
+  setError, 
+  clearError, 
+  setInitialized,
+  clearLegacyTokens 
+} = authSlice.actions;
+
 export default authSlice.reducer;

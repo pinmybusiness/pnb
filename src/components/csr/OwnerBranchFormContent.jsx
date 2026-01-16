@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import apiClient from "@/lib/apiClient";
 import { MapPin, Navigation, X, Store, Phone, Lock, Link } from "lucide-react";
 import Select from "react-select";
 import { loginUser } from "@/store/authThunks";
@@ -209,10 +209,10 @@ export default function OwnerBranchFormContent({ branchId, initialFormData, rest
     try {
       let response;
       if (branchId) {
-        response = await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/branches/${branchId}`, payload);
+        response = await apiClient.put(`/api/branches/${branchId}`, payload);
         toast.success("Branch updated successfully");
       } else {
-        response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/register-branch`, payload);
+        response = await apiClient.post('/api/auth/register-branch', payload);
         const { token, data } = response.data;
         await dispatch(loginUser({ mobile: formData.mobile, password: formData.password, rememberMe: false })).unwrap();
         toast.success("Registration and login successful!");

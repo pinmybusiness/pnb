@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import { toast } from "react-hot-toast";
+import apiClient from "@/lib/apiClient";
 import {
   Loader2,
   Search,
@@ -63,11 +63,8 @@ export default function RecordingsPage() {
   const fetchRecordings = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/recordings?page=${page}&limit=50&search=${searchTerm}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      const res = await apiClient.get(`/api/recordings?page=${page}&limit=50&search=${searchTerm}`);
+      
       setRecordings(res.data.data || []);
       setPagination(res.data.pagination || {});
     } catch (err) {

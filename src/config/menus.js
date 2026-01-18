@@ -8,7 +8,10 @@ import {
   Package,
   CreditCard,
   Wrench,
-  AudioLines
+  AudioLines,
+  Clock,
+  UsersRound,
+  TrendingUp
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
@@ -28,16 +31,21 @@ export const allMenus = [
   { name: "Customers", href: "/dashboard/customers", icon: Users, roles: [1] },
   { name: "Orders", href: "/dashboard/orders", icon: BarChart3, roles: [4] },
   
-  { 
-    name: "Trackly", 
-    icon: PhoneCall, 
-    roles: [6,7,8], 
-    children: [
-      { name: "FollowUp Calls", href: "/dashboard/trackly/followup-calls", roles: [6,7,8] },
-      { name: "Calls History", href: "/dashboard/trackly", roles: [6,7,8] },
-      { name: "Customer Intelligence", href: "/dashboard/trackly/customer-intelligence", roles: [6,7,8] },
-    ]
-  },
+
+  { name: "FollowUp Calls", href: "/dashboard/trackly/followup-calls", icon: PhoneCall, roles: [6,7,8] },
+  { name: "Calls History", href: "/dashboard/trackly", icon: Clock, roles: [6,7,8] },
+  { name: "Customer Intelligence", href: "/dashboard/trackly/customer-intelligence", icon: UsersRound, roles: [6,7,8] },
+  { name: "Team Performance", href: "/dashboard/teams/performance", icon: TrendingUp, roles: [6,7,8] },
+  // { 
+  //   name: "Trackly", 
+  //   icon: PhoneCall, 
+  //   roles: [6,7,8], 
+  //   children: [
+  //     { name: "FollowUp Calls", href: "/dashboard/trackly/followup-calls", roles: [6,7,8] },
+  //     { name: "Calls History", href: "/dashboard/trackly", roles: [6,7,8] },
+  //     { name: "Customer Intelligence", href: "/dashboard/trackly/customer-intelligence", roles: [6,7,8] },
+  //   ]
+  // },
   // { 
   //   name: "WaitPro", 
   //   icon: ClipboardList, 

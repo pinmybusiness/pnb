@@ -353,19 +353,14 @@ const MissedCalls = () => {
         id: call._id || call.id,
         caller: {
           name: call.phonebookName || call.callerName || "Unknown Caller",
-          phone: call.fromNumber || call.phoneNumber,
           formattedPhone: call.fromFormattedNumber || call.formattedPhone
         },
         receiver: {
           name: call.userId?.name || call.userInfo?.name || call.assignedTo || "Unassigned",
           id: call.userId?._id || call.userId || call.assignedToId || "unassigned",
         },
-        duration: call.duration ? formatSeconds(call.duration) : "0:00",
-        answered: call.answered || false,
-        inbound: call.inbound || false,
         startTime: call.startTime || call.startTimeIST || call.createdAt,
         notes: call.notes || "",
-        isSpam: call.isSpam || false,
         followUp: call.followUp || { status: 0, attempts: 0 }
       };
     } catch (error) {

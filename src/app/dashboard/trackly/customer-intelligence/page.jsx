@@ -4,12 +4,12 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Users, Repeat, UserMinus, Calendar, X, Phone, Clock, TrendingUp,
   Search, PhoneCall, PhoneMissed, PhoneIncoming, PhoneOutgoing, UserPlus,
-  ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
   Loader2, CalendarDays, History, BarChart3, User, Activity
 } from "lucide-react";
 import apiClient from "@/lib/apiClient";
 import { toast } from "react-hot-toast";
 import KPICard from "@/components/ui/KPICard";
+import Pagination from "@/components/ui/Pagination"; // Import reusable pagination
 
 /* ================= UTILS ================= */
 const formatDateTime = (date) => {
@@ -157,149 +157,6 @@ const EmptyTimelineState = ({ phone }) => (
   </div>
 );
 
-/* ================= PAGINATION COMPONENT ================= */
-const PaginationControls = ({ pagination, onPageChange, loading }) => {
-  if (!pagination || pagination.pages <= 1) return null;
-
-  const { page, pages, total, limit } = pagination;
-  const startItem = (page - 1) * limit + 1;
-  const endItem = Math.min(page * limit, total);
-
-  return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-orange-100 bg-gray-50/50">
-      {/* Items count */}
-      <div className="text-sm text-gray-600">
-        Showing <span className="font-bold">{startItem}-{endItem}</span> of{" "}
-        <span className="font-bold">{total}</span> customers
-      </div>
-
-      {/* Pagination buttons */}
-      <div className="flex items-center gap-2">
-        {/* First Page */}
-        <button
-          onClick={() => onPageChange(1)}
-          disabled={page === 1 || loading}
-          className={`p-2 rounded-lg transition-all duration-200 ${
-            page === 1
-              ? "text-gray-400 cursor-not-allowed"
-              : "text-gray-700 hover:bg-orange-100 hover:text-[#FF5211]"
-          }`}
-        >
-          <ChevronsLeft className="w-5 h-5" />
-        </button>
-
-        {/* Previous Page */}
-        <button
-          onClick={() => onPageChange(page - 1)}
-          disabled={page === 1 || loading}
-          className={`p-2 rounded-lg transition-all duration-200 ${
-            page === 1
-              ? "text-gray-400 cursor-not-allowed"
-              : "text-gray-700 hover:bg-orange-100 hover:text-[#FF5211]"
-          }`}
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-
-        {/* Page Numbers */}
-        <div className="flex items-center gap-1 mx-2">
-          {/* Always show first page */}
-          {page > 2 && (
-            <>
-              <button
-                onClick={() => onPageChange(1)}
-                className={`w-8 h-8 rounded-lg font-medium text-sm transition-all duration-200 ${
-                  page === 1
-                    ? "bg-gradient-to-r from-[#FF5211] to-orange-600 text-white"
-                    : "text-gray-700 hover:bg-orange-100 hover:text-[#FF5211]"
-                }`}
-              >
-                1
-              </button>
-              {page > 3 && <span className="text-gray-400">...</span>}
-            </>
-          )}
-
-          {/* Show current and surrounding pages */}
-          {[...Array(pages)].map((_, i) => {
-            const pageNum = i + 1;
-            // Show only current page, one before, one after
-            if (
-              pageNum === page ||
-              pageNum === page - 1 ||
-              pageNum === page + 1
-            ) {
-              return (
-                <button
-                  key={pageNum}
-                  onClick={() => onPageChange(pageNum)}
-                  disabled={loading}
-                  className={`w-8 h-8 rounded-lg font-medium text-sm transition-all duration-200 ${
-                    page === pageNum
-                      ? "bg-gradient-to-r from-[#FF5211] to-orange-600 text-white"
-                      : "text-gray-700 hover:bg-orange-100 hover:text-[#FF5211]"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              );
-            }
-            return null;
-          })}
-
-          {/* Always show last page */}
-          {page < pages - 1 && (
-            <>
-              {page < pages - 2 && <span className="text-gray-400">...</span>}
-              <button
-                onClick={() => onPageChange(pages)}
-                className={`w-8 h-8 rounded-lg font-medium text-sm transition-all duration-200 ${
-                  page === pages
-                    ? "bg-gradient-to-r from-[#FF5211] to-orange-600 text-white"
-                    : "text-gray-700 hover:bg-orange-100 hover:text-[#FF5211]"
-                }`}
-              >
-                {pages}
-              </button>
-            </>
-          )}
-        </div>
-
-        {/* Next Page */}
-        <button
-          onClick={() => onPageChange(page + 1)}
-          disabled={page === pages || loading}
-          className={`p-2 rounded-lg transition-all duration-200 ${
-            page === pages
-              ? "text-gray-400 cursor-not-allowed"
-              : "text-gray-700 hover:bg-orange-100 hover:text-[#FF5211]"
-          }`}
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-
-        {/* Last Page */}
-        <button
-          onClick={() => onPageChange(pages)}
-          disabled={page === pages || loading}
-          className={`p-2 rounded-lg transition-all duration-200 ${
-            page === pages
-              ? "text-gray-400 cursor-not-allowed"
-              : "text-gray-700 hover:bg-orange-100 hover:text-[#FF5211]"
-          }`}
-        >
-          <ChevronsRight className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Page info */}
-      <div className="text-sm text-gray-600 font-medium">
-        Page <span className="text-[#FF5211]">{page}</span> of {pages}
-      </div>
-    </div>
-  );
-};
-
 /* ================= MAIN COMPONENT ================= */
 const CustomerIntelligence = () => {
   const [period, setPeriod] = useState("today");
@@ -312,7 +169,6 @@ const CustomerIntelligence = () => {
     pages: 1
   });
   const [heatmap, setHeatmap] = useState([]);
-  const [lostCustomers, setLostCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -378,16 +234,13 @@ const CustomerIntelligence = () => {
     try {
       setLoading(true);
       
-      const [overviewRes, heatmapRes, lostRes] = await Promise.all([
+      const [overviewRes, heatmapRes] = await Promise.all([
         apiClient.get(`/api/customer-intelligence/overview?period=${period}`),
         apiClient.get(`/api/customer-intelligence/heatmap?period=${period}`),
-        apiClient.get(`/api/customer-intelligence/lost?days=15`)
       ]);
 
       if (overviewRes.data.success) setOverview(overviewRes.data.data);
-      if (heatmapRes.data.success) setHeatmap(heatmapRes.data.data.heatDistribution || []);
-      if (lostRes.data.success) setLostCustomers(lostRes.data.data.lostCustomers || []);
-      
+      if (heatmapRes.data.success) setHeatmap(heatmapRes.data.data.heatDistribution || []);      
     } catch (error) {
       console.error("Fetch error:", error);
       const errorMsg = error.response?.data?.message || "Failed to load intelligence";
@@ -600,12 +453,12 @@ const CustomerIntelligence = () => {
                 icon={Repeat}
                 description="Returning customers"
             />
-            <KPICard 
+            {/* <KPICard 
                 title="Lost Customers" 
                 value={lostCustomers.length} 
                 icon={UserMinus}
                 description="No contact in 15+ days"
-            />
+            /> */}
         </div>
 
         {/* CUSTOMER LIST */}
@@ -746,11 +599,14 @@ const CustomerIntelligence = () => {
             </div>
           </div>
 
-          {/* Pagination Controls */}
-          <PaginationControls
+          {/* Reusable Pagination Component */}
+          <Pagination
             pagination={pagination}
             onPageChange={handlePageChange}
             loading={listLoading}
+            itemsLabel="customers"
+            showItemsCount={true}
+            showPageInfo={true}
           />
         </div>
 

@@ -93,9 +93,9 @@ export default function LoginPage() {
           {/* Bottom Text */}
           <p className="text-center text-xs text-gray-500 mt-6">
             By logging in, you agree to our{" "}
-            <a href="/terms" className="text-[#FF5211] hover:underline">Terms</a>
+            <a href="https://www.fasterq.in/terms-and-conditions" className="text-[#FF5211] hover:underline">Terms</a>
             {" "}and{" "}
-            <a href="/privacy" className="text-[#FF5211] hover:underline">Privacy Policy</a>
+            <a href="https://www.fasterq.in/privacy-policy" className="text-[#FF5211] hover:underline">Privacy Policy</a>
           </p>
         </div>
 

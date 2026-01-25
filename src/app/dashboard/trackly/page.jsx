@@ -121,10 +121,7 @@ const CallTracking = () => {
       answered: call.answered,
       inbound: call.inbound,
       startTime: call.startTime,
-      notes: call.notes || "",
-      isSpam: call.isSpam || false,
       recordingUrl: recordingUrl, // Processed recording URL
-      followUp: call.followUp || { status: 0, attempts: 0 }
     };
   }, []);
 
@@ -225,17 +222,17 @@ const CallTracking = () => {
     fetchCalls(newPage);
   }, [pagination.pages, loading, fetchCalls]);
 
-  const addNote = useCallback(async (callId, note) => {
-    try {
-      await apiClient.patch(`/api/calls/${callId}/notes`, { notes: note });
-      setCalls(prev => prev.map(call => 
-        call.id === callId ? { ...call, notes: note } : call
-      ));
-      toast.success("Note added successfully");
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to add note");
-    }
-  }, []);
+  // const addNote = useCallback(async (callId, note) => {
+  //   try {
+  //     await apiClient.patch(`/api/calls/${callId}/notes`, { notes: note });
+  //     setCalls(prev => prev.map(call => 
+  //       call.id === callId ? { ...call, notes: note } : call
+  //     ));
+  //     toast.success("Note added successfully");
+  //   } catch (error) {
+  //     toast.error(error.response?.data?.message || "Failed to add note");
+  //   }
+  // }, []);
 
   const handleSort = useCallback((key) => {
     setSortBy(prev => {
@@ -378,8 +375,8 @@ const CallTracking = () => {
                       </div>
                     </TableHead>
                     <TableHead className="whitespace-nowrap">Recording</TableHead>
-                    <TableHead className="whitespace-nowrap">Notes</TableHead>
-                    <TableHead className="whitespace-nowrap">Actions</TableHead>
+                    {/* <TableHead className="whitespace-nowrap">Notes</TableHead> */}
+                    {/* <TableHead className="whitespace-nowrap">Actions</TableHead> */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -414,7 +411,7 @@ const CallTracking = () => {
                           callId={call.id} 
                         />
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[150px] sm:max-w-[200px]">
                           {call.notes || "No notes"}
                         </div>
@@ -429,7 +426,7 @@ const CallTracking = () => {
                             <Edit3 className="h-4 w-4" />
                           </button>
                         </div>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -466,7 +463,7 @@ const CallTracking = () => {
                       />
                     </div>
 
-                    <div className="text-xs text-gray-500 truncate">
+                    {/* <div className="text-xs text-gray-500 truncate">
                       <strong>Notes:</strong> {call.notes || "No notes"}
                     </div>
                     <div className="flex gap-2 justify-end mt-1">
@@ -477,7 +474,7 @@ const CallTracking = () => {
                       >
                         <Edit3 className="h-4 w-4" />
                       </button>
-                    </div>
+                    </div> */}
                   </div>
                 </Card>
               ))}

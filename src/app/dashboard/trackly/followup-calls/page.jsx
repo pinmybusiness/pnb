@@ -7,9 +7,7 @@ import {
   User, 
   PhoneOutgoing, 
   PhoneIncoming, 
-  Filter,
   Check,
-  Shield,
   Ban,
   AlertCircle,
   Loader2,
@@ -25,111 +23,14 @@ import {
   TableBody, 
   TableRow, 
   TableHead, 
-  TableCell, 
-  Button 
+  TableCell 
 } from "@/components/ui";
+import CallerDisplay from "@/components/calls/CallerDisplay";
+import TimeDisplay from "@/components/calls/TimeDisplay";
+import DirectionBadge from "@/components/calls/DirectionBadge";
+import StatusBadge from "@/components/calls/StatusBadge";
 
 // ---------- REUSABLE COMPONENTS ----------
-
-// StatusBadge Component (from CallTracking)
-const StatusBadge = ({ answered }) => {
-  const statusConfig = {
-    true: { className: "bg-green-100 text-green-800", label: "Answered" },
-    false: { className: "bg-red-100 text-red-800", label: "Missed" }
-  };
-
-  const { className, label } = statusConfig[answered] || statusConfig.false;
-
-  return (
-    <Badge className={`px-2 py-1 text-xs font-medium rounded-full ${className}`}>
-      {label}
-    </Badge>
-  );
-};
-
-// DirectionBadge Component (from CallTracking)
-const DirectionBadge = ({ inbound }) => {
-  const directionConfig = {
-    true: { className: "bg-blue-100 text-blue-800", icon: PhoneIncoming, label: "Incoming" },
-    false: { className: "bg-purple-100 text-purple-800", icon: PhoneOutgoing, label: "Outgoing" }
-  };
-
-  const { className, icon: Icon, label } = directionConfig[inbound] || directionConfig.true;
-
-  return (
-    <Badge className={`px-2 py-1 text-xs font-medium rounded-full ${className}`}>
-      <div className="flex items-center gap-1">
-        <Icon className="h-3 w-3" />
-        {label}
-      </div>
-    </Badge>
-  );
-};
-
-
-
-// CallerDisplay Component (from CallTracking with updates)
-const CallerDisplay = ({ caller }) => {
-  const { name, phone, formattedPhone } = caller || {};
-  
-  const cleanName = name?.trim() || "";
-  const displayName = cleanName !== "" && cleanName !== phone ? cleanName : null;
-  
-  const MAX_LEN = 20;
-  const shortName =
-    displayName && displayName.length > MAX_LEN
-      ? displayName.substring(0, MAX_LEN) + "..."
-      : displayName;
-
-  return (
-    <div className="flex flex-col items-start max-w-[150px] md:max-w-[90px]">
-      {displayName && (
-        <div
-          className="text-sm font-medium text-gray-900 truncate"
-          title={displayName}
-        >
-          {shortName}
-        </div>
-      )}
-      {formattedPhone && (
-        <div
-          className={`${displayName ? "text-xs text-gray-500" : "text-sm text-gray-900"} truncate`}
-          title={formattedPhone}
-        >
-          {formattedPhone}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// TimeDisplay Component (from CallTracking)
-const TimeDisplay = ({ startTime }) => {
-  const indianTime = new Date(startTime);
-  
-  const timeString = indianTime.toLocaleTimeString('en-IN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'Asia/Kolkata'
-  });
-  
-  const dateString = indianTime.toLocaleDateString('en-IN', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-    timeZone: 'Asia/Kolkata'
-  });
-
-  return (
-    <div className="text-xs sm:text-sm">
-      <div className="font-medium text-gray-900">{timeString}</div>
-      <div className="text-xs text-gray-500">{dateString}</div>
-    </div>
-  );
-};
-
-// FollowUpBadge Component (updated to match design)
 const FollowUpBadge = ({ followUp }) => {
   const attempts = followUp?.attempts || 0;
   const status = followUp?.status || 0;
@@ -154,9 +55,9 @@ const FollowUpBadge = ({ followUp }) => {
 // ---------- MAIN COMPONENT ----------
 const MissedCalls = () => {
   const [calls, setCalls] = useState([]);
+  const [allCalls, setAllCalls] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [selectedTeamMember, setSelectedTeamMember] = useState("all");
   const [sortBy, setSortBy] = useState("startTime");
   const [sortOrder, setSortOrder] = useState("desc");
   const [loading, setLoading] = useState(true);
@@ -164,42 +65,35 @@ const MissedCalls = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [resolvingCallId, setResolvingCallId] = useState(null);
+  const [daysLimit, setDaysLimit] = useState(7);
 
   // Refs
   const debounceTimerRef = useRef(null);
 
-  // Format seconds
-  const formatSeconds = useCallback((seconds) => {
-    if (!seconds || seconds <= 0) return '0:00';
-    const minutes = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
-  }, []);
-
   // Map call data
-const mapCallData = useCallback((call) => {
-  if (!call.groupKey) {
-    console.warn("Missing groupKey", call);
-    return null;
-  }
+  const mapCallData = useCallback((call) => {
+    if (!call.groupKey) {
+      console.warn("Missing groupKey", call);
+      return null;
+    }
 
-  return {
-    id: call.groupKey,
-    caller: {
-      name: call.phonebookName || "Unknown Caller",
-      phone: call.groupKey,
-      formattedPhone: call.fromFormattedNumber
-    },
-    receiver: {
-      name: call.userId?.name || "Unassigned"
-    },
-    answered: call.answered,
-    inbound: call.inbound,
-    startTime: call.startTime,
-    isSpam: call.isSpam,
-    followUp: call.followUp || { status: 1, attempts: 0 }
-  };
-}, []);
+    return {
+      id: call.groupKey,
+      caller: {
+        name: call.phonebookName || "Unknown Caller",
+        phone: call.groupKey,
+        formattedPhone: call.fromFormattedNumber
+      },
+      receiver: {
+        name: call.user?.name || "Unassigned"
+      },
+      answered: call.answered,
+      inbound: call.inbound,
+      startTime: call.startTime,
+      isSpam: call.isSpam,
+      followUp: call.followUp || { status: 1, attempts: 0 }
+    };
+  }, []);
 
   // Debounced search
   const handleSearchChange = useCallback((value) => {
@@ -211,10 +105,10 @@ const mapCallData = useCallback((call) => {
     
     debounceTimerRef.current = setTimeout(() => {
       setDebouncedSearchTerm(value);
-    }, 1000);
+    }, 500);
   }, []);
 
-  // Fetch missed calls
+  // Fetch missed calls - ONLY days, page, limit params
   const fetchMissedCalls = useCallback(async (pageNum = 1, shouldAppend = false) => {
     try {
       if (pageNum === 1) {
@@ -229,10 +123,7 @@ const mapCallData = useCallback((call) => {
         params: { 
           page: pageNum,
           limit: 20,
-          search: debouncedSearchTerm,
-          agent: selectedTeamMember !== "all" ? selectedTeamMember : undefined,
-          sortBy: sortBy,
-          sortOrder: sortOrder
+          days: daysLimit,
         }
       });
       
@@ -241,9 +132,9 @@ const mapCallData = useCallback((call) => {
         const mappedCalls = callsData.map(mapCallData).filter(call => call !== null);
         
         if (shouldAppend) {
-          setCalls(prev => [...prev, ...mappedCalls]);
+          setAllCalls(prev => [...prev, ...mappedCalls]);
         } else {
-          setCalls(mappedCalls);
+          setAllCalls(mappedCalls);
         }
         
         // For infinite scroll
@@ -258,53 +149,82 @@ const mapCallData = useCallback((call) => {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [debouncedSearchTerm, selectedTeamMember, sortBy, sortOrder, mapCallData]);
+  }, [daysLimit, mapCallData]);
 
-// refreshCalls FIRST
-const refreshCalls = useCallback(() => {
-  setPage(1);
-  setHasMore(true);
-  fetchMissedCalls(1, false);
-}, [fetchMissedCalls]);
+  // FRONTEND-ONLY search and sort
+  const processedCalls = useMemo(() => {
+    let result = [...allCalls];
 
-// then markAsResolved
-const markAsResolved = useCallback(async (callId) => {
-  try {
-    setResolvingCallId(callId);
-
-    const response = await apiClient.patch(
-      `/api/v1/calls/followup/by-number/${callId}`
-    );
-
-    if (response.data.success) {
-      toast.success("Call resolved successfully");
-      refreshCalls(); // ✅ safe
+    // Search filter
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      result = result.filter(call => 
+        call.caller.name.toLowerCase().includes(searchLower) ||
+        call.caller.phone.toLowerCase().includes(searchLower) ||
+        (call.caller.formattedPhone && call.caller.formattedPhone.toLowerCase().includes(searchLower))
+      );
     }
-  } catch (error) {
-    toast.error(error.response?.data?.message || "Failed to resolve call");
-  } finally {
-    setResolvingCallId(null);
-  }
-}, [refreshCalls]);
 
-// 🔥 3️⃣ then markAsSpam
-const markAsSpam = useCallback(async (callId) => {
-  if (!window.confirm('Mark this number as spam?')) return;
+    // Sort
+    result.sort((a, b) => {
+      const multiplier = sortOrder === "asc" ? 1 : -1;
+      
+      if (sortBy === "startTime") {
+        return multiplier * (new Date(a.startTime) - new Date(b.startTime));
+      }
+      
+      return 0;
+    });
 
-  try {
-    const response = await apiClient.patch(
-      `/api/v1/calls/spam/by-number/${encodeURIComponent(callId)}`
-    );
+    return result;
+  }, [allCalls, debouncedSearchTerm, sortBy, sortOrder]);
 
-    if (response.data.success) {
-      toast.success("Number marked as spam");
-      refreshCalls(); // ✅ safe
+  // Update displayed calls
+  useEffect(() => {
+    setCalls(processedCalls);
+  }, [processedCalls]);
+
+  const refreshCalls = useCallback(() => {
+    setPage(1);
+    setHasMore(true);
+    fetchMissedCalls(1, false);
+  }, [fetchMissedCalls]);
+
+  const markAsResolved = useCallback(async (callId) => {
+    try {
+      setResolvingCallId(callId);
+
+      const response = await apiClient.patch(
+        `/api/v1/calls/followup/by-number/${callId}`
+      );
+
+      if (response.data.success) {
+        toast.success("Call resolved successfully");
+        refreshCalls();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to resolve call");
+    } finally {
+      setResolvingCallId(null);
     }
-  } catch (error) {
-    toast.error(error.response?.data?.message || "Failed to mark as spam");
-  }
-}, [refreshCalls]);
+  }, [refreshCalls]);
 
+  const markAsSpam = useCallback(async (callId) => {
+    if (!window.confirm('Mark this number as spam?')) return;
+
+    try {
+      const response = await apiClient.patch(
+        `/api/v1/calls/spam/by-number/${encodeURIComponent(callId)}`
+      );
+
+      if (response.data.success) {
+        toast.success("Number marked as spam");
+        refreshCalls();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to mark as spam");
+    }
+  }, [refreshCalls]);
 
   // Sort handler
   const handleSort = useCallback((key) => {
@@ -336,8 +256,9 @@ const markAsSpam = useCallback(async (callId) => {
 
   useEffect(() => {
     setPage(1);
+    setAllCalls([]);
     fetchMissedCalls(1, false);
-  }, [debouncedSearchTerm, selectedTeamMember, sortBy, sortOrder, fetchMissedCalls]);
+  }, [daysLimit, fetchMissedCalls]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -351,25 +272,15 @@ const markAsSpam = useCallback(async (callId) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loadMore]);
 
-
-  // KPI data
+  // KPI data - using processedCalls for accurate counts
   const kpiData = useMemo(() => {
-    const pending = calls.filter(call => call.followUp.status === 1).length;
-    const resolved = calls.filter(call => call.followUp.status === 3).length;
-    const total = calls.length;
-    const spam = calls.filter(call => call.isSpam).length;
+    const pending = processedCalls.filter(call => call.followUp.status === 1).length;
+    const resolved = processedCalls.filter(call => call.followUp.status === 3).length;
+    const total = processedCalls.length;
+    const spam = processedCalls.filter(call => call.isSpam).length;
     
     return { total, pending, resolved, spam };
-  }, [calls]);
-
-  // Loading state
-  if (loading && page === 1) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  }, [processedCalls]);
 
   return (
     <div className="space-y-4 animate-fade-in p-4 sm:p-6 md:p-8">
@@ -408,149 +319,171 @@ const markAsSpam = useCallback(async (callId) => {
               className="pl-10 text-sm"
             />
           </div>
+
+          <select
+            value={daysLimit}
+            onChange={(e) => {
+              setDaysLimit(Number(e.target.value));
+              setPage(1);
+            }}
+            className="px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
+          >
+            <option value={7}>Last 7 Days</option>
+            <option value={14}>Last 14 Days</option>
+            <option value={30}>Last 30 Days</option>
+          </select>
         </div>
       </Card>
 
       {/* Calls Table */}
       <Card>
-        {/* Desktop Table */}
-        <div className="hidden sm:block overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead onClick={() => handleSort("caller")} className="cursor-pointer whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    Caller
-                    <ArrowUpDown className="h-4 w-4" />
-                  </div>
-                </TableHead>
-                <TableHead className="whitespace-nowrap">Agent</TableHead>
-                <TableHead className="whitespace-nowrap">Status</TableHead>
-                <TableHead className="whitespace-nowrap">Direction</TableHead>
-                <TableHead onClick={() => handleSort("startTime")} className="cursor-pointer whitespace-nowrap">
-                  <div className="flex items-center gap-2">
-                    Call Time
-                    <ArrowUpDown className="h-4 w-4" />
-                  </div>
-                </TableHead>
-                <TableHead className="whitespace-nowrap">Follow-up</TableHead>
-                <TableHead className="whitespace-nowrap">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {calls.map((call, index) => (
-                <TableRow key={call.id} className="hover:bg-gray-50">
-                  <TableCell className="whitespace-nowrap">
-                    <CallerDisplay caller={call.caller} />
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 rounded-md bg-gray-100 flex items-center justify-center">
-                        <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+        {loading && page === 1 ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+            <span className="ml-3 text-sm text-gray-500">Loading calls…</span>
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table */}
+            <div className="hidden sm:block overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="cursor-pointer whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        Caller
                       </div>
-                      <span className="text-xs sm:text-sm font-medium text-gray-900">{call.receiver.name}</span>
+                    </TableHead>
+                    <TableHead className="whitespace-nowrap">Agent</TableHead>
+                    <TableHead className="whitespace-nowrap">Direction</TableHead>
+                    <TableHead className="whitespace-nowrap">Status</TableHead>
+                    <TableHead onClick={() => handleSort("startTime")} className="cursor-pointer whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        Call Time
+                        <ArrowUpDown className="h-4 w-4" />
+                      </div>
+                    </TableHead>
+                    <TableHead className="whitespace-nowrap">Follow-up</TableHead>
+                    <TableHead className="whitespace-nowrap">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {calls.map((call) => (
+                    <TableRow key={call.id} className="hover:bg-gray-50">
+                      <TableCell className="whitespace-nowrap">
+                        <CallerDisplay caller={call.caller} />
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 rounded-md bg-gray-100 flex items-center justify-center">
+                            <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                          </div>
+                          <span className="text-xs sm:text-sm font-medium text-gray-900">{call.receiver.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <DirectionBadge inbound={true} />
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge answered={call.answered} />
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <TimeDisplay startTime={call.startTime} />
+                      </TableCell>
+                      <TableCell>
+                        <FollowUpBadge followUp={call.followUp} />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 sm:gap-2">
+                          {call.followUp.status !== 3 && (
+                            <button
+                              onClick={() => markAsResolved(call.id)}
+                              disabled={resolvingCallId === call.id}
+                              className="p-1 sm:p-2 text-green-600 hover:text-green-800 hover:bg-gray-100 rounded-md transition-colors"
+                              title="Mark as Resolved"
+                            >
+                              {resolvingCallId === call.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Check className="h-4 w-4" />
+                              )}
+                            </button>
+                          )}
+
+                          {!call.isSpam && (
+                            <button
+                              onClick={() => markAsSpam(call.id)}
+                              className="p-1 sm:p-2 text-red-600 hover:text-red-800 hover:bg-gray-100 rounded-md transition-colors"
+                              title="Mark as Spam"
+                            >
+                              <Ban className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="block sm:hidden space-y-2 p-2">
+              {calls.map((call) => (
+                <Card key={call.id} className="p-3 shadow-sm">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col gap-1">
+                       
+                        <CallerDisplay caller={call.caller} />
+                      </div>
+                      <TimeDisplay startTime={call.startTime} />
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge answered={call.answered} />
-                  </TableCell>
-                  <TableCell>
-                    <DirectionBadge inbound={call.inbound} />
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <TimeDisplay startTime={call.startTime} />
-                  </TableCell>
-                  <TableCell>
-                    <FollowUpBadge followUp={call.followUp} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1 sm:gap-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-shrink-0 h-6 w-6 rounded-md bg-gray-100 flex items-center justify-center">
+                          <User className="h-3 w-3 text-gray-400" />
+                        </div>
+                        <span className="text-xs font-medium text-gray-900">{call.receiver.name}</span>
+                      </div>
+                       <div className="flex items-center gap-2">
+                          <StatusBadge answered={call.answered} />
+                          <FollowUpBadge followUp={call.followUp} />
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-2 justify-end pt-2 border-t border-gray-400">
                       {call.followUp.status !== 3 && (
                         <button
                           onClick={() => markAsResolved(call.id)}
                           disabled={resolvingCallId === call.id}
-                          className="p-1 sm:p-2 text-green-600 hover:text-green-800 hover:bg-gray-100 rounded-md transition-colors"
-                          title="Mark as Resolved"
+                          className="px-2 py-1 text-sm bg-green-600 text-white rounded flex items-center gap-1"
                         >
                           {resolvingCallId === call.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (
-                            <Check className="h-4 w-4" />
+                            <Check className="h-3 w-3" />
                           )}
+                          Resolve
                         </button>
                       )}
-  
                       {!call.isSpam && (
                         <button
                           onClick={() => markAsSpam(call.id)}
-                          className="p-1 sm:p-2 text-red-600 hover:text-red-800 hover:bg-gray-100 rounded-md transition-colors"
-                          title="Mark as Spam"
+                          className="px-2 py-1 text-sm bg-red-600 text-white rounded flex items-center gap-1"
                         >
-                          <Ban className="h-4 w-4" />
+                          <Ban className="h-3 w-3" />
+                          Spam
                         </button>
                       )}
                     </div>
-                  </TableCell>
-                </TableRow>
+                  </div>
+                </Card>
               ))}
-            </TableBody>
-          </Table>
-        </div>
-
-        {/* Mobile View */}
-        <div className="block sm:hidden space-y-2 p-2">
-          {calls.map((call, index) => (
-            <Card key={call.id} className="p-3 shadow-sm">
-              <div className="space-y-2">
-                <div className="flex justify-between items-start">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <StatusBadge answered={call.answered} />
-                      <FollowUpBadge followUp={call.followUp} />
-                    </div>
-                    <CallerDisplay caller={call.caller} />
-                  </div>
-                  <TimeDisplay startTime={call.startTime} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="flex-shrink-0 h-6 w-6 rounded-md bg-gray-100 flex items-center justify-center">
-                      <User className="h-3 w-3 text-gray-400" />
-                    </div>
-                    <span className="text-xs font-medium text-gray-900">{call.receiver.name}</span>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2 justify-end pt-2 border-t">
-                  {call.followUp.status !== 3 && (
-                    <button
-                      onClick={() => markAsResolved(call.id)}
-                      disabled={resolvingCallId === call.id}
-                      className="px-2 py-1 text-sm bg-green-600 text-white rounded flex items-center gap-1"
-                    >
-                      {resolvingCallId === call.id ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <Check className="h-3 w-3" />
-                      )}
-                      Resolve
-                    </button>
-                  )}
-                  {!call.isSpam && (
-                    <button
-                      onClick={() => markAsSpam(call.id)}
-                      className="px-2 py-1 text-sm bg-red-600 text-white rounded flex items-center gap-1"
-                    >
-                      <Ban className="h-3 w-3" />
-                      Spam
-                    </button>
-                  )}
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+            </div>
+          </>
+        )}
 
         {/* Loading States */}
         {loadingMore && (
@@ -565,8 +498,8 @@ const markAsSpam = useCallback(async (callId) => {
             <PhoneMissed className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
             <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2">No missed calls found</h3>
             <p className="text-xs sm:text-sm text-gray-500">
-              {searchTerm || selectedTeamMember !== "all"
-                ? "Try adjusting your search or filter criteria"
+              {debouncedSearchTerm
+                ? "Try adjusting your search criteria"
                 : "Great! All missed calls have been followed up"}
             </p>
           </div>

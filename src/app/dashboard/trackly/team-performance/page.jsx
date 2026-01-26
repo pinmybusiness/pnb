@@ -155,7 +155,7 @@ const MemberDetailsModal = ({ member, onClose }) => {
   if (!member) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="flex justify-between items-center p-6 border-b">
@@ -202,7 +202,7 @@ const MemberDetailsModal = ({ member, onClose }) => {
           ) : memberStats ? (
             <div className="space-y-6">
               {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="p-4">
                   <div className="flex items-center gap-3">
                     <Phone className="h-6 w-6 text-blue-600" />
@@ -212,27 +212,7 @@ const MemberDetailsModal = ({ member, onClose }) => {
                     </div>
                   </div>
                 </Card>
-                
-                <Card className="p-4">
-                  <div className="flex items-center gap-3">
-                    <PhoneIncoming className="h-6 w-6 text-green-600" />
-                    <div>
-                      <p className="text-sm text-gray-500">Incoming Calls</p>
-                      <p className="text-2xl font-bold text-gray-900">{memberStats.incoming?.total || 0}</p>
-                    </div>
-                  </div>
-                </Card>
-                
-                <Card className="p-4">
-                  <div className="flex items-center gap-3">
-                    <PhoneOutgoing className="h-6 w-6 text-purple-600" />
-                    <div>
-                      <p className="text-sm text-gray-500">Outgoing Calls</p>
-                      <p className="text-2xl font-bold text-gray-900">{memberStats.outgoing?.total || 0}</p>
-                    </div>
-                  </div>
-                </Card>
-                
+                                
                 <Card className="p-4">
                   <div className="flex items-center gap-3">
                     <AlertCircle className="h-6 w-6 text-orange-600" />

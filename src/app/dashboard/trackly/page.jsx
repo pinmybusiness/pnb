@@ -1,56 +1,17 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { 
-  Phone, PhoneCall, PhoneIncoming, PhoneOutgoing, 
-  Search, Edit3, ArrowUpDown, User
-} from "lucide-react";
+import { PhoneCall, Search, ArrowUpDown, User} from "lucide-react";
 import { toast } from "react-hot-toast";
 import apiClient from "@/lib/apiClient";
-import { 
-  Card, Input, Badge, Table, TableHeader, TableBody, 
-  TableRow, TableHead, TableCell, Button
-} from "@/components/ui";
+import { Card, Input, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Button} from "@/components/ui";
 import { useSelector } from "react-redux";
 import CallExport from "@/components/calls/CallExport";
 import AudioPlayer from "@/components/calls/AudioPlayer";
 import CallerDisplay from "@/components/calls/CallerDisplay";
 import TimeDisplay from "@/components/calls/TimeDisplay";
-import Pagination from "@/components/ui/Pagination"; // Import reusable pagination
-
-// StatusBadge Component
-const StatusBadge = ({ answered }) => {
-  const statusConfig = {
-    true: { className: "bg-green-100 text-green-800", label: "Answered" },
-    false: { className: "bg-red-100 text-red-800", label: "Missed" }
-  };
-
-  const { className, label } = statusConfig[answered] || statusConfig.false;
-
-  return (
-    <Badge className={`px-2 py-1 text-xs font-medium rounded-full ${className}`}>
-      {label}
-    </Badge>
-  );
-};
-
-// DirectionBadge Component
-const DirectionBadge = ({ inbound }) => {
-  const directionConfig = {
-    true: { className: "bg-blue-100 text-blue-800", icon: PhoneIncoming, label: "Incoming" },
-    false: { className: "bg-purple-100 text-purple-800", icon: PhoneOutgoing, label: "Outgoing" }
-  };
-
-  const { className, icon: Icon, label } = directionConfig[inbound] || directionConfig.true;
-
-  return (
-    <Badge className={`px-2 py-1 text-xs font-medium rounded-full ${className}`}>
-      <div className="flex items-center gap-1">
-        <Icon className="h-3 w-3" />
-        {label}
-      </div>
-    </Badge>
-  );
-};
+import Pagination from "@/components/ui/Pagination";
+import StatusBadge from "@/components/calls/StatusBadge";
+import DirectionBadge from "@/components/calls/DirectionBadge";
 
 const CallTracking = () => {
   // State Management
@@ -222,18 +183,6 @@ const CallTracking = () => {
     fetchCalls(newPage);
   }, [pagination.pages, loading, fetchCalls]);
 
-  // const addNote = useCallback(async (callId, note) => {
-  //   try {
-  //     await apiClient.patch(`/api/calls/${callId}/notes`, { notes: note });
-  //     setCalls(prev => prev.map(call => 
-  //       call.id === callId ? { ...call, notes: note } : call
-  //     ));
-  //     toast.success("Note added successfully");
-  //   } catch (error) {
-  //     toast.error(error.response?.data?.message || "Failed to add note");
-  //   }
-  // }, []);
-
   const handleSort = useCallback((key) => {
     setSortBy(prev => {
       if (prev === key) {
@@ -355,19 +304,19 @@ const CallTracking = () => {
                       </div>
                     </TableHead>
                     <TableHead className="whitespace-nowrap">Agent</TableHead>
-                    <TableHead onClick={() => handleSort("duration")} className="cursor-pointer whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        Duration
-                        <ArrowUpDown className="h-4 w-4" />
-                      </div>
-                    </TableHead>
+                    <TableHead className="whitespace-nowrap">Direction</TableHead>
                     <TableHead onClick={() => handleSort("answered")} className="cursor-pointer whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         Status
                         <ArrowUpDown className="h-4 w-4" />
                       </div>
                     </TableHead>
-                    <TableHead className="whitespace-nowrap">Direction</TableHead>
+                    <TableHead onClick={() => handleSort("duration")} className="cursor-pointer whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        Duration
+                        <ArrowUpDown className="h-4 w-4" />
+                      </div>
+                    </TableHead>
                     <TableHead className="cursor-pointer whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         Call At
@@ -375,8 +324,6 @@ const CallTracking = () => {
                       </div>
                     </TableHead>
                     <TableHead className="whitespace-nowrap">Recording</TableHead>
-                    {/* <TableHead className="whitespace-nowrap">Notes</TableHead> */}
-                    {/* <TableHead className="whitespace-nowrap">Actions</TableHead> */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -393,14 +340,14 @@ const CallTracking = () => {
                           <span className="text-xs sm:text-sm font-medium text-gray-900">{call.receiver.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="whitespace-nowrap">
-                        <div className="text-xs sm:text-sm font-mono text-gray-900">{call.duration}</div>
+                      <TableCell>
+                        <DirectionBadge inbound={call.inbound} />
                       </TableCell>
                       <TableCell>
                         <StatusBadge answered={call.answered} />
                       </TableCell>
-                      <TableCell>
-                        <DirectionBadge inbound={call.inbound} />
+                      <TableCell className="whitespace-nowrap">
+                        <div className="text-xs sm:text-sm font-mono text-gray-900">{call.duration}</div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
                         <TimeDisplay startTime={call.startTime} />
@@ -411,22 +358,6 @@ const CallTracking = () => {
                           callId={call.id} 
                         />
                       </TableCell>
-                      {/* <TableCell>
-                        <div className="text-xs sm:text-sm text-gray-500 truncate max-w-[150px] sm:max-w-[200px]">
-                          {call.notes || "No notes"}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1 sm:gap-2">
-                          <button
-                            onClick={() => addNote(call.id, prompt("Enter note:") || "New note")}
-                            className="p-1 sm:p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md transition-colors"
-                            title="Add Note"
-                          >
-                            <Edit3 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -440,9 +371,7 @@ const CallTracking = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between items-start">
                       <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                          <StatusBadge answered={call.answered} />
-                        </div>
+                        
                         <CallerDisplay caller={call.caller} />
                       </div>
                       <TimeDisplay startTime={call.startTime} />
@@ -452,29 +381,22 @@ const CallTracking = () => {
                         <span className="text-xs font-medium text-gray-900">{call.receiver.name}</span>
                         <span className="text-xs text-gray-500">• {call.duration}</span>
                       </div>
-                      <DirectionBadge inbound={call.inbound} />
+                      <div className="flex items-center gap-2">
+                       
+                        <StatusBadge answered={call.answered} />
+                        <DirectionBadge inbound={call.inbound} />
+                      </div>
                     </div>
                     
                     {/* Recording in Mobile */}
-                    <div className="border-t pt-2">
+                    {call.recordingUrl && 
+                    <div className="border-t border-gray-400 pt-2">
                       <AudioPlayer 
                         recordingUrl={call.recordingUrl} 
                         callId={call.id} 
                       />
                     </div>
-
-                    {/* <div className="text-xs text-gray-500 truncate">
-                      <strong>Notes:</strong> {call.notes || "No notes"}
-                    </div>
-                    <div className="flex gap-2 justify-end mt-1">
-                      <button
-                        onClick={() => addNote(call.id, prompt("Enter note:") || "New note")}
-                        className="p-1 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded transition-colors"
-                        title="Add Note"
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </button>
-                    </div> */}
+                    }
                   </div>
                 </Card>
               ))}

@@ -105,7 +105,7 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
     e.preventDefault();
     setAddLoading(true);
     try {
-      const res = await apiClient.post('/api/auth/register', addMemberForm);
+      const res = await apiClient.post('/api/auth/team-register', addMemberForm);
 
       if (res.data.success) {
         toast.success('Team member added successfully');

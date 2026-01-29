@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import {
-  Users, Repeat, UserMinus, Calendar, X, Phone, Clock, TrendingUp,
+  Users, Repeat, X, Phone, Clock, TrendingUp,
   Search, PhoneCall, PhoneMissed, PhoneIncoming, PhoneOutgoing, UserPlus,
   Loader2, CalendarDays, History, BarChart3, User, Activity
 } from "lucide-react";
@@ -168,7 +168,6 @@ const CustomerIntelligence = () => {
     total: 0,
     pages: 1
   });
-  const [heatmap, setHeatmap] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listLoading, setListLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -179,19 +178,6 @@ const CustomerIntelligence = () => {
   const [activePhone, setActivePhone] = useState(null);
   const [timelineLoading, setTimelineLoading] = useState(false);
   const [customerName, setCustomerName] = useState("");
-
-  /* ---------- HEATMAP LOOKUP ---------- */
-  const heatmapLookup = useMemo(() => {
-    const map = {};
-    heatmap.forEach(h => {
-      if (h.sampleCustomers && Array.isArray(h.sampleCustomers)) {
-        h.sampleCustomers.forEach(customer => {
-          map[customer] = h.heat;
-        });
-      }
-    });
-    return map;
-  }, [heatmap]);
 
   /* ---------------- Fetch Customer List ---------------- */
   const fetchCustomerList = useCallback(async (page = 1) => {
@@ -234,13 +220,11 @@ const CustomerIntelligence = () => {
     try {
       setLoading(true);
       
-      const [overviewRes, heatmapRes] = await Promise.all([
+      const [overviewRes] = await Promise.all([
         apiClient.get(`/api/customer-intelligence/overview?period=${period}`),
-        apiClient.get(`/api/customer-intelligence/heatmap?period=${period}`),
       ]);
 
       if (overviewRes.data.success) setOverview(overviewRes.data.data);
-      if (heatmapRes.data.success) setHeatmap(heatmapRes.data.data.heatDistribution || []);      
     } catch (error) {
       console.error("Fetch error:", error);
       const errorMsg = error.response?.data?.message || "Failed to load intelligence";
@@ -283,8 +267,7 @@ const CustomerIntelligence = () => {
     Promise.all([
       apiClient.get(`/api/customer-intelligence/overview?period=${newPeriod}`),
       apiClient.get(`/api/customer-intelligence/list?period=${newPeriod}&page=1&limit=${pagination.limit}`),
-      apiClient.get(`/api/customer-intelligence/heatmap?period=${newPeriod}`)
-    ]).then(([overviewRes, listRes, heatmapRes]) => {
+    ]).then(([overviewRes, listRes]) => {
       if (overviewRes.data.success) setOverview(overviewRes.data.data);
       if (listRes.data.success) {
         setCustomers(listRes.data.data.customers || []);
@@ -295,7 +278,6 @@ const CustomerIntelligence = () => {
           pages: 1
         });
       }
-      if (heatmapRes.data.success) setHeatmap(heatmapRes.data.data.heatDistribution || []);
     }).catch(error => {
       console.error("Period change error:", error);
       toast.error("Failed to update data");
@@ -453,12 +435,6 @@ const CustomerIntelligence = () => {
                 icon={Repeat}
                 description="Returning customers"
             />
-            {/* <KPICard 
-                title="Lost Customers" 
-                value={lostCustomers.length} 
-                icon={UserMinus}
-                description="No contact in 15+ days"
-            /> */}
         </div>
 
         {/* CUSTOMER LIST */}
@@ -517,13 +493,11 @@ const CustomerIntelligence = () => {
                     <th className="text-center p-4 font-bold text-gray-700 text-sm">Total Calls</th>
                     <th className="text-center p-4 font-bold text-gray-700 text-sm">Answered</th>
                     <th className="text-center p-4 font-bold text-gray-700 text-sm">Missed</th>
-                    <th className="text-center p-4 font-bold text-gray-700 text-sm">Status</th>
                     <th className="text-left p-4 font-bold text-gray-700 text-sm">Last Contact</th>
                   </tr>
                 </thead>
                 <tbody>
                   {customers.map((c, i) => {
-                    const heat = heatmapLookup[c._id] || "cold";
                     const answerRate = c.totalCalls > 0 
                       ? Math.round((c.answeredCalls / c.totalCalls) * 100)
                       : 0;
@@ -561,15 +535,6 @@ const CustomerIntelligence = () => {
                         <td className="p-4 text-center">
                           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-50 rounded-lg">
                             <span className="font-bold text-red-700">{c.missedCalls}</span>
-                          </div>
-                        </td>
-                        <td className="p-4 text-center">
-                          <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-full ${
-                            heat === "hot" ? "bg-gradient-to-r from-red-500 to-red-600 text-white" :
-                            heat === "warm" ? "bg-gradient-to-r from-orange-500 to-orange-600 text-white" :
-                            "bg-gradient-to-br from-blue-500 to-blue-600 text-white"
-                          } shadow-lg`}>
-                            {heat.toUpperCase()}
                           </div>
                         </td>
                         <td className="p-4">

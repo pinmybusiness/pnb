@@ -16,7 +16,6 @@ import apiClient from '@/lib/apiClient';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import OverviewTab from '@/components/BranchView/OverviewTab';
-import PerformanceTab from '@/components/BranchView/PerformanceTab';
 import TeamTab from '@/components/BranchView/TeamTab';
 import SettingsTab from '@/components/BranchView/SettingsTab';
 
@@ -132,7 +131,6 @@ const BranchView = () => {
         <nav className="-mb-px flex space-x-8">
           {[
             { id: 'overview', name: 'Overview', icon: Eye },
-            { id: 'performance', name: 'Performance', icon: BarChart3 },
             { id: 'team', name: 'Team', icon: Users },
             { id: 'settings', name: 'Settings', icon: Settings },
           ].map((tab) => {
@@ -163,7 +161,6 @@ const BranchView = () => {
       {/* Tab Content */}
       <div className="mt-6">
         {activeTab === 'overview' && <OverviewTab branch={branch} />}
-        {activeTab === 'performance' && <PerformanceTab />}
         {activeTab === 'team' && <TeamTab branchId={id} teamMembers={teamMembers} setTeamMembers={setTeamMembers} />}
         {activeTab === 'settings' && <SettingsTab />}
       </div>

@@ -139,26 +139,6 @@ const Branches = () => {
         </Link>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <KPICard title="Total Branches" value={pagination.totalRecords} icon={MapPin} />
-        <KPICard
-          title="Avg Revenue"
-          value={branches.length > 0 ? `$${(kpiData.totalRevenue / branches.length / 1000).toFixed(0)}K` : '$0K'}
-          icon={DollarSign}
-        />
-        <KPICard
-          title="Avg Footfall"
-          value={branches.length > 0 ? kpiData.avgFootfall.toLocaleString() : '0'}
-          icon={TrendingUp}
-        />
-        <KPICard
-          title="Avg Rating"
-          value={branches.length > 0 ? kpiData.avgRating : '0.0'}
-          icon={Star}
-        />
-      </div>
-
       {/* Filters */}
       <Card className="p-4">
         <div className="flex flex-col sm:flex-row gap-4">
@@ -234,9 +214,6 @@ const Branches = () => {
                 <TableCell>
                   <div>
                     <div className="font-medium">{branch.name || 'Unnamed Branch'}</div>
-                    <div className="text-sm text-gray-500">
-                      {branch.teamsCount || 0} team members
-                    </div>
                   </div>
                 </TableCell>
                 <TableCell>

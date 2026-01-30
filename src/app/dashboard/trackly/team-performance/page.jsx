@@ -3,65 +3,37 @@
 import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
-import {
-  Users,
-  Phone,
-  Search,
-  RefreshCw,
-  ShieldAlert,
-  ArrowUpDown,
-  TrendingUp,
-  Eye,
-} from "lucide-react";
+import { Users, Search, Eye, PhoneOutgoing, PhoneIncoming, PhoneMissed } from "lucide-react";
 import { 
   Card, 
   Input, 
-  Badge, 
   Table, 
   TableHeader, 
   TableBody, 
   TableRow, 
   TableHead, 
-  TableCell, 
-  Button 
+  TableCell,
+  Button,
+  Badge
 } from "@/components/ui";
 import MemberDetailsModal from "@/components/team/MemberDetailsModal";
 import TeamStatsExport from "@/components/team/TeamStatsExport";
 
-// ---------- Constants ----------
+// Constants
 const PERIOD_OPTIONS = [
   { key: "today", label: "Today" },
+  { key: "yesterday", label: "Yesterday" },
   { key: "week", label: "This Week" },
   { key: "month", label: "This Month" }
 ];
 
-const UserAvatar = ({ name, className = "w-8 h-8" }) => (
-  <div className={`flex-shrink-0 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold ${className}`}>
+const UserAvatar = ({ name }) => (
+  <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm">
     {(name || 'U').charAt(0).toUpperCase()}
   </div>
 );
 
-const LoadingState = () => (
-  <div className="flex justify-center items-center h-64">
-    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-  </div>
-);
-
-const ErrorState = ({ message, onRetry }) => (
-  <Card className="p-12 text-center">
-    <ShieldAlert className="h-12 w-12 text-red-400 mx-auto mb-4" />
-    <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load data</h3>
-    <p className="text-sm text-gray-500 mb-4">{message}</p>
-    {onRetry && (
-      <Button variant="outline" onClick={onRetry}>
-        <RefreshCw className="h-4 w-4 mr-2" />
-        Try Again
-      </Button>
-    )}
-  </Card>
-);
-
-// ---------- Hooks ----------
+// Custom Hook for Team Data
 const useTeamData = (period) => {
   return useQuery({
     queryKey: ["team-performance", period],
@@ -70,118 +42,142 @@ const useTeamData = (period) => {
       if (!data.success) throw new Error(data.message);
       return data.data;
     },
-    retry: 2,
+    retry: 1,
     staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false
   });
 };
 
-// ---------- Main Component ----------
+// Main Component
 const TeamManagementPage = () => {
   const [period, setPeriod] = useState("week");
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("performance");
-  const [sortOrder, setSortOrder] = useState("desc");
   const [selectedMember, setSelectedMember] = useState(null);
-    const [showExport, setShowExport] = useState(false);
-  
+  const [showExport, setShowExport] = useState(false);
 
   // Fetch data
   const { 
     data: teamData, 
-    isLoading: teamLoading, 
-    error: teamError, 
-    refetch: refetchTeam 
+    isLoading, 
+    error,
+    refetch
   } = useTeamData(period);
 
-  // Sort handler
-  const handleSort = useCallback((key) => {
-    setSortBy(prev => {
-      if (prev === key) {
-        setSortOrder(order => order === "asc" ? "desc" : "asc");
-      } else {
-        setSortOrder("desc");
-      }
-      return key;
-    });
-  }, []);
-
-  // View details handler
-  const handleViewDetails = useCallback((member) => {
-    setSelectedMember(member);
-  }, []);
-
-  // Close details modal
-  const handleCloseDetails = useCallback(() => {
-    setSelectedMember(null);
-  }, []);
-
-  // Filter and sort members
+  // Filter members
   const filteredMembers = useMemo(() => {
     if (!teamData) return [];
     
     let members = [...teamData];
     
-    // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       members = members.filter(member => 
-        member.userName?.toLowerCase().includes(query) ||
-        member.userMobile?.includes(query)
+        member.name?.toLowerCase().includes(query) ||
+        member.mobile?.includes(query)
       );
     }
     
-    // Sort
-    members.sort((a, b) => {
-      let aValue, bValue;
-      
-      switch (sortBy) {
-        
-        case "calls":
-          aValue = a.totalCalls || 0;
-          bValue = b.totalCalls || 0;
-          break;
-        
-        case "name":
-          aValue = a.userName?.toLowerCase() || "";
-          bValue = b.userName?.toLowerCase() || "";
-          break;
-        
-        default:
-          return 0;
-      }
-      
-      if (typeof aValue === "string") {
-        return sortOrder === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
-      }
-      return sortOrder === "asc" ? aValue - bValue : bValue - aValue;
-    });
+    // Sort by total calls (descending)
+    members.sort((a, b) => b.totalCalls - a.totalCalls);
     
     return members;
-  }, [teamData, searchQuery, sortBy, sortOrder]);
+  }, [teamData, searchQuery]);
 
-  // Error handling
-  if (teamError) {
+  // Handlers
+  const handleViewDetails = useCallback((member) => {
+    setSelectedMember(member);
+  }, []);
+
+  const handleCloseDetails = useCallback(() => {
+    setSelectedMember(null);
+  }, []);
+
+  // Loading State
+  if (isLoading) {
     return (
-      <ErrorState 
-        message="Failed to load team data. Please check your connection."
-      />
+      <div className="flex flex-col justify-center items-center h-64 space-y-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <p className="text-sm text-gray-500">Loading team data...</p>
+      </div>
     );
   }
 
-  if (teamLoading) {
-    return <LoadingState />;
+  // Error State
+  if (error) {
+    return (
+      <Card className="p-8 text-center max-w-md mx-auto mt-8">
+        <div className="h-16 w-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">⚠️</span>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load data</h3>
+        <p className="text-sm text-gray-600 mb-6">Please check your connection and try again</p>
+        <div className="flex gap-3 justify-center">
+          <Button variant="outline" onClick={() => window.location.reload()}>
+            Refresh Page
+          </Button>
+          <Button onClick={() => refetch()}>
+            Retry
+          </Button>
+        </div>
+      </Card>
+    );
   }
 
   return (
     <>
-      <div className="space-y-4 animate-fade-in p-4 sm:p-6 md:p-8">
-        {/* Header */}
-        <div className="flex justify-between items-start gap-2">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Team Management</h1>
-            <p className="text-sm text-gray-500">Monitor and manage your team's performance</p>
-          </div>
+      {/* Add CSS for table responsiveness */}
+      <style jsx>{`
+        .team-table {
+          table-layout: fixed;
+          width: 100%;
+        }
+        .team-table th, .team-table td {
+          vertical-align: middle;
+          padding: 0.75rem;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .member-cell {
+          min-width: 200px;
+          max-width: 200px;
+        }
+        .stat-cell {
+          min-width: 120px;
+          max-width: 120px;
+        }
+        .action-cell {
+          min-width: 80px;
+          max-width: 80px;
+        }
+        @media (max-width: 768px) {
+          .member-cell {
+            min-width: 150px;
+            max-width: 150px;
+          }
+          .stat-cell {
+            min-width: 100px;
+            max-width: 100px;
+          }
+        }
+      `}</style>
 
+      <div className="space-y-6 p-4 sm:p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Team Activity Overview</h1>
+             {/* Summary Stats */}
+            <div className="flex items-center gap-3 text-sm">
+              {/* <Badge variant="outline" className="px-3 py-1">
+                {filteredMembers.length} Members
+              </Badge> */}
+              <Badge variant="outline" className="px-3 py-1">
+                Total Calls: {filteredMembers.reduce((sum, m) => sum + (m.totalCalls || 0), 0)}
+              </Badge>
+            </div>
+          </div>
+          
            {/* Toggle Export Button */}
             <div className="flex justify-end mt-2">
               <Button
@@ -190,152 +186,267 @@ const TeamManagementPage = () => {
               >
                 {showExport ? "Hide Export Options" : "Show Export Options"}
               </Button>
-            </div>
+            </div>         
         </div>
 
         {showExport &&  <TeamStatsExport />}
-     
+
         {/* Filters */}
-        <Card className="p-3 sm:p-4">
-          <div className="flex flex-col gap-2 sm:flex-row sm:gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search team members..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 text-sm"
-              />
+        <Card className="p-4 sm:p-6 shadow-sm">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search by name or mobile number..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-11"
+                />
+              </div>
             </div>
-            <select
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
-              className="px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
-            >
-              {PERIOD_OPTIONS.map((option) => (
-                <option key={option.key} value={option.key}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-700">Period:</label>
+                <select
+                  value={period}
+                  onChange={(e) => setPeriod(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {PERIOD_OPTIONS.map((option) => (
+                    <option key={option.key} value={option.key}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="h-11"
+                >
+                  Clear Search
+                </Button>
+              )}
+            </div>
           </div>
         </Card>
 
         {/* Team Table */}
-        <Card>
-          {/* Desktop Table */}
-          <div className="hidden sm:block overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead onClick={() => handleSort("name")} className="cursor-pointer whitespace-nowrap">
+        <Card className="overflow-hidden border shadow-sm">
+          {/* Desktop Table - Fixed width columns */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="team-table">
+              <thead className="bg-gray-50 border-b border-gray-400">
+                <tr>
+                  {/* Column 1: Name with Number - Fixed width */}
+                  <th className="member-cell text-left px-4 py-3">
                     <div className="flex items-center gap-2">
-                      Team Member
-                      <ArrowUpDown className="h-4 w-4" />
+                      <Users className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm font-semibold text-gray-700">Team Member</span>
                     </div>
-                  </TableHead>
-                  <TableHead onClick={() => handleSort("calls")} className="cursor-pointer whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      Total Calls
-                      <ArrowUpDown className="h-4 w-4" />
+                  </th>
+                  
+                  {/* Column 2: Total Calls */}
+                  <th className="stat-cell text-center px-4 py-3">
+                    <span className="text-sm font-semibold text-gray-700">Total Calls</span>
+                  </th>
+                  
+                  {/* Column 3: Total Outgoing */}
+                  <th className="stat-cell text-center px-4 py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <PhoneOutgoing className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-semibold text-gray-700">Outgoing</span>
                     </div>
-                  </TableHead>
-                  <TableHead className="whitespace-nowrap">Answered</TableHead>
-                  <TableHead className="whitespace-nowrap">Missed</TableHead>
-                  <TableHead className="whitespace-nowrap">Details</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+                  </th>
+                  
+                  {/* Column 4: Outgoing Connected */}
+                  <th className="stat-cell text-center px-4 py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <PhoneOutgoing className="h-4 w-4 text-green-500" />
+                      <span className="text-sm font-semibold text-gray-700">Connected</span>
+                    </div>
+                  </th>
+                  
+                  {/* Column 5: Incoming Calls */}
+                  <th className="stat-cell text-center px-4 py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <PhoneIncoming className="h-4 w-4 text-purple-500" />
+                      <span className="text-sm font-semibold text-gray-700">Incoming</span>
+                    </div>
+                  </th>
+                  
+                  {/* Column 6: Incoming Missed */}
+                  <th className="stat-cell text-center px-4 py-3">
+                    <div className="flex items-center justify-center gap-2">
+                      <PhoneMissed className="h-4 w-4 text-red-500" />
+                      <span className="text-sm font-semibold text-gray-700">Missed</span>
+                    </div>
+                  </th>
+                  
+                  {/* Column 7: Details */}
+                  <th className="action-cell text-center px-4 py-3">
+                    <span className="text-sm font-semibold text-gray-700">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              
+              <tbody className="divide-y divide-gray-100">
                 {filteredMembers.map((member, index) => (
-                  <TableRow key={member.userId || index} className="hover:bg-gray-50">
-                    <TableCell className="whitespace-nowrap">
+                  <tr key={member.userId || index} className="hover:bg-blue-50/30 transition-colors">
+                    {/* Column 1: Name with Number */}
+                    <td className="member-cell px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <UserAvatar name={member.userName} />
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{member.userName}</div>
-                          <div className="text-xs text-gray-500">{member.userMobile || 'No mobile'}</div>
+                        <UserAvatar name={member.name} />
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-gray-900 truncate">{member.name}</div>
+                          <div className="text-sm text-gray-500 truncate">{member.mobile || 'No mobile'}</div>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{member.totalCalls || 0}</div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="text-sm text-green-600 font-medium">{member.answeredCalls || 0}</div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap">
-                      <div className="text-sm text-red-600 font-medium">{member.missedCalls || 0}</div>
-                    </TableCell>
-                   
-                    <TableCell>
-                      <button
+                    </td>
+                    
+                    {/* Column 2: Total Calls */}
+                    <td className="stat-cell px-4 py-3 text-center">
+                      <div className="inline-flex items-center justify-center">
+                        <span className="text-lg font-bold text-gray-900">
+                          {member.totalCalls || 0}
+                        </span>
+                      </div>
+                    </td>
+                    
+                    {/* Column 3: Total Outgoing */}
+                    <td className="stat-cell px-4 py-3 text-center">
+                      <div className="flex flex-col items-center">
+                        <span className="text-lg font-semibold text-blue-600">{member.totalOutgoing || 0}</span>
+                      </div>
+                    </td>
+                    
+                    {/* Column 4: Outgoing Connected */}
+                    <td className="stat-cell px-4 py-3 text-center">
+                      <div className="flex flex-col items-center">
+                        <span className="text-lg font-semibold text-green-600">{member.totalOutgoingConnected || 0}</span>
+                      </div>
+                    </td>
+                    
+                    {/* Column 5: Incoming Calls */}
+                    <td className="stat-cell px-4 py-3 text-center">
+                      <div className="flex flex-col items-center">
+                        <span className="text-lg font-semibold text-purple-600">{member.totalIncoming || 0}</span>
+                      </div>
+                    </td>
+                    
+                    {/* Column 6: Incoming Missed */}
+                    <td className="stat-cell px-4 py-3 text-center">
+                      <div className="flex flex-col items-center">
+                        <span className="text-lg font-semibold text-red-600">{member.totalIncomingMissed || 0}</span>
+                      </div>
+                    </td>
+                    
+                    {/* Column 7: Details */}
+                    <td className="action-cell px-4 py-3 text-center">
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleViewDetails(member)}
-                        className="p-2 text-gray-600 hover:text-blue-600 hover:bg-gray-100 rounded-md transition-colors"
+                        className="h-9 w-9 rounded-full hover:bg-blue-100 hover:text-blue-600 transition-colors"
                         title="View Details"
                       >
                         <Eye className="h-4 w-4" />
-                      </button>
-                    </TableCell>
-                  </TableRow>
+                      </Button>
+                    </td>
+                  </tr>
                 ))}
-              </TableBody>
-            </Table>
+              </tbody>
+            </table>
           </div>
 
-          {/* Mobile Cards */}
-          <div className="block sm:hidden space-y-2 p-2">
-            {filteredMembers.map((member, index) => (
-              <Card key={member.userId || index} className="p-3 shadow-sm">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                      <UserAvatar name={member.userName} />
-                      <div>
-                        <div className="font-medium text-gray-900">{member.userName}</div>
-                        <div className="text-xs text-gray-500">{member.userMobile || 'No mobile'}</div>
+          {/* Mobile Cards - Enhanced */}
+          <div className="block md:hidden">
+            <div className="p-4 border-b bg-gray-50">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-gray-900">Team Members ({filteredMembers.length})</h3>
+                <Badge variant="outline">
+                  {period === 'today' ? 'Today' : period === 'week' ? 'This Week' : 'This Month'}
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="divide-y divide-gray-100">
+              {filteredMembers.map((member, index) => (
+                <div key={member.userId || index} className="p-4 hover:bg-gray-50">
+                  <div className="space-y-4">
+                    {/* Member Header */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <UserAvatar name={member.name} />
+                        <div>
+                          <div className="font-semibold text-gray-900">{member.name}</div>
+                          <div className="text-sm text-gray-500">{member.mobile || 'No mobile'}</div>
+                        </div>
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewDetails(member)}
+                        className="h-8 w-8 rounded-full"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-gray-900">{member.totalCalls || 0}</div>
-                      <div className="text-xs text-gray-500">Total Calls</div>
+                    
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-100">
+                        <div className="text-2xl font-bold text-gray-900">{member.totalCalls || 0}</div>
+                        <div className="text-xs text-gray-600 mt-1">Total Calls</div>
+                      </div>
+                      <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-100">
+                        <div className="text-xl font-semibold text-blue-600">{member.totalOutgoing || 0}</div>
+                        <div className="text-xs text-gray-600 mt-1">Outgoing</div>
+                      </div>
+                      <div className="text-center p-3 bg-green-50 rounded-lg border border-green-100">
+                        <div className="text-xl font-semibold text-green-600">{member.totalOutgoingConnected || 0}</div>
+                        <div className="text-xs text-gray-600 mt-1">Connected</div>
+                      </div>
+                      <div className="text-center p-3 bg-purple-50 rounded-lg border border-purple-100">
+                        <div className="text-xl font-semibold text-purple-600">{member.totalIncoming || 0}</div>
+                        <div className="text-xs text-gray-600 mt-1">Incoming</div>
+                      </div>
+                      <div className="text-center p-3 bg-red-50 rounded-lg border border-red-100">
+                        <div className="text-xl font-semibold text-red-600">{member.totalIncomingMissed || 0}</div>
+                        <div className="text-xs text-gray-600 mt-1">Missed</div>
+                      </div>
+                     
                     </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-green-600">{member.answeredCalls || 0}</div>
-                      <div className="text-xs text-gray-500">Answered</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-lg font-bold text-red-600">{member.missedCalls || 0}</div>
-                      <div className="text-xs text-gray-500">Missed</div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 pt-2 border-t">
-                    <button
-                      onClick={() => handleViewDetails(member)}
-                      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md transition-colors"
-                    >
-                      <Eye className="h-4 w-4" />
-                      View Details
-                    </button>
                   </div>
                 </div>
-              </Card>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Empty State */}
-          {filteredMembers.length === 0 && !teamLoading && (
-            <div className="p-6 sm:p-12 text-center">
-              <Users className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-2 sm:mb-4" />
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1 sm:mb-2">No team members found</h3>
-              <p className="text-xs sm:text-sm text-gray-500">
+          {filteredMembers.length === 0 && !isLoading && (
+            <div className="p-12 text-center">
+              <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-gray-100 mb-4">
+                <Users className="h-10 w-10 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                {searchQuery ? "No matching team members" : "No team data available"}
+              </h3>
+              <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
                 {searchQuery 
-                  ? "Try adjusting your search criteria"
-                  : "No team data available for the selected period"}
+                  ? "Try adjusting your search terms or clear the search"
+                  : "No call data found for the selected period. Try selecting a different period."}
               </p>
+              {searchQuery && (
+                <Button variant="outline" onClick={() => setSearchQuery("")}>
+                  Clear Search
+                </Button>
+              )}
             </div>
           )}
         </Card>
@@ -346,6 +457,7 @@ const TeamManagementPage = () => {
         <MemberDetailsModal
           member={selectedMember}
           onClose={handleCloseDetails}
+          period={period}
         />
       )}
     </>

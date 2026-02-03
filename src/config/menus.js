@@ -11,7 +11,8 @@ import {
   AudioLines,
   Clock,
   UsersRound,
-  TrendingUp
+  TrendingUp,
+  Cable
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
@@ -36,6 +37,7 @@ export const allMenus = [
   { name: "Calls History", href: "/dashboard/trackly", icon: Clock, roles: [6] },
   { name: "Team Performance", href: "/dashboard/trackly/team-performance", icon: TrendingUp, roles: [6] },
   { name: "Customer Intelligence", href: "/dashboard/trackly/customer-intelligence", icon: UsersRound, roles: [6] },
+  { name: "Integrations", href: "/dashboard/integrations", icon: Cable, roles: [6] },
   // { 
   //   name: "Trackly", 
   //   icon: PhoneCall, 

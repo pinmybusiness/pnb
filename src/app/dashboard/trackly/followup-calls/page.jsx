@@ -65,7 +65,7 @@ const MissedCalls = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [resolvingCallId, setResolvingCallId] = useState(null);
-  const [daysLimit, setDaysLimit] = useState(7);
+  const [daysLimit, setDaysLimit] = useState(3);
 
   // Refs
   const debounceTimerRef = useRef(null);
@@ -328,9 +328,9 @@ const MissedCalls = () => {
             }}
             className="px-2 py-1 sm:px-3 sm:py-2 border border-gray-300 rounded-md bg-white text-gray-900 text-sm"
           >
+            <option value={3}>Last 3 Days</option>
+            <option value={5}>Last 5 Days</option>
             <option value={7}>Last 7 Days</option>
-            <option value={14}>Last 14 Days</option>
-            <option value={30}>Last 30 Days</option>
           </select>
         </div>
       </Card>

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Card, Button, Input } from "@/components/ui";
 import { toast } from "react-hot-toast";
-import { useSelector } from "react-redux";
 
 // ====================== EXPORT HELPERS ======================
 const formatDate = (date) => date.toISOString().split("T")[0];
@@ -15,6 +14,11 @@ const getDateRange = (type) => {
   switch (type) {
     case "today":
       start = end = today;
+      break;
+
+    case "yesterday":
+      start = end = new Date(today);
+      start.setDate(today.getDate() - 1);
       break;
 
     case "week":
@@ -44,19 +48,12 @@ const getDateRange = (type) => {
 };
 
 const CallExport = () => {
-  const { user } = useSelector((state) => state.auth);
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
 
   const downloadExcel = (startDate, endDate) => {
     try {
-      const branchId = user?.branch;
-      if (!branchId) {
-        return toast.error("Branch ID missing");
-      }
-
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/calls/export/excel?branchId=${branchId}&startDate=${startDate}&endDate=${endDate}`;
-
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/calls/export/excel?startDate=${startDate}&endDate=${endDate}`;
       window.open(url, "_blank");
     } catch (err) {
       console.error(err);
@@ -79,6 +76,15 @@ const CallExport = () => {
         >
           Today
         </Button>
+        <Button
+          variant="outline"
+          onClick={() => {
+            const { startDate, endDate } = getDateRange("yesterday");
+            downloadExcel(startDate, endDate);
+          }}
+        >
+          YesterDay
+        </Button>
 
         <Button
           variant="outline"
@@ -98,16 +104,6 @@ const CallExport = () => {
           }}
         >
           This Month
-        </Button>
-
-        <Button
-          variant="outline"
-          onClick={() => {
-            const { startDate, endDate } = getDateRange("last_month");
-            downloadExcel(startDate, endDate);
-          }}
-        >
-          Last Month
         </Button>
       </div>
 

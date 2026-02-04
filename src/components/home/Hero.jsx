@@ -1,5 +1,4 @@
 import Link from "next/link";
-import CtaButton from "./CtaButton";
 
 export default function Hero() {
 
@@ -148,7 +147,7 @@ export default function Hero() {
             </div>
             <div className="relative">
               <img
-                src="/images/trackly/hero-image.png"
+                src="/images/hero-image.webp"
                 alt="Trackly dashboard preview"
                 width={550}
                 height={450}

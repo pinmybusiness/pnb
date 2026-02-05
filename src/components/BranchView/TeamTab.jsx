@@ -6,17 +6,19 @@ import {
   Edit,
   UserPlus,
   Loader,
-  Plus,
   Save,
   X,
-  EyeOff,
-  Eye,
+  UserCheck // Add this icon for Assign Plan
 } from 'lucide-react';
 import StatusBadge from '@/components/ui/StatusBadge';
 import { toast } from 'react-hot-toast';
 import apiClient from '@/lib/apiClient';
 import { formatDateWithSuffix } from '@/utils/dateFormat';
 import AddTeamMemberModal from '../team/AddTeamMemberModal';
+
+// 🔹 Import Roles + Helpers (same as first component)
+import { ROLES } from '@/constants/roles';
+import { getRoleLabel, isRootAdmin } from '@/constants/roleHelpers';
 
 const Card = ({ className = '', children }) => (
   <div className={`bg-white border border-gray-200 rounded-lg shadow-sm ${className}`}>
@@ -40,7 +42,15 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
   const [selectedMember, setSelectedMember] = useState(null);
   const [addLoading, setAddLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  
+  // 🔹 ADD THESE STATES FOR ASSIGN PLAN MODAL
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedMemberForPlan, setSelectedMemberForPlan] = useState(null);
+  const [plans, setPlans] = useState([]);
+  const [selectedPlan, setSelectedPlan] = useState('');
+  const [assignLoading, setAssignLoading] = useState(false);
+  // 🔹 Get current user from localStorage or context
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [filters, setFilters] = useState({
     role: '',
@@ -60,6 +70,18 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
     email: '',
     isActive: true,
   });
+
+  // 🔹 Get current user on component mount
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        setCurrentUser(JSON.parse(userData));
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     fetchTeamMembers();
@@ -102,6 +124,52 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
       console.error('Fetch team error:', error);
     } finally {
       setTeamLoading(false);
+    }
+  };
+
+  // 🔹 ADD THIS FUNCTION - OPEN ASSIGN PLAN MODAL
+  const openAssignPlanModal = async (memberId) => {
+    setSelectedMemberForPlan(memberId);
+    setShowAssignModal(true);
+
+    if (plans.length === 0) {
+      try {
+        const res = await apiClient.get('/api/services/plans');
+        setPlans(res.data.data || []);
+      } catch (err) {
+        toast.error('Failed to load plans');
+      }
+    }
+  };
+
+  // 🔹 ADD THIS FUNCTION - ASSIGN PLAN TO MEMBER
+  const assignPlanToMember = async () => {
+    if (!selectedPlan || !selectedMemberForPlan) {
+      toast.error('Please select a plan');
+      return;
+    }
+
+    setAssignLoading(true);
+    try {
+      const res = await apiClient.post('/api/services/subscribe', {
+          userId: selectedMemberForPlan,
+          planId: selectedPlan,
+          addons: [],
+        }
+      );
+
+      if (res.data.success) {
+        toast.success('Plan assigned successfully!');
+        setShowAssignModal(false);
+        setSelectedPlan('');
+        setSelectedMemberForPlan(null);
+      } else {
+        toast.error(res.data.message || 'Failed to assign plan');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to assign plan');
+    } finally {
+      setAssignLoading(false);
     }
   };
 
@@ -191,6 +259,9 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
     { value: 7, label: 'Branch Team' },
     { value: 8, label: 'Branch Staff' },
   ];
+
+  // 🔹 Check if current user is Root Admin (same logic as first component)
+  const isCurrentUserRootAdmin = currentUser && isRootAdmin(currentUser.role);
 
   return (
     <div className="space-y-6">
@@ -297,10 +368,22 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => openEditModal(member)}
-                              className="text-gray-600 hover:text-gray-900 p-1"
+                              className="text-blue-600 hover:text-blue-900 p-1"
+                              title="Edit Member"
                             >
                               <Edit className="h-4 w-4" />
                             </button>
+                            
+                            {/* 🔹 ADD ASSIGN PLAN BUTTON HERE - Same logic as first component */}
+                            { member.role === ROLES.BRANCH_TEAM && (
+                              <button
+                                onClick={() => openAssignPlanModal(member._id)}
+                                className="text-orange-600 hover:text-orange-900 p-1"
+                                title="Assign Plan"
+                              >
+                                <UserCheck className="h-4 w-4" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -419,6 +502,75 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 🔹 ADD ASSIGN PLAN MODAL - Same as first component */}
+      {showAssignModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/30">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Assign Plan</h3>
+              <button
+                onClick={() => {
+                  setShowAssignModal(false);
+                  setSelectedPlan('');
+                  setSelectedMemberForPlan(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select Plan
+                </label>
+                <select
+                  className="w-full border border-gray-300 rounded-md p-2"
+                  value={selectedPlan}
+                  onChange={(e) => setSelectedPlan(e.target.value)}
+                >
+                  <option value="">Select a plan</option>
+                  {plans.map((plan) => (
+                    <option key={plan._id} value={plan._id}>
+                      {plan.serviceId?.name || 'Unknown Service'} — {plan.name} — ₹{plan.price}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAssignModal(false);
+                    setSelectedPlan('');
+                    setSelectedMemberForPlan(null);
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={assignPlanToMember}
+                  disabled={assignLoading || !selectedPlan}
+                  className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {assignLoading ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin inline mr-2" />
+                      Assigning...
+                    </>
+                  ) : (
+                    'Assign Plan'
+                  )}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

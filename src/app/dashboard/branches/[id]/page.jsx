@@ -3,10 +3,8 @@
 import { useState, useEffect } from 'react';
 import {
   Users,
-  Eye,
   Edit,
   ArrowLeft,
-  BarChart3,
   Settings,
   X,
 } from 'lucide-react';
@@ -15,7 +13,6 @@ import { toast } from 'react-hot-toast';
 import apiClient from '@/lib/apiClient';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import OverviewTab from '@/components/BranchView/OverviewTab';
 import TeamTab from '@/components/BranchView/TeamTab';
 import SettingsTab from '@/components/BranchView/SettingsTab';
 
@@ -35,7 +32,7 @@ const BranchView = () => {
   const id = params.id;
 
   // Initialize activeTab from URL query parameter or default to 'overview'
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'team');
   const [branch, setBranch] = useState(null);
   const [loading, setLoading] = useState(true);
   const [teamMembers, setTeamMembers] = useState([]);
@@ -104,6 +101,7 @@ const BranchView = () => {
           </Link>
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900">{branch.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900">({branch.parentRestaurant.name})</h1>
             <StatusBadge status={branch.status?.current} />
           </div>
           <p className="text-gray-500">{branch.location?.address}</p>
@@ -130,7 +128,6 @@ const BranchView = () => {
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {[
-            { id: 'overview', name: 'Overview', icon: Eye },
             { id: 'team', name: 'Team', icon: Users },
             { id: 'settings', name: 'Settings', icon: Settings },
           ].map((tab) => {
@@ -160,7 +157,6 @@ const BranchView = () => {
 
       {/* Tab Content */}
       <div className="mt-6">
-        {activeTab === 'overview' && <OverviewTab branch={branch} />}
         {activeTab === 'team' && <TeamTab branchId={id} teamMembers={teamMembers} setTeamMembers={setTeamMembers} />}
         {activeTab === 'settings' && <SettingsTab />}
       </div>

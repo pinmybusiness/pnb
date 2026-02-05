@@ -53,7 +53,7 @@ const CallExport = () => {
 
   const downloadExcel = (startDate, endDate) => {
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/calls/export/excel?startDate=${startDate}&endDate=${endDate}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/calls/export/excel?startDate=${startDate}&endDate=${endDate}`;
       window.open(url, "_blank");
     } catch (err) {
       console.error(err);

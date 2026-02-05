@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import apiClient from '@/lib/apiClient';
 import { Loader2, Search } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { formatDateWithSuffix } from '@/utils/dateFormat';
 
 // 🔹 Status color styles
 const statusColors = {
@@ -144,12 +145,12 @@ export default function AdminSubscriptionsPage() {
 
                   {/* Start */}
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {sub.startDate ? new Date(sub.startDate).toLocaleDateString() : '—'}
+                    {sub.startDate ? formatDateWithSuffix(sub.startDate): '—'}
                   </td>
 
                   {/* Expire */}
                   <td className="px-4 py-3 text-sm text-gray-600">
-                    {sub.expireDate ? new Date(sub.expireDate).toLocaleDateString() : '—'}
+                    {sub.expireDate ? formatDateWithSuffix(sub.expireDate) : '—'}
                   </td>
 
                   {/* 🔹 Editable Status Dropdown */}

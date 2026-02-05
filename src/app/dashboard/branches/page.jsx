@@ -10,6 +10,7 @@ import Link from "next/link";
 import { Card, Button, Input, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
 import { useSelector } from "react-redux";
 import { useDebounce } from 'use-debounce';
+import { formatDateWithSuffix } from "@/utils/dateFormat";
 
 const Branches = () => {
   const router = useRouter();
@@ -225,7 +226,7 @@ const Branches = () => {
                 </TableCell>
                 <TableCell>
                   <div className="max-w-[200px] truncate" title={branch.createdAt}>
-                    {branch.createdAt ? new Date(branch.createdAt).toLocaleDateString() : 'Unknown'}
+                    {branch.createdAt ? formatDateWithSuffix(branch.createdAt) : 'Unknown'}
                   </div>
                 </TableCell>
                 <TableCell>

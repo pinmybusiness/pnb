@@ -12,16 +12,12 @@ import {
   TrendingDown,
   Clock,
   Users,
-  BarChart3,
   AlertCircle,
-  ArrowLeft,
   Ban,
   ChevronDown,
   ChevronUp,
-  Loader2,
   RefreshCw,
-  ShieldAlert,
-  PhoneForwarded
+  ShieldAlert
 } from "lucide-react";
 import KPICard from "@/components/ui/KPICard";
 import Card from "@/components/ui/Card";
@@ -56,7 +52,6 @@ const useDashboardData = (period) => {
     refetchOnWindowFocus: false
   });
 };
-
 
 const ErrorState = ({ message, onRetry }) => (
   <div className="flex flex-col items-center justify-center py-12 space-y-4">

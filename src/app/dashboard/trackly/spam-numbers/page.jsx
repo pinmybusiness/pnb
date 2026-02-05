@@ -12,7 +12,7 @@ const SpamNumbers = () => {
   const fetchSpamNumbers = async () => {
     try {
       setLoading(true);
-      const response = await apiClient.get('/api/calls/spam-numbers');
+      const response = await apiClient.get('/api/v1/calls/spam-numbers');
       
       if (response.data.success) {
         setSpamNumbers(response.data.data || []);

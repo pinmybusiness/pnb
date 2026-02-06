@@ -49,7 +49,6 @@ const BranchProfile = () => {
 
   const handleUpdateSuccess = () => {
     setIsEditing(false);
-    toast.success('Branch updated successfully');
     router.refresh();
   };
 
@@ -173,26 +172,26 @@ const BranchProfile = () => {
 
           {/* Edit Button */}
          {canEdit && (
-  <div className="flex flex-col md:flex-row gap-4  md:justify-between md:items-center mt-6">
-    
-    {/* Change Password Button */}
-    <button
-      onClick={() => router.push('/dashboard/profile/change-password')}
-      className="px-4 py-2 border border-primary text-primary rounded-md shadow-sm text-sm font-medium hover:bg-primary hover:text-white transition"
-    >
-      Change Password
-    </button>
+          <div className="flex flex-col md:flex-row gap-4  md:justify-between md:items-center mt-6">
+            
+            {/* Change Password Button */}
+            <button
+              onClick={() => router.push('/dashboard/profile/change-password')}
+              className="px-4 py-2 border border-primary text-primary rounded-md shadow-sm text-sm font-medium hover:bg-primary hover:text-white transition"
+            >
+              Change Password
+            </button>
 
-    {/* Edit Branch Button */}
-    <button
-      onClick={() => setIsEditing(true)}
-      className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90"
-    >
-      Edit Branch
-    </button>
+            {/* Edit Branch Button */}
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary/90"
+            >
+              Edit
+            </button>
 
-  </div>
-)}
+          </div>
+        )}
 
         </div>
       ) : (

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import apiClient from '@/lib/apiClient';
-import { MapPin, Navigation, X, Store, Phone, Link } from 'lucide-react';
+import { MapPin, X, Store, Phone, Mail } from 'lucide-react';
 import Select from 'react-select';
 
 const BranchForm = ({ branchId, onSuccess, onClose }) => {
@@ -22,10 +22,9 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
       state: '',
       postalCode: '',
       country: 'India',
-      coordinates: [0, 0]
     },
     helplineNumber: '',
-    socialLink: ''
+    email: ''
   });
 
   useEffect(() => {
@@ -55,10 +54,9 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
               state: cityExists ? branchData.cityDetails?.stateName || '' : '',
               postalCode: branchData.location?.postalCode || '',
               country: cityExists ? branchData.cityDetails?.countryName || 'India' : 'India',
-              coordinates: branchData.location?.coordinates || [0, 0]
             },
             helplineNumber: branchData.helplineNumber || '',
-            socialLink: branchData.socialLink || ''
+            email: branchData.email || ''
           });
 
           if (branchData.cityDetails?._id && !cityExists) {
@@ -109,7 +107,6 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
           city: selected._id,
           state: selected.stateName,
           country: selected.countryName,
-          coordinates: selected.coordinates || [0, 0]
         }
       }));
     } else {
@@ -120,46 +117,8 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
           city: '',
           state: '',
           country: 'India',
-          coordinates: [0, 0]
         }
       }));
-    }
-  };
-
-  const handleCoordinateChange = (name, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      location: {
-        ...prev.location,
-        coordinates:
-          name === 'longitude'
-            ? [parseFloat(value) || 0, prev.location.coordinates[1]]
-            : [prev.location.coordinates[0], parseFloat(value) || 0]
-      }
-    }));
-  };
-
-  const handleGetCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setFormData((prev) => ({
-            ...prev,
-            location: {
-              ...prev.location,
-              coordinates: [longitude, latitude]
-            }
-          }));
-          toast.success('Location fetched successfully', { id: 'location-fetch' });
-        },
-        (error) => {
-          console.error('Geolocation error:', error);
-          toast.error('Failed to get location. Please allow location access or enter manually.', { id: 'location-error' });
-        }
-      );
-    } else {
-      toast.error('Geolocation is not supported by your browser', { id: 'location-error' });
     }
   };
 
@@ -209,15 +168,6 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
         }));
       }
 
-      const [longitude, latitude] = formData.location.coordinates;
-      if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
-        toast.error('Invalid coordinates: Longitude must be between -180 and 180, latitude between -90 and 90.', {
-          id: 'coordinates-error'
-        });
-        setLoading(false);
-        return;
-      }
-
       // Validate helpline number
       if (formData.helplineNumber && !/^\+?[\d\s-]{10,15}$/.test(formData.helplineNumber)) {
         toast.error('Please provide a valid helpline number', { id: 'helpline-error' });
@@ -225,12 +175,10 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
         return;
       }
 
-      // Validate social link (Zomato)
-      // if (formData.socialLink && !/^https?:\/\/(www\.)?zomato\.com\/.+$/.test(formData.socialLink)) {
-      //   toast.error('Please provide a valid Zomato link', { id: 'social-link-error' });
-      //   setLoading(false);
-      //   return;
-      // }
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
 
       const payload = {
         name: formData.name,
@@ -241,10 +189,9 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
           state: formData.location.state,
           postalCode: formData.location.postalCode || undefined,
           country: formData.location.country,
-          coordinates: formData.location.coordinates[0] !== 0 && formData.location.coordinates[1] !== 0 ? formData.location.coordinates : undefined
         },
         helplineNumber: formData.helplineNumber || undefined,
-        socialLink: formData.socialLink || undefined
+        email: formData.email || undefined
       };
 
       try {
@@ -283,7 +230,6 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
     _id: city._id,
     stateName: city.stateName,
     countryName: city.countryName,
-    coordinates: city.coordinates
   }));
 
   return (
@@ -374,19 +320,20 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-dark mb-1">Social Link</label>
+              <label className="text-sm font-medium">Email</label>
               <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                <Link className="w-4 h-4 text-gray-400" />
+                <Mail className="h-4 w-4 text-gray-400" />
                 <input
-                  type="url"
-                  name="socialLink"
-                  value={formData.socialLink}
+                  type="email"
+                  name="email"
+                  value={formData.email}
                   onChange={handleChange}
-                  className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                  placeholder="https://www.zomato.com/..."
+                  className="flex-1 px-2 py-2"
+                  placeholder="branch@email.com"
                 />
               </div>
             </div>
+
           </div>
         </div>
 
@@ -443,44 +390,7 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
                   />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Latitude</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <input
-                    type="number"
-                    name="latitude"
-                    value={formData.location.coordinates[1]}
-                    onChange={(e) => handleCoordinateChange('latitude', e.target.value)}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    placeholder="Latitude"
-                    step="any"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-dark mb-1">Longitude</label>
-                <div className="flex items-center border border-soft rounded-lg px-3 focus-within:ring-2 focus-within:ring-primary focus-within:border-transparent">
-                  <input
-                    type="number"
-                    name="longitude"
-                    value={formData.location.coordinates[0]}
-                    onChange={(e) => handleCoordinateChange('longitude', e.target.value)}
-                    className="flex-1 px-2 py-2 focus:outline-none text-sm"
-                    placeholder="Longitude"
-                    step="any"
-                  />
-                </div>
-              </div>
-            </div>
-            <div>
-              <button
-                type="button"
-                onClick={handleGetCurrentLocation}
-                className="w-full sm:w-auto flex items-center justify-center px-4 py-2 border border-soft shadow-sm text-sm font-medium text-dark bg-white hover:bg-gray-50 rounded-lg mt-4"
-              >
-                <Navigation className="h-5 w-5 mr-2 text-primary" />
-                Get Current Location
-              </button>
+
             </div>
           </div>
         </div>
@@ -494,7 +404,7 @@ const BranchForm = ({ branchId, onSuccess, onClose }) => {
               loading || !cities.length ? 'opacity-70 cursor-not-allowed' : 'hover:opacity-90'
             }`}
           >
-            {loading ? 'Processing...' : effectiveBranchId ? 'Update Branch' : 'Create Branch'}
+            {loading ? 'Processing...' : effectiveBranchId ? 'Update' : 'Create Branch'}
           </button>
           <button
             type="button"

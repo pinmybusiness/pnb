@@ -2,8 +2,6 @@ import { configureStore } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import authReducer from './authSlice';
-import customerReducer from './customerSlice';
-import analyticsReducer from './analyticsSlice';
 
 // Configuration for auth persistence - NO TOKEN STORAGE
 const authPersistConfig = {
@@ -21,8 +19,6 @@ export const makeStore = (initialState = {}) => {
   const store = configureStore({
     reducer: {
       auth: persistedAuthReducer,
-      customers: customerReducer,
-      analytics: analyticsReducer,
     },
     preloadedState: initialState, // Allow server to pass initial state
     middleware: (getDefaultMiddleware) =>

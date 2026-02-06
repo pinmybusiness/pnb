@@ -187,6 +187,7 @@ const Branches = () => {
                 </div>
               </TableHead>
               <TableHead>Location</TableHead>
+              <TableHead>Contact</TableHead>
               <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer">
                 <div className="flex items-center gap-2">
                   Created At
@@ -222,6 +223,11 @@ const Branches = () => {
                     {branch.location && branch.location?.city
                       ? `${branch.location?.city?.name}, ${branch.location?.city?.state?.name}`
                       : 'No address'}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div>
+                    <div className="font-medium">{branch.helplineNumber || '-'}</div>
                   </div>
                 </TableCell>
                 <TableCell>

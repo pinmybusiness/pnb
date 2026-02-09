@@ -11,6 +11,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { logoutUser } from "@/store/authThunks";
 import toast from "react-hot-toast";
+import { truncate } from "@/utils/helper";
 
 export default function SideNav({ navigation, title = "Dashboard", subtitle = "Portal", sidebarOpen, setSidebarOpen }) {
   const [openMenus, setOpenMenus] = useState({});
@@ -19,19 +20,10 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
-  // const handleLogout = async () => {
-  //   try {
-  //     await dispatch(logoutUser()).unwrap();
-  //     toast.success("Logged out successfully!");
-  //     router.push("/login");
+  console.log("usse", user)
   const handleLogout = async () => {
   try {
-    // await dispatch(logoutUser()).unwrap();
-
-    // ✅ Clear all localStorage data (only for non-auth data)
     router.push("/login");
-    // localStorage.clear(); // Removed - cookies handle auth automatically
-
     toast.success("Logged out successfully!");
   } catch (error) {
     console.error("Logout error:", error);
@@ -58,8 +50,8 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
             </div>
             {sidebarOpen && (
               <div>
-                <h4 className="font-semibold text-gray-800 leading-tight">{title}</h4>
-                <p className="text-xs text-gray-500">{subtitle}</p>
+                <h4 className="font-semibold text-gray-800 leading-tight"> {truncate(user?.restaurantName || title, 20)}</h4>
+                <p className="text-xs text-gray-500">{truncate(user?.branchName || subtitle, 26)}</p>
               </div>
             )}
           </div>

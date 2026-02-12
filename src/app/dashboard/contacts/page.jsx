@@ -20,7 +20,7 @@ export default function ContactList() {
   // Pagination State
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 20,
     total: 0,
     pages: 1,
     hasMore: false
@@ -226,11 +226,6 @@ export default function ContactList() {
                     <TableRow key={contact._id} className="hover:bg-gray-50">
                       <TableCell className="whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                            <span className="text-white text-sm font-bold">
-                              {(contact.name || "?").charAt(0).toUpperCase()}
-                            </span>
-                          </div>
                           <span className="font-medium text-gray-900 text-sm sm:text-base">
                             {contact.name || "—"}
                           </span>
@@ -267,11 +262,7 @@ export default function ContactList() {
                   <div className="space-y-3">
                     {/* Header with Avatar and Name */}
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                        <span className="text-white font-bold">
-                          {(contact.name || "?").charAt(0).toUpperCase()}
-                        </span>
-                      </div>
+
                       <div>
                         <div className="font-semibold text-gray-900">
                           {contact.name || "Unknown"}

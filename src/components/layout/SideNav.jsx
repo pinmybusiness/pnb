@@ -20,7 +20,7 @@ export default function SideNav({ navigation, title = "Dashboard", subtitle = "P
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
 
-  console.log("usse", user)
+  // console.log("usse", user)
   const handleLogout = async () => {
   try {
     router.push("/login");

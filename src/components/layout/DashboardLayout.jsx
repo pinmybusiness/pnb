@@ -14,7 +14,7 @@ export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true); // Add state here
 
   return (
-    <div className="dashboard-root flex h-screen w-full overflow-hidden">
+    <div className="dashboard-root flex h-screen">
       <SideNav
         navigation={roleMenus}
         title={config.title}
@@ -22,7 +22,7 @@ export default function DashboardLayout({ children }) {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col">
         <TopNav navigation={roleMenus} setSidebarOpen={setSidebarOpen} />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>

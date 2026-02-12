@@ -27,7 +27,7 @@ export default function Pricing() {
               <div className="absolute -top-5 min-w-[300px] left-1/2 transform -translate-x-1/2">
                 <div className="bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-6 py-3 rounded-full text-sm font-bold shadow-xl flex items-center gap-2 animate-bounce">
                   <span>🔥</span>
-                  <span>Special Offer: ₹99/month for 4 months</span>
+                  <span>Special Offer: ₹999/year (Limited Time)</span>
                   <span>🔥</span>
                 </div>
               </div>

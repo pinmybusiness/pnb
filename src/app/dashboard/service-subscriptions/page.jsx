@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import apiClient from '@/lib/apiClient';
 import { 
   Loader2, Search, ArrowUpDown, RefreshCw, 
-  CreditCard, Calendar, User, Package 
+  CreditCard, Calendar, User, Package, 
+  Edit, RotateCw, CalendarPlus, XCircle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { formatDateWithSuffix } from '@/utils/dateFormat';
@@ -26,10 +27,11 @@ export default function AdminSubscriptionsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   
   // ✅ Sirf Plan aur ExpireDate ke liye sorting
-  const [sortBy, setSortBy] = useState('expireDate'); // Default expireDate
-  const [sortOrder, setSortOrder] = useState('asc'); // Ascending for expiry
+  const [sortBy, setSortBy] = useState('expireDate');
+  const [sortOrder, setSortOrder] = useState('asc');
   
   const [loading, setLoading] = useState(true);
+  const [plans, setPlans] = useState([]);
   
   // Pagination State
   const [pagination, setPagination] = useState({
@@ -39,6 +41,18 @@ export default function AdminSubscriptionsPage() {
     pages: 1,
     hasMore: false
   });
+
+  // 🔹 Action States
+  const [selectedSub, setSelectedSub] = useState(null);
+  const [showRenewModal, setShowRenewModal] = useState(false);
+  const [showCorrectModal, setShowCorrectModal] = useState(false);
+  const [showExtendModal, setShowExtendModal] = useState(false);
+  
+  // 🔹 Form States
+  const [selectedPlan, setSelectedPlan] = useState('');
+  const [extendDays, setExtendDays] = useState('');
+  const [renewPlan, setRenewPlan] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Refs
   const debounceTimerRef = useRef(null);
@@ -61,6 +75,19 @@ export default function AdminSubscriptionsPage() {
         clearTimeout(debounceTimerRef.current);
       }
     };
+  }, []);
+
+  // Fetch Plans for dropdowns
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const res = await apiClient.get('/api/services/plans');
+        setPlans(res.data.data || []);
+      } catch (err) {
+        console.error('Failed to fetch plans:', err);
+      }
+    };
+    fetchPlans();
   }, []);
 
   // Debounced Search
@@ -86,7 +113,7 @@ export default function AdminSubscriptionsPage() {
         limit: pagination.limit,
         search: debouncedSearchTerm,
         status: statusFilter !== 'all' ? statusFilter : undefined,
-        sortBy, // Sirf plan ya expireDate
+        sortBy,
         sortOrder
       };
 
@@ -124,9 +151,8 @@ export default function AdminSubscriptionsPage() {
     fetchSubscriptions(newPage);
   }, [pagination.pages, loading, fetchSubscriptions]);
 
-  // ✅ Handle Sort - SIRF Plan aur ExpireDate ke liye
+  // ✅ Handle Sort
   const handleSort = useCallback((key) => {
-    // Sirf plan aur expireDate allow karo
     if (key !== 'plan.name' && key !== 'expireDate') return;
     
     setSortBy(prev => {
@@ -139,7 +165,7 @@ export default function AdminSubscriptionsPage() {
     });
   }, []);
 
-  // Update Status
+  // ✅ Update Status -直接从Dropdown
   const updateStatus = useCallback(async (subscriptionId, newStatus) => {
     try {
       await apiClient.put('/api/services/subscriptions/status', {
@@ -158,12 +184,105 @@ export default function AdminSubscriptionsPage() {
     }
   }, []);
 
+  // 🔹 Action Handlers
+  const openRenewModal = (sub) => {
+    setSelectedSub(sub);
+    setRenewPlan('');
+    setShowRenewModal(true);
+  };
+
+  const openCorrectModal = (sub) => {
+    setSelectedSub(sub);
+    setSelectedPlan('');
+    setShowCorrectModal(true);
+  };
+
+  const openExtendModal = (sub) => {
+    setSelectedSub(sub);
+    setExtendDays('');
+    setShowExtendModal(true);
+  };
+
+  const closeModals = () => {
+    setShowRenewModal(false);
+    setShowCorrectModal(false);
+    setShowExtendModal(false);
+    setSelectedSub(null);
+    setSelectedPlan('');
+    setRenewPlan('');
+    setExtendDays('');
+  };
+
+  // 🔹 API Calls
+  const handleRenew = async () => {
+    if (!selectedSub) return;
+    
+    try {
+      setActionLoading(true);
+      await apiClient.post('/api/services/subscriptions/renew', {
+        subscriptionId: selectedSub._id,
+        planId: renewPlan || undefined
+      });
+      toast.success('Subscription renewed successfully');
+      closeModals();
+      fetchSubscriptions(pagination.page);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Renew failed');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCorrect = async () => {
+    if (!selectedSub || !selectedPlan) {
+      toast.error('Please select a plan');
+      return;
+    }
+    
+    try {
+      setActionLoading(true);
+      await apiClient.post('/api/services/subscriptions/correct-plan', {
+        subscriptionId: selectedSub._id,
+        newPlanId: selectedPlan
+      });
+      toast.success('Plan corrected successfully');
+      closeModals();
+      fetchSubscriptions(pagination.page);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Correction failed');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleExtend = async () => {
+    if (!selectedSub || !extendDays || parseInt(extendDays) <= 0) {
+      toast.error('Please enter valid number of days');
+      return;
+    }
+    
+    try {
+      setActionLoading(true);
+      await apiClient.post('/api/services/subscriptions/extend', {
+        subscriptionId: selectedSub._id,
+        days: parseInt(extendDays)
+      });
+      toast.success('Subscription extended successfully');
+      closeModals();
+      fetchSubscriptions(pagination.page);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Extend failed');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Format Price
   const formatPrice = (sub) => {
     return `₹${sub.amount || sub.planId?.price || 0}`;
   };
 
-  // ✅ Check if subscription is expiring soon (within 7 days)
+  // ✅ Check if subscription is expiring soon
   const isExpiringSoon = (expireDate) => {
     if (!expireDate) return false;
     const today = new Date();
@@ -254,7 +373,7 @@ export default function AdminSubscriptionsPage() {
                       </div>
                     </TableHead>
                     
-                    {/* ✅ Plan Column - SORTING ENABLED */}
+                    {/* Plan Column - SORTING ENABLED */}
                     <TableHead 
                       onClick={() => handleSort("plan.name")} 
                       className="cursor-pointer whitespace-nowrap"
@@ -276,7 +395,7 @@ export default function AdminSubscriptionsPage() {
                       </div>
                     </TableHead>
                     
-                    {/* ✅ Expire Date Column - SORTING ENABLED */}
+                    {/* Expire Date Column - SORTING ENABLED */}
                     <TableHead 
                       onClick={() => handleSort("expireDate")} 
                       className="cursor-pointer whitespace-nowrap"
@@ -287,9 +406,17 @@ export default function AdminSubscriptionsPage() {
                       </div>
                     </TableHead>
                     
+                    {/* Status Column with Dropdown */}
                     <TableHead className="whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         Status
+                      </div>
+                    </TableHead>
+
+                    {/* Actions Column */}
+                    <TableHead className="whitespace-nowrap text-center">
+                      <div className="flex items-center gap-2">
+                        Actions
                       </div>
                     </TableHead>
                   </TableRow>
@@ -350,7 +477,7 @@ export default function AdminSubscriptionsPage() {
                           </div>
                         </TableCell>
 
-                        {/* ✅ Expire Date with Warning Badge */}
+                        {/* Expire Date with Warning Badge */}
                         <TableCell className="whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <Calendar className={`h-4 w-4 ${expired ? 'text-red-400' : expiringSoon ? 'text-orange-400' : 'text-gray-400'}`} />
@@ -373,7 +500,7 @@ export default function AdminSubscriptionsPage() {
                           </div>
                         </TableCell>
 
-                        {/* Status Dropdown */}
+                        {/* ✅ Status Dropdown - Restored */}
                         <TableCell className="whitespace-nowrap">
                           <select
                             value={sub.status}
@@ -387,7 +514,43 @@ export default function AdminSubscriptionsPage() {
                             <option value="3">Expired</option>
                             <option value="4">Cancelled</option>
                           </select>
-                        </TableCell>                       
+                        </TableCell>
+
+                        {/* Action Buttons */}
+                        <TableCell className="whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs flex items-center gap-1"
+                              onClick={() => openRenewModal(sub)}
+                              title="Renew Subscription"
+                            >
+                              <RotateCw className="h-4 w-4" />
+                              {/* Renew */}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs flex items-center gap-1"
+                              onClick={() => openCorrectModal(sub)}
+                              title="Correct Plan"
+                            >
+                              <Edit className="h-4 w-4" />
+                              {/* Correct */}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs flex items-center gap-1"
+                              onClick={() => openExtendModal(sub)}
+                              title="Extend Subscription"
+                            >
+                              <CalendarPlus className="h-4 w-4" />
+                              {/* Extend */}
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -404,7 +567,7 @@ export default function AdminSubscriptionsPage() {
                 return (
                   <Card key={sub._id} className="p-3 shadow-sm">
                     <div className="space-y-3">
-                      {/* Header with User and Status */}
+                      {/* Header with User and Status Dropdown */}
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
@@ -415,6 +578,7 @@ export default function AdminSubscriptionsPage() {
                             <div className="text-xs text-gray-500">{sub.userId?.mobile || sub.userId?.email}</div>
                           </div>
                         </div>
+                        {/* ✅ Status Dropdown in Mobile */}
                         <select
                           value={sub.status}
                           onChange={(e) => updateStatus(sub._id, e.target.value)}
@@ -474,14 +638,34 @@ export default function AdminSubscriptionsPage() {
                         </div>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex justify-end pt-2 border-t border-gray-200">
+                      {/* Action Buttons - Mobile */}
+                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-gray-200">
                         <Button
-                          variant="outline"
                           size="sm"
-                          className="text-xs"
+                          variant="outline"
+                          className="text-xs flex items-center justify-center gap-1"
+                          onClick={() => openRenewModal(sub)}
                         >
-                          View Details
+                          <RotateCw className="h-3 w-3" />
+                          Renew
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs flex items-center justify-center gap-1"
+                          onClick={() => openCorrectModal(sub)}
+                        >
+                          <Edit className="h-3 w-3" />
+                          Correct
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs flex items-center justify-center gap-1"
+                          onClick={() => openExtendModal(sub)}
+                        >
+                          <CalendarPlus className="h-3 w-3" />
+                          Extend
                         </Button>
                       </div>
                     </div>
@@ -517,6 +701,180 @@ export default function AdminSubscriptionsPage() {
           showPageInfo={true}
           className="mt-4"
         />
+      )}
+
+      {/* Renew Modal */}
+      {showRenewModal && selectedSub && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <Card className="w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Renew Subscription</h3>
+              <button onClick={closeModals} className="text-gray-400 hover:text-gray-600">
+                <XCircle className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <span className="font-medium">User:</span> {selectedSub.userId?.name}
+                </p>
+                <p className="text-sm text-blue-800">
+                  <span className="font-medium">Current Plan:</span> {selectedSub.planId?.name}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select New Plan
+                </label>
+                <select
+                  value={renewPlan}
+                  onChange={(e) => setRenewPlan(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">Same Plan</option>
+                  {plans.map(plan => (
+                    <option key={plan._id} value={plan._id}>
+                      {plan.name} - ₹{plan.price}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <Button variant="outline" onClick={closeModals}>
+                  Cancel
+                </Button>
+                <Button onClick={handleRenew} disabled={actionLoading}>
+                  {actionLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Confirm Renew'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Correct Plan Modal */}
+      {showCorrectModal && selectedSub && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <Card className="w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Correct Plan</h3>
+              <button onClick={closeModals} className="text-gray-400 hover:text-gray-600">
+                <XCircle className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-yellow-50 p-3 rounded-lg">
+                <p className="text-sm text-yellow-800">
+                  <span className="font-medium">User:</span> {selectedSub.userId?.name}
+                </p>
+                <p className="text-sm text-yellow-800">
+                  <span className="font-medium">Current Plan:</span> {selectedSub.planId?.name}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Select New Plan <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={selectedPlan}
+                  onChange={(e) => setSelectedPlan(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                  required
+                >
+                  <option value="">Choose a plan...</option>
+                  {plans.map(plan => (
+                    <option key={plan._id} value={plan._id}>
+                      {plan.name} - ₹{plan.price}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <Button variant="outline" onClick={closeModals}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCorrect} disabled={actionLoading || !selectedPlan}>
+                  {actionLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Confirm Correction'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Extend Modal */}
+      {showExtendModal && selectedSub && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <Card className="w-full max-w-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Extend Subscription</h3>
+              <button onClick={closeModals} className="text-gray-400 hover:text-gray-600">
+                <XCircle className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="bg-green-50 p-3 rounded-lg">
+                <p className="text-sm text-green-800">
+                  <span className="font-medium">User:</span> {selectedSub.userId?.name}
+                </p>
+                <p className="text-sm text-green-800">
+                  <span className="font-medium">Current Expiry:</span> {formatDateWithSuffix(selectedSub.expireDate)}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Days <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={extendDays}
+                  onChange={(e) => setExtendDays(e.target.value)}
+                  placeholder="e.g., 30"
+                  className="text-sm"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <Button variant="outline" onClick={closeModals}>
+                  Cancel
+                </Button>
+                <Button onClick={handleExtend} disabled={actionLoading || !extendDays}>
+                  {actionLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Processing...
+                    </>
+                  ) : (
+                    'Confirm Extension'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   );

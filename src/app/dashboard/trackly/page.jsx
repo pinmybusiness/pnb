@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { PhoneCall, Search, ArrowUpDown, User} from "lucide-react";
+import { PhoneCall, Search, ArrowUpDown, User, MessageCircleMore, CardSim } from "lucide-react";
 import { toast } from "react-hot-toast";
 import apiClient from "@/lib/apiClient";
 import { Card, Input, Badge, Table, TableHeader, TableBody, TableRow, TableHead, TableCell, Button} from "@/components/ui";
@@ -13,9 +13,18 @@ import Pagination from "@/components/ui/Pagination";
 import StatusBadge from "@/components/calls/StatusBadge";
 import DirectionBadge from "@/components/calls/DirectionBadge";
 
+// Source Icon Component
+const SourceIcon = ({ source }) => {
+  if (source === 1) {
+    return <MessageCircleMore className="h-3 w-3 md:h-5 md:w-5 text-green-600" />;
+  }
+  return <CardSim className="h-3 w-3 md:h-5 md:w-5 text-gray-400" />;
+};
+
 const CallTracking = () => {
   // State Management
   const [calls, setCalls] = useState([]);
+  console.log("calllls", calls)
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [answeredFilter, setAnsweredFilter] = useState("all");
@@ -55,7 +64,7 @@ const CallTracking = () => {
     { value: "false", label: "Outgoing" },
   ];
 
-  // Data Mapping - WITH RECORDING SUPPORT
+  // Data Mapping - WITH RECORDING AND SOURCE SUPPORT
   const mapCallData = useCallback((call) => {
     // Handle recordingUrl - could be string or array
     let recordingUrl = null;
@@ -69,6 +78,7 @@ const CallTracking = () => {
 
     return {
       id: call._id,
+      source: call.source, // 0 = SIM, 1 = WhatsApp
       caller: {
         name: call.phonebookName,
         phone: call.fromNumber,
@@ -330,7 +340,10 @@ const CallTracking = () => {
                   {calls.map((call, index) => (
                     <TableRow key={call.id || index} className="hover:bg-gray-50">
                       <TableCell className="whitespace-nowrap">
-                        <CallerDisplay caller={call.caller} />
+                        <div className="flex items-center gap-2">
+                          <SourceIcon source={call.source} />
+                          <CallerDisplay caller={call.caller} />
+                        </div>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">
                         <div className="flex items-center gap-2">
@@ -371,8 +384,10 @@ const CallTracking = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between items-start">
                       <div className="flex flex-col gap-1">
-                        
-                        <CallerDisplay caller={call.caller} />
+                        <div className="flex items-center gap-2">
+                          <SourceIcon source={call.source} />
+                          <CallerDisplay caller={call.caller} />
+                        </div>
                       </div>
                       <TimeDisplay startTime={call.startTime} />
                     </div>

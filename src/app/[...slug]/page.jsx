@@ -126,16 +126,12 @@ export default async function Page({ params }) {
     );
 
     if (!res.ok) {
-      const retryRedirect = await checkRedirection(slug);
-      if (retryRedirect.shouldRedirect) redirect(retryRedirect.url);
       return notFound();
     }
 
     const data = await res.json();
 
     if (!data?.article) {
-      const retryRedirect = await checkRedirection(slug);
-      if (retryRedirect.shouldRedirect) redirect(retryRedirect.url);
       return notFound();
     }
 
@@ -311,6 +307,10 @@ export default async function Page({ params }) {
       </>
     );
   } catch (error) {
+    if (error?.digest?.includes("NEXT_REDIRECT")) {
+      throw error; // VERY IMPORTANT
+    }
+
     console.error("PAGE CRASH:", error);
     return notFound();
   }

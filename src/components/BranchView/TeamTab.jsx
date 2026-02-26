@@ -69,6 +69,7 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
     name: '',
     email: '',
     isActive: true,
+    role: 8,
   });
 
   // 🔹 Get current user on component mount
@@ -224,6 +225,7 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
       name: member.name,
       email: member.email,
       isActive: member.isActive,
+      role: member.role,
     });
     setShowEditMemberModal(true);
   };
@@ -461,6 +463,27 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
                   onChange={(e) => setEditMemberForm({ ...editMemberForm, email: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role
+                </label>
+                <select
+                  value={editMemberForm.role}
+                  onChange={(e) =>
+                    setEditMemberForm({
+                      ...editMemberForm,
+                      role: Number(e.target.value),
+                    })
+                  }
+                  className="w-full border border-gray-300 rounded-md px-3 py-2"
+                >
+                  {roleOptions.map((role) => (
+                    <option key={role.value} value={role.value}>
+                      {role.label}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>

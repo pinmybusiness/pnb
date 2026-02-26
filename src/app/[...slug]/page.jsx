@@ -85,7 +85,7 @@ async function checkRedirection(slug) {
       const redirectStatus = parseInt(redirectData.statusCode);
       const redirectUrl = redirectData.redirectUrl;
 
-      if (redirectUrl && (redirectStatus === 301 || 302)) {
+      if (redirectUrl && (redirectStatus === 301 || redirectStatus === 302)) {
         return {
           shouldRedirect: true,
           url: redirectUrl.startsWith("/") ? redirectUrl : `/${redirectUrl}`,

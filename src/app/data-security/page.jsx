@@ -1,7 +1,10 @@
-// app/trust-center/page.jsx
+import Link from "next/link"
+
+// app/data-security/page.jsx
 export const metadata = {
-  title: "Trust Center | FasterQ",
-  description: "Learn how FasterQ protects your SIM-based call tracking data with secure AWS infrastructure, encrypted storage, and automated daily backups in India.",
+  title: "Data Security | FasterQ",
+  description:
+    "Discover how FasterQ protects your SIM-based call tracking data with secure AWS infrastructure, encrypted storage, daily automated backups, and strict access control in India.",
 }
 
 export default function TrustCenter() {
@@ -88,8 +91,8 @@ export default function TrustCenter() {
             </div>
             <h3 className="text-2xl font-semibold text-gray-900 mb-3">Secure AWS Infrastructure</h3>
             <p className="text-gray-600 leading-relaxed">
-              Hosted on secure AWS cloud servers with network isolation and strict IAM policies.
-            </p>
+                Hosted on secure AWS cloud infrastructure within India, 
+                with isolated network environments and strict IAM access controls.            </p>
           </div>
 
           {/* Card 2 */}
@@ -248,9 +251,12 @@ export default function TrustCenter() {
           <p className="text-xl text-white/90 mb-10 max-w-2xl mx-auto">
             We continuously monitor, secure, and improve our infrastructure to protect your sales data.
           </p>
-          <a href="/contact" className="bg-white text-[#FF5211] px-10 py-5 rounded-full text-xl font-semibold shadow-2xl hover:shadow-3xl transform hover:-translate-y-0.5 hover:scale-105 transition-all duration-200 border-2 border-white/20">
+          <Link
+            href="/contact"
+            className="bg-white text-[#FF5211] px-10 py-5 rounded-full text-xl font-semibold shadow-2xl hover:-translate-y-0.5 hover:scale-105 transition-all duration-200 border-2 border-white/20"
+            >
             Talk to Our Team
-          </a>
+            </Link>
         </div>
       </section>
     </main>

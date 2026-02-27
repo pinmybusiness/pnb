@@ -121,6 +121,7 @@ export default function Footer() {
             <Link href="/privacy-policy" className="hover:text-[#FF5211] transition-colors">Privacy</Link>
             <Link href="/terms-and-conditions" className="hover:text-[#FF5211] transition-colors">Terms</Link>
             <Link href="/faq" className="hover:text-[#FF5211] transition-colors">FAQ</Link>
+            <Link href="/data-security" className="hover:text-[#FF5211] transition-colors"> Data Security</Link>
           </div>
         </div>
       </div>

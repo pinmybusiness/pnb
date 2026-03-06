@@ -284,7 +284,7 @@ const CustomerIntelligence = () => {
         
         {/* Period Selector - Cleaner design */}
         <div className="flex gap-2">
-          {["today", "week", "month"].map(p => (
+          {["today", "yesterday", "week", "month"].map(p => (
             <button
               key={p}
               onClick={() => handlePeriodChange(p)}
@@ -296,6 +296,7 @@ const CustomerIntelligence = () => {
               } ${listLoading || loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {p === "today" && "Today"}
+              {p === "yesterday" && "Yesterday"}
               {p === "week" && "This Week"}
               {p === "month" && "This Month"}
             </button>

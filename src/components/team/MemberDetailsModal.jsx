@@ -9,7 +9,8 @@ import {
   CheckCircle,
   BarChart3,
   FileText,
-  X
+  X,
+  Clock
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import {
@@ -19,6 +20,7 @@ import {
 
 const PERIOD_OPTIONS = [
   { key: "today", label: "Today" },
+  { key: "yesterday", label: "Yesterday" },
   { key: "week", label: "This Week" },
   { key: "month", label: "This Month" }
 ];
@@ -127,8 +129,8 @@ const MemberDetailsModal = ({ member, onClose }) => {
           <div className="flex items-center gap-4">
             <UserAvatar name={member.userName} className="w-12 h-12" />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{member.userName}</h2>
-              <p className="text-sm text-gray-500">{member.userMobile || 'No mobile number'}</p>
+              <h2 className="text-xl font-bold text-gray-900">{member.name}</h2>
+              <p className="text-sm text-gray-500">{member.mobile || 'No mobile number'}</p>
             </div>
           </div>
           <button
@@ -187,9 +189,9 @@ const MemberDetailsModal = ({ member, onClose }) => {
                   color="green"
                 />
                 <StatCard
-                  icon={BarChart3}
-                  label="Overall Success Rate"
-                  value={`${overallSuccessRate}%`}
+                  icon={Clock}
+                  label="Avg Call Duration"
+                  value={memberStats?.avgCallDuration || "0:00"}
                   color="purple"
                 />
               </div>

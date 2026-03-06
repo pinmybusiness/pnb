@@ -29,6 +29,7 @@ import { toast } from "react-hot-toast";
 // ---------- Constants & Helpers ----------
 const PERIOD_OPTIONS = [
   { key: "today", label: "Today" },
+  { key: "yesterday", label: "Yesterday" },
   { key: "week", label: "This Week" },
   { key: "month", label: "This Month" }
 ];

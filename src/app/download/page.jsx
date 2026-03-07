@@ -1,6 +1,6 @@
 import { Download, Shield, Zap, Check, Star, Users, ArrowRight, Smartphone, CheckCircle, Clock, Phone } from "lucide-react";
 
-const APK_URL = "https://cdn.fasterq.in/images/app/fasterq-app.2.1.8.apk";
+const APK_URL = "https://cdn.fasterq.in/images/app/fasterq-2.1.8.apk";
 
 export default function DownloadPage() {
   return (

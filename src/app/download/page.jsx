@@ -86,7 +86,7 @@ export default function DownloadPage() {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-gray-900">Android App</h3>
-                      <p className="text-sm text-gray-600">Version 2.1.8 • 7.7 MB</p>
+                      <p className="text-sm text-gray-600">Version 3.0.2 • 7.7 MB</p>
                     </div>
                   </div>
 

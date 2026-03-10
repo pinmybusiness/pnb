@@ -61,7 +61,7 @@ export const panelInfo = {
   3: { title: "Restaurant Hub", subtitle: "Admin Portal" },
   4: { title: "Manager Console", subtitle: "Operations Dashboard" },
   5: { title: "Restaurant Team", subtitle: "Team Dashboard" },
-  6: { title: "Branch Manager", subtitle: "Operations Dashboard" },
-  7: { title: "Branch Team", subtitle: "Operations Dashboard" },
+  6: { title: "Branch Admin", subtitle: "Operations Dashboard" },
+  7: { title: "Branch Team Manager", subtitle: "Operations Dashboard" },
   8: { title: "Branch Staff", subtitle: "Staff Dashboard" },
 };

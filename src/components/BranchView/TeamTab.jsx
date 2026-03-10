@@ -249,16 +249,16 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
       3: 'Restaurant Admin',
       4: 'Restaurant Manager',
       5: 'Restaurant Team',
-      6: 'Branch Manager',
-      7: 'Branch Team',
+      6: 'Branch Admin',
+      7: 'Branch Team Manager',
       8: 'Branch Staff',
     };
     return roleMap[roleNumber] || 'Unknown Role';
   };
 
   const roleOptions = [
-    { value: 6, label: 'Branch Manager' },
-    { value: 7, label: 'Branch Team' },
+    { value: 6, label: 'Branch Manager Admin' },
+    { value: 7, label: 'Branch Team Manager' },
     { value: 8, label: 'Branch Staff' },
   ];
 

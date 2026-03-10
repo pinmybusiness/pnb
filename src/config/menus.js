@@ -34,10 +34,10 @@ export const allMenus = [
   { name: "Orders", href: "/dashboard/orders", icon: BarChart3, roles: [4] },
   
 
-  { name: "FollowUp Calls", href: "/dashboard/trackly/followup-calls", icon: PhoneCall, roles: [6] },
-  { name: "Calls History", href: "/dashboard/trackly", icon: Clock, roles: [6] },
-  { name: "Team Performance", href: "/dashboard/trackly/team-performance", icon: TrendingUp, roles: [6] },
-  { name: "Customer Intelligence", href: "/dashboard/trackly/customer-intelligence", icon: UsersRound, roles: [6] },
+  { name: "FollowUp Calls", href: "/dashboard/trackly/followup-calls", icon: PhoneCall, roles: [6,7] },
+  { name: "Calls History", href: "/dashboard/trackly", icon: Clock, roles: [6,7] },
+  { name: "Team Performance", href: "/dashboard/trackly/team-performance", icon: TrendingUp, roles: [6,7] },
+  { name: "Customer Intelligence", href: "/dashboard/trackly/customer-intelligence", icon: UsersRound, roles: [6,7] },
   { name: "Integrations", href: "/dashboard/integrations", icon: Cable, roles: [6] },
 
   { name: "Teams", href: "/dashboard/teams", icon: Users, roles: [0,3,6] },

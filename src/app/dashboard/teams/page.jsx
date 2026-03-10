@@ -281,6 +281,8 @@ const Teams = () => {
                 </div>
               </TableHead>
 
+              <TableHead>Team Manager</TableHead>
+
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -336,6 +338,17 @@ const Teams = () => {
 
                   <TableCell>
                     {getRoleLabel(member.role)}
+                  </TableCell>
+
+                  <TableCell>
+                    {member.manager?.name ? (
+                      <div className="text-sm">
+                        <div className="font-medium">{member.manager.name}</div>
+                        <div className="text-gray-500 text-xs">{member.manager.mobile}</div>
+                      </div>
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
 
                   <TableCell>

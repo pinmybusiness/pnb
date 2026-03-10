@@ -201,7 +201,7 @@ const OverviewTab = ({
         </Link>
         
         <KPICard
-          title="Answered"
+          title="Inbound Answered"
           value={stats.answeredCalls || 0}
           icon={PhoneIncoming}
           loading={dashboardLoading}
@@ -210,7 +210,7 @@ const OverviewTab = ({
         />
         
         <KPICard
-          title="Missed"
+          title="Missed Calls"
           value={stats.missedCalls || 0}
           icon={PhoneMissed}
           loading={dashboardLoading}

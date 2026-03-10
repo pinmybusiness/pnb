@@ -5,8 +5,6 @@ import {
   Search, 
   ArrowUpDown, 
   User, 
-  PhoneOutgoing, 
-  PhoneIncoming, 
   Check,
   Ban,
   AlertCircle,

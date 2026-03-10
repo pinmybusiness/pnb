@@ -5,10 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import apiClient from "@/lib/apiClient";
-import {
-  ArrowLeft, Save, UserCircle, Phone, Shield,
-  AlertCircle, CheckCircle2, X, Lock
-} from 'lucide-react';
+import {  ArrowLeft, Shield,  CheckCircle2, Lock} from 'lucide-react';
 
 import { ROLES } from '@/constants/roles';
 import { canEditTeamMember, getRoleLabel } from '@/constants/roleHelpers';
@@ -21,12 +18,14 @@ const EditTeamMember = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [member, setMember] = useState(null);
+  const [leaders, setLeaders] = useState([]);
 
   const [form, setForm] = useState({
     name: '',
     mobile: '',
     role: '',
-    password: '' // 🔐 NEW
+    managerId: '',
+    password: ''
   });
 
   // 🔹 Fetch member details
@@ -46,6 +45,7 @@ const EditTeamMember = () => {
         name: data.name || '',
         mobile: data.mobile || '',
         role: data.role || '',
+        managerId: data.managerId || '',
         password: ''
       });
     } catch (err) {
@@ -56,9 +56,24 @@ const EditTeamMember = () => {
     }
   };
 
+  const fetchLeaders = async (branchId) => {
+    try {
+      const res = await apiClient.get(`/api/teams/leaders?branch=${branchId}`);
+      setLeaders(res.data.data || []);
+    } catch (err) {
+      toast.error("Failed to load team leaders");
+    }
+  };
+
   useEffect(() => {
     fetchMember();
   }, []);
+
+  useEffect(() => {
+    if (member?.branch) {
+      fetchLeaders(member.branch);
+    }
+  }, [member]);
 
   // 🔹 Submit update
   const handleSubmit = async (e) => {
@@ -115,7 +130,7 @@ const EditTeamMember = () => {
             className="inline-flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-[#FF5211] bg-white hover:bg-orange-50 border-2 border-orange-200 hover:border-orange-300 rounded-xl transition-all duration-300 mb-6 group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-semibold">Back to Team</span>
+            <span className="font-semibold">Back to Teams</span>
           </button>
 
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
@@ -123,21 +138,8 @@ const EditTeamMember = () => {
           </h2>
         </div>
 
-        {/* Info Alert */}
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-2xl p-4 mb-8">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-blue-900 mb-1">Note</p>
-              <p className="text-sm text-blue-800">
-                Mobile numbers can’t be changed once assigned. Contact support if needed.
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-orange-100 shadow-xl overflow-hidden">
+        <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-orange-100 overflow-hidden">
 
           <div className="bg-gradient-to-r from-orange-50 to-white p-6 border-b-2 border-orange-100">
             <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
@@ -146,10 +148,11 @@ const EditTeamMember = () => {
             </h2>
           </div>
 
-          <div className="p-8 space-y-6">
+          {/* 🔹 Two-column grid layout */}
+          <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            {/* Name */}
-            <div>
+            {/* Full Name */}
+            <div className="col-span-1">
               <label className="text-sm font-semibold text-gray-700 mb-3 block">
                 Full Name <span className="text-red-500">*</span>
               </label>
@@ -162,8 +165,8 @@ const EditTeamMember = () => {
               />
             </div>
 
-            {/* Mobile */}
-            <div>
+            {/* Mobile Number (disabled) */}
+            <div className="col-span-1">
               <label className="text-sm font-semibold text-gray-700 mb-3 block">
                 Mobile Number
               </label>
@@ -173,10 +176,13 @@ const EditTeamMember = () => {
                 disabled
                 className="w-full px-4 py-3.5 bg-gray-100 border-2 border-gray-200 rounded-xl cursor-not-allowed"
               />
+               <p className="text-xs text-gray-500 mt-1">
+                Mobile numbers can’t be changed once assigned. Contact support if needed.
+              </p>
             </div>
 
-            {/* 🔐 New Password (Optional) */}
-            <div>
+            {/* New Password (Optional) */}
+            <div className="col-span-1">
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                 <Lock className="w-4 h-4 text-gray-500" />
                 New Password (optional)
@@ -193,19 +199,44 @@ const EditTeamMember = () => {
               </p>
             </div>
 
-            {/* Role Display */}
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <Shield className="w-5 h-5 text-blue-600" />
-                <div>
-                  <div className="text-sm text-gray-600">Current Role</div>
-                  <div className="text-lg font-bold text-gray-900">
-                    {getRoleLabel(member.role)}
+            {/* Role Display - Full width */}
+            <div className="col-span-1 md:col-span-2">
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-5 h-5 text-blue-600" />
+                  <div>
+                    <div className="text-sm text-gray-600">Current Role</div>
+                    <div className="text-lg font-bold text-gray-900">
+                      {getRoleLabel(member.role)}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
+            {/* Team Manager dropdown (only for BRANCH_TEAM) - Full width */}
+            {member.role === ROLES.BRANCH_TEAM && (
+              <div className="col-span-1 md:col-span-2">
+                <label className="text-sm font-semibold text-gray-700 mb-3 block">
+                  Team Manager
+                </label>
+                <select
+                  value={form.managerId}
+                  onChange={(e) => setForm({ ...form, managerId: e.target.value })}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#FF5211]"
+                >
+                  <option value="">Select Team Manager</option>
+                  {leaders.map((leader) => (
+                    <option key={leader._id} value={leader._id}>
+                      {leader.name} ({leader.mobile})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Assign this member under a Team Manager
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Footer */}
@@ -232,4 +263,4 @@ const EditTeamMember = () => {
   );
 };
 
-export default EditTeamMember;
+export default EditTeamMember; 

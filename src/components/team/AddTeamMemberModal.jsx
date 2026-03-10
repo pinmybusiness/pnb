@@ -24,8 +24,8 @@ const AddTeamMemberModal = ({
   if (!isOpen) return null;
 
   const roleOptions = [
-    { value: 6, label: 'Branch Manager' },
-    { value: 7, label: 'Branch Team' },
+    { value: 6, label: 'Admin' },
+    { value: 7, label: 'Branch Team Manager' },
     { value: 8, label: 'Branch Staff' },
   ];
 

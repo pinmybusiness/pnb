@@ -47,7 +47,7 @@ export const allMenus = [
 
   // { name: "Applications", href: "/dashboard/applications", icon: FileCheck, roles: [0,1,2] },
   { name: "Contacts", href: "/dashboard/contacts", icon: Users, roles: [0,1,2] },
-  { name: "Recordings", href: "/dashboard/trackly/recordings", icon: AudioLines, roles: [0,1] },
+  { name: "Recordings", href: "/dashboard/trackly/admin-recordings", icon: AudioLines, roles: [0,1] },
   // { name: "Payload", href: "/dashboard/payload-list", icon: Users, roles: [0,1] },
   // { name: "Reports", href: "/dashboard/reports", icon: FileBarChart, roles: [0] },
   // { name: "Settings", href: "/dashboard/settings", icon: Settings, roles: [0,3] },

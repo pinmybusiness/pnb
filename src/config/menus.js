@@ -36,6 +36,7 @@ export const allMenus = [
 
   { name: "FollowUp Calls", href: "/dashboard/trackly/followup-calls", icon: PhoneCall, roles: [6,7] },
   { name: "Calls History", href: "/dashboard/trackly", icon: Clock, roles: [6,7] },
+  { name: "Recordings", href: "/dashboard/trackly/recordings", icon: AudioLines, roles: [6,7] },
   { name: "Team Performance", href: "/dashboard/trackly/team-performance", icon: TrendingUp, roles: [6,7] },
   { name: "Customer Intelligence", href: "/dashboard/trackly/customer-intelligence", icon: UsersRound, roles: [6,7] },
   { name: "Integrations", href: "/dashboard/integrations", icon: Cable, roles: [6] },

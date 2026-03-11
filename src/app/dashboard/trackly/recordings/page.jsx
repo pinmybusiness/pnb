@@ -328,7 +328,7 @@ const CallRecordings = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Call Recordings</h1>
-          <p className="text-sm text-gray-500">Access and manage all your call recordings</p>
+          {/* <p className="text-sm text-gray-500">Access and manage all your call recordings</p> */}
         </div>
         
         {/* Stats Summary */}
@@ -375,12 +375,12 @@ const CallRecordings = () => {
                         <ArrowUpDown className="h-4 w-4" />
                       </div>
                     </TableHead>
-                    <TableHead onClick={() => handleSort('status')} className="cursor-pointer">
+                    {/* <TableHead onClick={() => handleSort('status')} className="cursor-pointer">
                       <div className="flex items-center gap-2">
                         Status
                         <ArrowUpDown className="h-4 w-4" />
                       </div>
-                    </TableHead>
+                    </TableHead> */}
                     <TableHead onClick={() => handleSort('startTime')} className="cursor-pointer">
                       <div className="flex items-center gap-2">
                         Date & Time
@@ -388,7 +388,7 @@ const CallRecordings = () => {
                       </div>
                     </TableHead>
                     <TableHead>Recording</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    {/* <TableHead className="text-right">Actions</TableHead> */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -412,9 +412,9 @@ const CallRecordings = () => {
                           <span className="text-sm text-gray-900">{recording.userId?.name || 'Unknown'}</span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <RecordingStatusBadge status={recording.status} />
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell>
                         <TimeDisplay startTime={recording.startTime} />
                       </TableCell>
@@ -424,7 +424,7 @@ const CallRecordings = () => {
                           callId={recording._id}
                         />
                       </TableCell>
-                      <TableCell className="text-right">
+                      {/* <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -433,7 +433,7 @@ const CallRecordings = () => {
                         >
                           <Download className="h-4 w-4" />
                         </Button>
-                      </TableCell>
+                      </TableCell> */}
                     </TableRow>
                   ))}
                 </TableBody>

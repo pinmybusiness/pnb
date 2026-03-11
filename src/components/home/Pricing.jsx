@@ -25,11 +25,11 @@ export default function Pricing() {
             <div className="absolute inset-0 bg-gradient-to-r from-[#FF5211] to-orange-600 rounded-3xl blur-2xl opacity-20 group-hover:opacity-30 transition-opacity"></div>
             <div className="relative bg-white border-2 border-gray-100 shadow-2xl rounded-3xl p-10 hover:shadow-3xl transition-all duration-500">
               <div className="absolute -top-5 min-w-[300px] left-1/2 transform -translate-x-1/2">
-                <div className="bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-6 py-3 rounded-full text-sm font-bold shadow-xl flex items-center gap-2 animate-bounce">
+                {/* <div className="bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-6 py-3 rounded-full text-sm font-bold shadow-xl flex items-center gap-2 animate-bounce">
                   <span>🔥</span>
                   <span>Special Offer: ₹999/year (Limited Time)</span>
                   <span>🔥</span>
-                </div>
+                </div> */}
               </div>
               <div className="mt-6 mb-8">
                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#FF5211]/10 to-orange-100/50 px-6 py-2 rounded-full border border-[#FF5211]/20">
@@ -40,19 +40,19 @@ export default function Pricing() {
                 </div>
               </div>
               <div className="mb-8">
-                <div className="flex items-center justify-center gap-3 mb-2">
+                {/* <div className="flex items-center justify-center gap-3 mb-2">
                   <span className="text-2xl text-gray-400 line-through font-semibold">₹299</span>
                   <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
                     Save 67%
                   </div>
-                </div>
+                </div> */}
                 <div className="flex items-baseline justify-center gap-2">
                   <span className="text-gray-600 text-xl">₹</span>
                   <span className="text-7xl font-extrabold bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">99</span>
                   <span className="text-gray-600 text-xl">/month</span>
                 </div>
                 <p className="text-gray-600 mt-3 font-medium">
-                  For first 4 months, then ₹299/month • Cancel anytime
+                  Valid only with yearly plan • Cancel anytime
                 </p>
               </div>
               <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent mb-8"></div>

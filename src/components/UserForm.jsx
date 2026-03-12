@@ -12,8 +12,8 @@ import {
 import { useSelector } from 'react-redux';
 
 const roleOptions = [
-  { value: 7, label: 'Branch Team Manager', scope: 'branch' },
-  { value: 8, label: 'Branch Staff', scope: 'branch' },
+  { value: 7, label: 'Team Manager', scope: 'branch' },
+  { value: 8, label: 'Team Member', scope: 'branch' },
 ];
 
 const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {

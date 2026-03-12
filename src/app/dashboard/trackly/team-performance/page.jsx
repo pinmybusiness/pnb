@@ -1,18 +1,12 @@
 'use client';
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
-import { Users, Search, Eye, PhoneOutgoing, PhoneIncoming, PhoneMissed, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, Search, Eye, PhoneOutgoing, PhoneIncoming, PhoneMissed } from "lucide-react";
 import { 
   Card, 
   Input, 
-  Table, 
-  TableHeader, 
-  TableBody, 
-  TableRow, 
-  TableHead, 
-  TableCell,
   Button,
   Badge
 } from "@/components/ui";
@@ -48,7 +42,7 @@ const useTeamData = (period, page, limit) => {
     retry: 1,
     staleTime: 2 * 60 * 1000,
     refetchOnWindowFocus: false,
-    keepPreviousData: true // Smooth pagination
+    keepPreviousData: true
   });
 };
 
@@ -73,12 +67,14 @@ const TeamManagementPage = () => {
     data: response, 
     isLoading, 
     error,
-    refetch
+    refetch,
+    isFetching
   } = useTeamData(period, pagination.page, pagination.limit);
 
-  // Update pagination when response changes
-  useState(() => {
+  // ✅ FIXED: useEffect instead of useState
+  useEffect(() => {
     if (response?.pagination) {
+      console.log("Pagination from API:", response.pagination); // Debug log
       setPagination(response.pagination);
     }
   }, [response]);
@@ -113,9 +109,10 @@ const TeamManagementPage = () => {
 
   // Handle Page Change
   const handlePageChange = useCallback((newPage) => {
-    if (newPage < 1 || newPage > pagination.pages || isLoading) return;
+    if (newPage < 1 || newPage > pagination.pages || isLoading || isFetching) return;
+    console.log("Changing to page:", newPage); // Debug log
     setPagination(prev => ({ ...prev, page: newPage }));
-  }, [pagination.pages, isLoading]);
+  }, [pagination.pages, isLoading, isFetching]);
 
   // Handle Period Change
   const handlePeriodChange = useCallback((newPeriod) => {
@@ -154,9 +151,12 @@ const TeamManagementPage = () => {
     );
   }
 
+  // Debug log
+  console.log("Current pagination state:", pagination);
+  console.log("Should show pagination?", pagination.total > 0 && pagination.pages > 1);
+
   return (
     <>
-      {/* Add CSS for table responsiveness */}
       <style jsx>{`
         .team-table {
           table-layout: fixed;
@@ -269,57 +269,32 @@ const TeamManagementPage = () => {
 
         {/* Team Table */}
         <Card className="overflow-hidden border shadow-sm">
-          {/* Desktop Table - Fixed width columns */}
+          {/* Desktop Table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="team-table">
               <thead className="bg-gray-50 border-b border-gray-400">
                 <tr>
-                  {/* Column 1: Name with Number - Fixed width */}
                   <th className="member-cell text-left px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-gray-500" />
                       <span className="text-sm font-semibold text-gray-700">Team Member</span>
                     </div>
                   </th>
-                  
-                  {/* Column 2: Total Calls */}
                   <th className="stat-cell text-center px-4 py-3">
                     <span className="text-sm font-semibold text-gray-700">Total Calls</span>
                   </th>
-                  
-                  {/* Column 3: Total Outgoing */}
                   <th className="stat-cell text-center px-4 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <PhoneOutgoing className="h-4 w-4 text-blue-500" />
-                      <span className="text-sm font-semibold text-gray-700">Outgoing</span>
-                    </div>
+                    <span className="text-sm font-semibold text-gray-700">Outgoing</span>
                   </th>
-                  
-                  {/* Column 4: Outgoing Connected */}
                   <th className="stat-cell text-center px-4 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <PhoneOutgoing className="h-4 w-4 text-green-500" />
-                      <span className="text-sm font-semibold text-gray-700">Connected</span>
-                    </div>
+                    <span className="text-sm font-semibold text-gray-700">Connected</span>
                   </th>
-                  
-                  {/* Column 5: Incoming Calls */}
                   <th className="stat-cell text-center px-4 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <PhoneIncoming className="h-4 w-4 text-purple-500" />
-                      <span className="text-sm font-semibold text-gray-700">Incoming</span>
-                    </div>
+                    <span className="text-sm font-semibold text-gray-700">Incoming</span>
                   </th>
-                  
-                  {/* Column 6: Incoming Missed */}
                   <th className="stat-cell text-center px-4 py-3">
-                    <div className="flex items-center justify-center gap-2">
-                      <PhoneMissed className="h-4 w-4 text-red-500" />
-                      <span className="text-sm font-semibold text-gray-700">Missed</span>
-                    </div>
+                    <span className="text-sm font-semibold text-gray-700">Missed</span>
                   </th>
-                  
-                  {/* Column 7: Details */}
                   <th className="action-cell text-center px-4 py-3">
                     <span className="text-sm font-semibold text-gray-700">Actions</span>
                   </th>
@@ -329,7 +304,6 @@ const TeamManagementPage = () => {
               <tbody className="divide-y divide-gray-100">
                 {filteredMembers.map((member, index) => (
                   <tr key={member.userId || index} className="hover:bg-blue-50/30 transition-colors">
-                    {/* Column 1: Name with Number */}
                     <td className="member-cell px-4 py-3">
                       <div className="flex items-center gap-3">
                         <UserAvatar name={member.name} />
@@ -339,45 +313,21 @@ const TeamManagementPage = () => {
                         </div>
                       </div>
                     </td>
-                    
-                    {/* Column 2: Total Calls */}
                     <td className="stat-cell px-4 py-3 text-center">
-                      <div className="inline-flex items-center justify-center">
-                        <span className="text-lg font-bold text-gray-900">
-                          {member.totalCalls || 0}
-                        </span>
-                      </div>
+                      <span className="text-lg font-bold text-gray-900">{member.totalCalls || 0}</span>
                     </td>
-                    
-                    {/* Column 3: Total Outgoing */}
                     <td className="stat-cell px-4 py-3 text-center">
-                      <div className="flex flex-col items-center">
-                        <span className="text-lg font-semibold text-blue-600">{member.totalOutgoing || 0}</span>
-                      </div>
+                      <span className="text-lg font-semibold text-blue-600">{member.totalOutgoing || 0}</span>
                     </td>
-                    
-                    {/* Column 4: Outgoing Connected */}
                     <td className="stat-cell px-4 py-3 text-center">
-                      <div className="flex flex-col items-center">
-                        <span className="text-lg font-semibold text-green-600">{member.totalOutgoingConnected || 0}</span>
-                      </div>
+                      <span className="text-lg font-semibold text-green-600">{member.totalOutgoingConnected || 0}</span>
                     </td>
-                    
-                    {/* Column 5: Incoming Calls */}
                     <td className="stat-cell px-4 py-3 text-center">
-                      <div className="flex flex-col items-center">
-                        <span className="text-lg font-semibold text-purple-600">{member.totalIncoming || 0}</span>
-                      </div>
+                      <span className="text-lg font-semibold text-purple-600">{member.totalIncoming || 0}</span>
                     </td>
-                    
-                    {/* Column 6: Incoming Missed */}
                     <td className="stat-cell px-4 py-3 text-center">
-                      <div className="flex flex-col items-center">
-                        <span className="text-lg font-semibold text-red-600">{member.totalIncomingMissed || 0}</span>
-                      </div>
+                      <span className="text-lg font-semibold text-red-600">{member.totalIncomingMissed || 0}</span>
                     </td>
-                    
-                    {/* Column 7: Details */}
                     <td className="action-cell px-4 py-3 text-center">
                       <Button
                         variant="ghost"
@@ -395,7 +345,7 @@ const TeamManagementPage = () => {
             </table>
           </div>
 
-          {/* Mobile Cards - Enhanced */}
+          {/* Mobile Cards */}
           <div className="block md:hidden">
             <div className="p-4 border-b bg-gray-50">
               <div className="flex items-center justify-between">
@@ -410,7 +360,6 @@ const TeamManagementPage = () => {
               {filteredMembers.map((member, index) => (
                 <div key={member.userId || index} className="p-4 hover:bg-gray-50">
                   <div className="space-y-4">
-                    {/* Member Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <UserAvatar name={member.name} />
@@ -429,7 +378,6 @@ const TeamManagementPage = () => {
                       </Button>
                     </div>
                     
-                    {/* Stats Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-100">
                         <div className="text-2xl font-bold text-gray-900">{member.totalCalls || 0}</div>
@@ -480,13 +428,13 @@ const TeamManagementPage = () => {
             </div>
           )}
 
-          {/* Pagination */}
+          {/* ✅ FIXED: Pagination - Always show if total > 0 */}
           {!isLoading && pagination.total > 0 && (
             <div className="px-6 py-4 border-t border-gray-200">
               <Pagination
                 pagination={pagination}
                 onPageChange={handlePageChange}
-                loading={isLoading}
+                loading={isLoading || isFetching}
                 itemsLabel="team members"
                 showItemsCount={true}
                 showPageInfo={true}

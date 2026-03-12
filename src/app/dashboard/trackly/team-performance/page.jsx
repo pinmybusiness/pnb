@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/apiClient";
-import { Users, Search, Eye, PhoneOutgoing, PhoneIncoming, PhoneMissed } from "lucide-react";
+import { Users, Search, Eye, PhoneOutgoing, PhoneIncoming, PhoneMissed, ChevronLeft, ChevronRight } from "lucide-react";
 import { 
   Card, 
   Input, 
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui";
 import MemberDetailsModal from "@/components/team/MemberDetailsModal";
 import TeamStatsExport from "@/components/team/TeamStatsExport";
+import Pagination from "@/components/ui/Pagination";
 
 // Constants
 const PERIOD_OPTIONS = [
@@ -33,18 +34,21 @@ const UserAvatar = ({ name }) => (
   </div>
 );
 
-// Custom Hook for Team Data
-const useTeamData = (period) => {
+// Custom Hook for Team Data with Pagination
+const useTeamData = (period, page, limit) => {
   return useQuery({
-    queryKey: ["team-performance", period],
+    queryKey: ["team-performance", period, page, limit],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/api/v1/calls/team/performance?period=${period}`);
+      const { data } = await apiClient.get(
+        `/api/v1/calls/team/performance?period=${period}&page=${page}&limit=${limit}`
+      );
       if (!data.success) throw new Error(data.message);
-      return data.data;
+      return data;
     },
     retry: 1,
     staleTime: 2 * 60 * 1000,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    keepPreviousData: true // Smooth pagination
   });
 };
 
@@ -54,18 +58,36 @@ const TeamManagementPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMember, setSelectedMember] = useState(null);
   const [showExport, setShowExport] = useState(false);
+  
+  // Pagination State
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    pages: 1,
+    hasMore: false
+  });
 
-  // Fetch data
+  // Fetch data with pagination
   const { 
-    data: teamData, 
+    data: response, 
     isLoading, 
     error,
     refetch
-  } = useTeamData(period);
+  } = useTeamData(period, pagination.page, pagination.limit);
 
-  // Filter members
+  // Update pagination when response changes
+  useState(() => {
+    if (response?.pagination) {
+      setPagination(response.pagination);
+    }
+  }, [response]);
+
+  const teamData = response?.data || [];
+
+  // Filter members client-side (search only)
   const filteredMembers = useMemo(() => {
-    if (!teamData) return [];
+    if (!teamData.length) return [];
     
     let members = [...teamData];
     
@@ -76,9 +98,6 @@ const TeamManagementPage = () => {
         member.mobile?.includes(query)
       );
     }
-    
-    // Sort by total calls (descending)
-    members.sort((a, b) => b.totalCalls - a.totalCalls);
     
     return members;
   }, [teamData, searchQuery]);
@@ -92,8 +111,20 @@ const TeamManagementPage = () => {
     setSelectedMember(null);
   }, []);
 
+  // Handle Page Change
+  const handlePageChange = useCallback((newPage) => {
+    if (newPage < 1 || newPage > pagination.pages || isLoading) return;
+    setPagination(prev => ({ ...prev, page: newPage }));
+  }, [pagination.pages, isLoading]);
+
+  // Handle Period Change
+  const handlePeriodChange = useCallback((newPeriod) => {
+    setPeriod(newPeriod);
+    setPagination(prev => ({ ...prev, page: 1 })); // Reset to page 1
+  }, []);
+
   // Loading State
-  if (isLoading) {
+  if (isLoading && !response) {
     return (
       <div className="flex flex-col justify-center items-center h-64 space-y-4">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -167,29 +198,29 @@ const TeamManagementPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-col gap-2">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Team Activity Overview</h1>
-             {/* Summary Stats */}
+            {/* Summary Stats */}
             <div className="flex items-center gap-3 text-sm">
-              {/* <Badge variant="outline" className="px-3 py-1">
-                {filteredMembers.length} Members
-              </Badge> */}
+              <Badge variant="outline" className="px-3 py-1">
+                {pagination.total} Members
+              </Badge>
               <Badge variant="outline" className="px-3 py-1">
                 Total Calls: {filteredMembers.reduce((sum, m) => sum + (m.totalCalls || 0), 0)}
               </Badge>
             </div>
           </div>
           
-           {/* Toggle Export Button */}
-            <div className="flex justify-end mt-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowExport(!showExport)}
-              >
-                {showExport ? "Hide Export Options" : "Show Export Options"}
-              </Button>
-            </div>         
+          {/* Toggle Export Button */}
+          <div className="flex justify-end mt-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowExport(!showExport)}
+            >
+              {showExport ? "Hide Export Options" : "Show Export Options"}
+            </Button>
+          </div>         
         </div>
 
-        {showExport &&  <TeamStatsExport />}
+        {showExport && <TeamStatsExport />}
 
         {/* Filters */}
         <Card className="p-4 sm:p-6 shadow-sm">
@@ -211,7 +242,7 @@ const TeamManagementPage = () => {
                 <label className="text-sm font-medium text-gray-700">Period:</label>
                 <select
                   value={period}
-                  onChange={(e) => setPeriod(e.target.value)}
+                  onChange={(e) => handlePeriodChange(e.target.value)}
                   className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
                   {PERIOD_OPTIONS.map((option) => (
@@ -420,7 +451,6 @@ const TeamManagementPage = () => {
                         <div className="text-xl font-semibold text-red-600">{member.totalIncomingMissed || 0}</div>
                         <div className="text-xs text-gray-600 mt-1">Missed</div>
                       </div>
-                     
                     </div>
                   </div>
                 </div>
@@ -449,6 +479,20 @@ const TeamManagementPage = () => {
               )}
             </div>
           )}
+
+          {/* Pagination */}
+          {!isLoading && pagination.total > 0 && (
+            <div className="px-6 py-4 border-t border-gray-200">
+              <Pagination
+                pagination={pagination}
+                onPageChange={handlePageChange}
+                loading={isLoading}
+                itemsLabel="team members"
+                showItemsCount={true}
+                showPageInfo={true}
+              />
+            </div>
+          )}
         </Card>
       </div>
 
@@ -464,4 +508,4 @@ const TeamManagementPage = () => {
   );
 };
 
-export default TeamManagementPage;
+export default TeamManagementPage; 

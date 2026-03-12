@@ -1,57 +1,272 @@
 "use client";
 
 import TestimonialsSection from "@/components/home/Testimonials";
-import { Check, Crown, Zap, Users, Shield, Star, ArrowRight } from "lucide-react";
+import { Check, Crown, Zap, Users, Shield, Star, ArrowRight, Phone, Mic, Database, Globe, Clock, Plus } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+// Reusable PackagePricing Component
+const PackagePricing = ({ billingCycle }) => {
+  const [selectedFeatures, setSelectedFeatures] = useState({
+    callMonitoring: true, // Always true as it's base
+    extendedStorage: false,
+    crmIntegration: false,
+  });
+
+  const prices = {
+    quarterly: {
+      callMonitoring: 447,
+      extendedStorage: 99,
+      crmIntegration: 99,
+    },
+    yearly: {
+      callMonitoring: 1188,
+      extendedStorage: 499,
+      crmIntegration: 499,
+    },
+  };
+
+  const currentPrices = prices[billingCycle];
+
+  const calculateTotal = () => {
+    let total = currentPrices.callMonitoring;
+    if (selectedFeatures.extendedStorage) total += currentPrices.extendedStorage;
+    if (selectedFeatures.crmIntegration) total += currentPrices.crmIntegration;
+    return total;
+  };
+
+  const toggleFeature = (feature) => {
+    setSelectedFeatures(prev => ({
+      ...prev,
+      [feature]: !prev[feature]
+    }));
+  };
+
+  return (
+    <div className="bg-gradient-to-r from-[#FF5211]/5 to-orange-100/30 rounded-3xl p-8 md:p-12 border-2 border-[#FF5211]/20">
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">
+        Complete Package Pricing
+      </h2>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b-2 border-[#FF5211]/20">
+              <th className="text-left py-4 px-4 font-bold text-gray-900">Component</th>
+              <th className="text-center py-4 px-4 font-bold text-gray-900">
+                {billingCycle === "quarterly" ? "Quarterly (per user)" : "Yearly (per user)"}
+              </th>
+              <th className="text-center py-4 px-4 font-bold text-gray-900">Include</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {/* Call Monitoring - Always included */}
+            <tr className="hover:bg-white/50 transition-colors bg-green-50/30">
+              <td className="py-4 px-4 font-medium text-gray-900">
+                Call Monitoring
+                <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Base Plan</span>
+              </td>
+              <td className="text-center py-4 px-4 text-[#FF5211] font-bold">₹{currentPrices.callMonitoring}</td>
+              <td className="text-center py-4 px-4">
+                <div className="flex justify-center">
+                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            {/* Call Recording - Free */}
+            <tr className="hover:bg-white/50 transition-colors">
+              <td className="py-4 px-4 font-medium text-gray-900">
+                Call Recording
+                <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Free</span>
+              </td>
+              <td className="text-center py-4 px-4 text-gray-600">₹0 (30 days storage)</td>
+              <td className="text-center py-4 px-4">
+                <div className="flex justify-center">
+                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center opacity-50">
+                    <Check className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+              </td>
+            </tr>
+
+            {/* Extended Storage - Optional */}
+            <tr className="hover:bg-white/50 transition-colors">
+              <td className="py-4 px-4 font-medium text-gray-900 pl-8 text-sm">
+                └ Extended Storage (beyond 30 days)
+              </td>
+              <td className="text-center py-4 px-4 text-gray-600">₹{currentPrices.extendedStorage}</td>
+              <td className="text-center py-4 px-4">
+                <button
+                  onClick={() => toggleFeature('extendedStorage')}
+                  className={`w-6 h-6 rounded border-2 transition-all duration-200 ${
+                    selectedFeatures.extendedStorage
+                      ? 'bg-[#FF5211] border-[#FF5211] hover:bg-[#FF5211]/80'
+                      : 'border-gray-300 hover:border-[#FF5211] bg-white'
+                  }`}
+                >
+                  {selectedFeatures.extendedStorage && (
+                    <Check className="w-4 h-4 text-white mx-auto" />
+                  )}
+                </button>
+              </td>
+            </tr>
+
+            {/* CRM Integration - Optional */}
+            <tr className="hover:bg-white/50 transition-colors">
+              <td className="py-4 px-4 font-medium text-gray-900">CRM/API Integration</td>
+              <td className="text-center py-4 px-4 text-gray-600">₹{currentPrices.crmIntegration}</td>
+              <td className="text-center py-4 px-4">
+                <button
+                  onClick={() => toggleFeature('crmIntegration')}
+                  className={`w-6 h-6 rounded border-2 transition-all duration-200 ${
+                    selectedFeatures.crmIntegration
+                      ? 'bg-[#FF5211] border-[#FF5211] hover:bg-[#FF5211]/80'
+                      : 'border-gray-300 hover:border-[#FF5211] bg-white'
+                  }`}
+                >
+                  {selectedFeatures.crmIntegration && (
+                    <Check className="w-4 h-4 text-white mx-auto" />
+                  )}
+                </button>
+              </td>
+            </tr>
+
+            {/* Total */}
+            <tr className="bg-[#FF5211]/5 font-bold">
+              <td className="py-4 px-4 text-gray-900">
+                Total per User
+                <span className="ml-2 text-xs font-normal text-gray-500">
+                  ({selectedFeatures.extendedStorage ? 'with' : 'without'} extended storage, {selectedFeatures.crmIntegration ? 'with' : 'without'} CRM)
+                </span>
+              </td>
+              <td className="text-center py-4 px-4 text-[#FF5211] text-xl">
+                ₹{calculateTotal()}
+              </td>
+              <td className="text-center py-4 px-4"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Info Boxes */}
+      <div className="mt-6 space-y-3">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <p className="text-sm text-blue-800 flex items-center gap-2">
+            <Mic className="w-4 h-4" />
+            <span className="font-medium">Recording is free!</span> You only pay for storage if you need to keep recordings longer than 30 days.
+          </p>
+        </div>
+        
+        {selectedFeatures.extendedStorage || selectedFeatures.crmIntegration ? (
+          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+            <p className="text-sm text-green-800 flex items-center gap-2">
+              <span className="font-medium">Selected Package:</span>
+              Call Monitoring 
+              {selectedFeatures.extendedStorage && ' + Extended Storage'}
+              {selectedFeatures.crmIntegration && ' + CRM Integration'}
+            </p>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+};
+
+// Add-on Card Component
+const AddonCard = ({
+  title,
+  quarterlyPrice,
+  yearlyPrice,
+  description,
+  features,
+  icon: Icon,
+  billingCycle,
+}) => {
+  const router = useRouter();
+  const currentPrice = billingCycle === "quarterly" ? quarterlyPrice : yearlyPrice;
+  
+  return (
+    <div className="relative bg-white rounded-2xl p-6 border-2 border-gray-200 hover:border-[#FF5211]/30 hover:shadow-xl transition-all duration-300 group w-full">
+      <div className="absolute top-4 right-4">
+        <span className="text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-semibold">
+          Add-on
+        </span>
+      </div>
+      
+      <div className="flex flex-col">
+        <div className="flex items-start gap-4 mb-4">
+          <div className="flex-shrink-0">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Icon className="w-6 h-6 text-[#FF5211]" />
+            </div>
+          </div>
+          
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-gray-900 mb-1">{title}</h3>
+            <p className="text-sm text-gray-600">{description}</p>
+          </div>
+        </div>
+        
+        <div className="flex items-baseline gap-1 mb-4">
+          <span className="text-gray-600 text-lg">₹</span>
+          <span className="text-2xl font-bold text-[#FF5211]">{currentPrice}</span>
+          <span className="text-sm text-gray-500">/{billingCycle === "quarterly" ? "quarter" : "year"}</span>
+        </div>
+        
+        <ul className="space-y-2 mb-4">
+          {features.slice(0, 3).map((feature, i) => (
+            <li key={i} className="flex items-start gap-2 text-xs text-gray-600">
+              <Plus className="w-3 h-3 text-[#FF5211] flex-shrink-0 mt-0.5" />
+              <span>{feature}</span>
+            </li>
+          ))}
+        </ul>
+        
+        <button
+          onClick={() => router.push("/contact")}
+          className="w-full py-2.5 rounded-full text-sm font-semibold bg-gray-50 text-[#FF5211] border-2 border-[#FF5211]/20 hover:border-[#FF5211] hover:bg-[#FF5211] hover:text-white transition-all duration-300"
+        >
+          Add to Plan
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function PricingPage() {
-  const [billingCycle, setBillingCycle] = useState("monthly");
+  const [billingCycle, setBillingCycle] = useState("yearly");
   const router = useRouter();
 
   const PlanCard = ({
     title,
-    monthlyPrice,
-    annualPrice,
+    quarterlyPrice,
+    yearlyPrice,
     description,
     features,
     cta,
     popular = false,
-    addOn = false,
+    icon: Icon,
+    note,
   }) => {
-    // ---- Pricing Logic ----
-    let currentPrice;
-    let promoDetails = null;
+    const currentPrice = billingCycle === "quarterly" ? quarterlyPrice : yearlyPrice;
+    
+    const monthlyPrice = billingCycle === "yearly" 
+      ? Math.round(yearlyPrice / 12) 
+      : Math.round(quarterlyPrice / 3);
+    
+    const savings = billingCycle === "yearly" && quarterlyPrice
+      ? Math.round(((quarterlyPrice * 4 - yearlyPrice) / (quarterlyPrice * 4)) * 100)
+      : 0;
 
-    if (billingCycle === "monthly") {
-      if (typeof monthlyPrice === "object") {
-        currentPrice = monthlyPrice.promoPrice;
-        promoDetails = {
-          promoPrice: monthlyPrice.promoPrice,
-          regularPrice: monthlyPrice.regularPrice,
-          duration: monthlyPrice.promoDuration,
-        };
-      } else {
-        currentPrice = monthlyPrice;
-      }
-    } else {
-      currentPrice = annualPrice;
-    }
-
-    const isCustom = typeof currentPrice === "string";
-    const savings =
-      billingCycle === "annual" && typeof monthlyPrice === "number"
-        ? Math.round(((monthlyPrice * 12 - annualPrice) / (monthlyPrice * 12)) * 100)
-        : 0;
-
-    // ---- UI ----
     return (
       <div
-        className={`relative bg-white rounded-3xl p-6 md:p-8 hover:shadow-2xl transition-all duration-500 border-2 ${
+        className={`relative bg-white rounded-3xl p-8 hover:shadow-2xl transition-all duration-500 border-2 ${
           popular
-            ? "border-[#FF5211] shadow-xl scale-105"
+            ? "border-[#FF5211] shadow-xl"
             : "border-gray-100 shadow-lg hover:-translate-y-2"
-        } group`}
+        } group w-full`}
       >
         {popular && (
           <div className="absolute -top-4 min-w-[150px] left-1/2 transform -translate-x-1/2 z-10">
@@ -66,50 +281,45 @@ export default function PricingPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/0 to-orange-500/0 group-hover:from-[#FF5211]/5 group-hover:to-orange-500/5 rounded-3xl transition-all duration-500"></div>
 
         <div className="relative">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-3">{title}</h3>
+          {/* Header with Icon */}
+          <div className="text-center mb-8">
+            {Icon && (
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 rounded-2xl mb-4 mx-auto">
+                <Icon className="w-10 h-10 text-[#FF5211]" />
+              </div>
+            )}
+            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">{title}</h3>
 
-{/* Price */}
-<div className="mb-4 text-center">
-  {title === "Essential" ? (
-    <>
-      <div className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">
-        ₹99
-        <span className="text-base text-gray-500 font-medium">/mo</span>
-      </div>
-      <div className="text-sm text-gray-500 mt-2 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full inline-block font-semibold">
-        for first 4 months, then ₹299/mo (billed yearly)
-      </div>
-    </>
-  ) : isCustom ? (
-    <div className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">
-      {currentPrice}
-    </div>
-  ) : (
-    <>
-      <div className="flex items-baseline justify-center gap-1">
-        <span className="text-gray-600 text-xl">₹</span>
-        <span className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">
-          {currentPrice}
-        </span>
-      </div>
-      <div className="text-sm text-gray-500 mt-2">
-        per user / {billingCycle}
-      </div>
+            {/* Price with monthly highlighted */}
+            <div className="mb-4">
+              {/* Monthly price - Large and prominent */}
+              <div className="flex items-baseline justify-center gap-1 mb-1">
+                <span className="text-gray-600 text-3xl">₹</span>
+                <span className="text-7xl md:text-8xl font-extrabold bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">
+                  {monthlyPrice}
+                </span>
+                <span className="text-2xl text-gray-500 ml-2">/month</span>
+              </div>
+              
+              {/* Yearly price - Smaller below */}
+              <div className="text-gray-500 mb-3">
+                <span className="text-lg">₹{currentPrice}</span>
+                <span className="text-sm">/{billingCycle === "quarterly" ? "quarter" : "year"}</span>
+                {billingCycle === "yearly" && (
+                  <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                    Save {savings}%
+                  </span>
+                )}
+              </div>
 
-      {/* Promo info */}
-      {billingCycle === "monthly" && promoDetails && (
-        <div className="text-xs text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full inline-block mt-3 font-semibold">
-          ₹{promoDetails.promoPrice}/month for first {promoDetails.duration} months, then ₹{promoDetails.regularPrice}/month
-        </div>
-      )}
-    </>
-  )}
-</div>
+              {note && (
+                <div className="text-xs text-orange-600 bg-orange-50 border border-orange-200 px-3 py-2 rounded-lg inline-block mt-3 font-medium">
+                  {note}
+                </div>
+              )}
+            </div>
 
-
-            <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+            <p className="text-gray-600 text-base leading-relaxed">{description}</p>
           </div>
 
           {/* Divider */}
@@ -118,26 +328,26 @@ export default function PricingPage() {
           {/* Features */}
           <ul className="space-y-3 mb-8">
             {features.map((feature, i) => (
-              <li key={i} className="flex items-start gap-3 text-sm text-gray-700 group/item">
-                <div className="flex-shrink-0 w-5 h-5 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mt-0.5 group-hover/item:scale-110 transition-transform shadow-sm">
-                  <Check className="w-3 h-3 text-white" strokeWidth={3} />
+              <li key={i} className="flex items-start gap-3 text-base text-gray-700 group/item">
+                <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mt-0.5 group-hover/item:scale-110 transition-transform shadow-sm">
+                  <Check className="w-4 h-4 text-white" strokeWidth={3} />
                 </div>
-                <span className="flex-1">{feature}</span>
+                <span className="flex-1 text-left">{feature}</span>
               </li>
             ))}
           </ul>
 
-          {/* CTA Button → redirect to /contact */}
+          {/* CTA Button */}
           <button
             onClick={() => router.push("/contact")}
-            className={`w-full py-4 rounded-full font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-2 ${
+            className={`w-full py-4 rounded-full font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center justify-center gap-2 text-lg ${
               popular
                 ? "bg-gradient-to-r from-[#FF5211] to-orange-600 text-white"
                 : "bg-gray-50 text-[#FF5211] border-2 border-[#FF5211]/20 hover:border-[#FF5211] hover:bg-[#FF5211] hover:text-white"
             }`}
           >
             {cta}
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-5 h-5" />
           </button>
         </div>
 
@@ -150,6 +360,45 @@ export default function PricingPage() {
       </div>
     );
   };
+
+  // Refund Policy Component
+  const RefundPolicy = () => (
+    <div className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-[#FF5211]/30 transition-all duration-300">
+      <div className="flex items-center gap-2 mb-4">
+        <span className="w-8 h-8 bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 rounded-lg flex items-center justify-center">
+          <span className="text-[#FF5211] font-bold">₹</span>
+        </span>
+        <h3 className="font-bold text-lg text-gray-900">Refund Policy</h3>
+      </div>
+      
+      {/* Yearly only badge */}
+      <div className="mb-4 inline-block px-3 py-1 bg-blue-50 border border-blue-200 rounded-full">
+        <span className="text-xs font-bold text-blue-700 flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          Available for Yearly Plans Only
+        </span>
+      </div>
+
+      <div className="space-y-3 text-gray-600">
+        <p className="flex items-start gap-2">
+          <span className="text-[#FF5211] font-bold">•</span>
+          <span>Less than one month - 90% refund</span>
+        </p>
+        <p className="flex items-start gap-2">
+          <span className="text-[#FF5211] font-bold">•</span>
+          <span>Between 2 months and 3 months - 60% refund</span>
+        </p>
+        <p className="flex items-start gap-2">
+          <span className="text-[#FF5211] font-bold">•</span>
+          <span>More than 3 months - No refund</span>
+        </p>
+        <p className="text-sm text-orange-600 bg-orange-50 p-3 rounded-xl mt-2">
+          <span className="font-bold">Note:</span> Refunds apply only to Call Monitoring on yearly plans. 
+          Other payments and add-ons are non-refundable.
+        </p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF5EC] via-orange-50/40 to-white relative overflow-hidden">
@@ -182,17 +431,17 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center mb-12 md:mb-16">
           <span className="inline-block px-5 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-bold mb-4 border border-[#FF5211]/20 shadow-sm">
-            💰 Simple Pricing
+            💰 Transparent Pricing
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-4 md:mb-6 leading-tight">
-            Choose the Plan That's
+            Simple, Flexible Plans for
             <br />
             <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">
-              Best for You
+              Every Business Need
             </span>
           </h1>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Simple pricing for Android SIM call tracking with WhatsApp team reports. No setup fees, cancel anytime.
+            Start with Call Monitoring and add features as you grow
           </p>
         </div>
 
@@ -200,103 +449,116 @@ export default function PricingPage() {
         <div className="flex justify-center mb-12 md:mb-16">
           <div className="bg-white p-1.5 rounded-full border-2 border-gray-200 shadow-lg inline-flex">
             <button
-              onClick={() => setBillingCycle("monthly")}
+              onClick={() => setBillingCycle("quarterly")}
               className={`px-6 md:px-8 py-3 md:py-4 rounded-full text-sm md:text-base font-bold transition-all ${
-                billingCycle === "monthly"
+                billingCycle === "quarterly"
                   ? "bg-gradient-to-r from-[#FF5211] to-orange-600 text-white shadow-lg scale-105"
                   : "text-gray-600 hover:bg-gray-50"
               }`}
             >
-              Monthly
+              Quarterly
             </button>
             <button
-              onClick={() => setBillingCycle("annual")}
+              onClick={() => setBillingCycle("yearly")}
               className={`px-6 md:px-8 py-3 md:py-4 rounded-full text-sm md:text-base font-bold transition-all flex items-center gap-2 ${
-                billingCycle === "annual"
+                billingCycle === "yearly"
                   ? "bg-gradient-to-r from-[#FF5211] to-orange-600 text-white shadow-lg scale-105"
                   : "text-gray-600 hover:bg-gray-50"
               }`}
             >
-              Annual
+              Yearly
               <span
                 className={`text-xs font-bold px-2.5 py-1 rounded-full ${
-                  billingCycle === "annual"
+                  billingCycle === "yearly"
                     ? "bg-white/20 text-white"
                     : "bg-green-50 text-green-700 border border-green-200"
                 }`}
               >
-                Save 30%
+                Save 34%
               </span>
             </button>
           </div>
         </div>
 
-        {/* Plans */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16 md:mb-20">
-          {/* Essential Plan with updated yearly display */}
-          <PlanCard
-            title="Essential"
-            monthlyPrice={{ promoPrice: 99, regularPrice: 299, promoDuration: 4 }}
-            annualPrice="₹99/mo for 4 months → ₹299/mo after"
-            description="Track SIM calls to your analytics dashboard with WhatsApp reports."
-            features={[
-              "Auto-tracking for SIM calls",
-              "Analytics dashboard with trends", 
-              "Individual rep performance",
-              "Daily WhatsApp reports for managers",
-              "Unlimited call logging",
-              "Android app only",
-            ]}
-            cta="Get Started"
-            popular={true}
-          />
+        {/* Two Column Layout - Plan on Left, Add-ons on Right */}
+        <div className="flex flex-col lg:flex-row gap-8 justify-center items-stretch mb-16">
+          {/* Left Column - Main Plan */}
+          <div className="lg:w-[600px]">
+            <PlanCard
+              title="Call Monitoring"
+              quarterlyPrice={447}
+              yearlyPrice={1188}
+              description="Track and analyze all business calls with real-time insights. The complete solution for call tracking and team performance monitoring."
+              icon={Phone}
+              features={[
+                "Automatic tracking for all SIM calls",
+                "Performance insights for each agent",
+                "Missed call follow-up tracking",
+                "Call analytics and trend reports",
+                "Daily WhatsApp summary for managers",
+                "Unlimited call log history",
+                "Android app for on-device tracking",
+                "Export data to CSV/Excel",
+              ]}
+              cta="Start Monitoring Now"
+              popular={true}
+            />
+          </div>
 
-          {/* <PlanCard
-            title="Call Recording"
-            monthlyPrice={148}
-            annualPrice={105}
-            description="Add crystal-clear call recordings to your Essential plan."
-            features={[
-              "Dual-side call recordings",
-              "Secure, compliant storage",
-              "Real-time coaching access",
-              "Android device support",
-              "Easy playback in dashboard",
-            ]}
-            cta="Add to Plan"
-            addOn={true}
-          /> */}
+          {/* Right Column - Add-ons Stacked */}
+          <div className="lg:w-[400px] flex flex-col gap-6">
+            <div className="text-left mb-2">
+              <span className="inline-block px-4 py-1 bg-orange-100 text-orange-700 rounded-full text-sm font-semibold">
+                Optional Add-ons
+              </span>
+            </div>
+            
+            {/* Call Recording Add-on */}
+            <AddonCard
+              title="Call Recording"
+              quarterlyPrice={0}
+              yearlyPrice={0}
+              description="Record every call for quality control and training."
+              icon={Mic}
+              features={[
+                "Dual-side call recordings",
+                "30 days recording storage included",
+                "Playback directly from dashboard",
+                "Download recordings anytime",
+                "Useful for training and audits",
+                "Real-time coaching support",
+              ]}
+              billingCycle={billingCycle}
+            />
 
-          <PlanCard
-            title="CRM Integration"
-            monthlyPrice={248}
-            annualPrice={175}
-            description="Seamlessly sync call data to your CRM."
-            features={[
-              "Integration with Zoho, HubSpot, LeadSquared",
-              "Microsoft Dynamics & custom API",
-              "Auto-log calls to CRM",
-              "Real-time notifications",
-              "Bi-directional sync",
-            ]}
-            cta="Add to Plan"
-            addOn={true}
-          />
+            {/* CRM Integration Add-on */}
+            <AddonCard
+              title="CRM Integration"
+              quarterlyPrice={99}
+              yearlyPrice={499}
+              description="Sync call data automatically with your CRM."
+              icon={Globe}
+              features={[
+                "Zoho CRM integration",
+                "HubSpot integration",
+                "LeadSquared & Dynamics support",
+                "Auto-create leads from calls",
+                "API access for custom integrations",
+                "Real-time CRM updates",
+              ]}
+              billingCycle={billingCycle}
+            />
 
-          <PlanCard
-            title="Enterprise"
-            monthlyPrice="Custom"
-            annualPrice="Custom"
-            description="Custom solution for large teams (30+ users)."
-            features={[
-              "All Essential features",
-              "Daily WhatsApp call reports",
-              "Custom onboarding & training",
-              "Dedicated support & SLA",
-              "Advanced analytics & insights",
-            ]}
-            cta="Get a Quote"
-          />
+            {/* Extended Storage Note */}
+            <div className="mt-2 text-sm text-gray-500 bg-white/80 rounded-xl p-4 border border-gray-200">
+              <span className="font-medium text-[#FF5211]">Extended storage:</span> Beyond 30 days at ₹99/quarter or ₹499/year
+            </div>
+          </div>
+        </div>
+
+        {/* Package Pricing Component */}
+        <div className="mb-16 md:mb-20">
+          <PackagePricing billingCycle={billingCycle} />
         </div>
 
         {/* Trust Section */}
@@ -324,99 +586,111 @@ export default function PricingPage() {
 
         <TestimonialsSection />
 
-        {/* FAQ */}
-        <div className="max-w-4xl mx-auto mb-16 md:mb-20">
-          <div className="text-center mb-12">
-            <span className="inline-block px-5 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-bold mb-4 border border-[#FF5211]/20 shadow-sm">
-              ❓ Got Questions?
-            </span>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Frequently Asked{" "}
-              <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">
-                Questions
+        {/* FAQ and Refund Policy */}
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16 md:mb-20">
+          <div className="md:col-span-2">
+            <div className="text-center mb-8">
+              <span className="inline-block px-5 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-bold mb-4 border border-[#FF5211]/20 shadow-sm">
+                ❓ Got Questions?
               </span>
-            </h2>
-          </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                Frequently Asked{" "}
+                <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">
+                  Questions
+                </span>
+              </h2>
+            </div>
 
-          <div className="space-y-4">
-            {[{
-                q: "What happens after my Trackly free trial ends?",
-                a: "Once your trial ends, access is limited but data is preserved. No auto-charges—upgrade anytime via dashboard.",
-              },
-              {
-                q: "What pricing plans does Trackly offer?",
-                a: "Essential plan includes core tracking. Add-ons for recording and CRM. Flexible, no hidden fees.",
-              },
-              {
-                q: "Does Trackly offer discounts for annual or team subscriptions?",
-                a: "Yes! 30% off annual billing. Volume discounts for 50+ users. Contact info@fasterq.in for quotes.",
-              },
-              {
-                q: "Are there any hidden fees or extra costs with Trackly?",
-                a: "No setup or storage fees. Pay only for chosen plan and add-ons. Fully transparent.",
-              },
-              {
-                q: "How do I purchase Trackly licenses after the trial?",
-                a: "From dashboard: Subscription > Purchase. Select plan, add features. One admin per org.",
-              },
-              {
-                q: "How can I modify or cancel my Trackly subscription?",
-                a: "Add licenses anytime. For reductions/cancellation, email info@fasterq.in. 30-day notice for monthly.",
-              },
-            ].map((faq, i) => (
-              <div
-                key={i}
-                className="group bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-[#FF5211]/30 hover:shadow-xl transition-all duration-300"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <span className="text-[#FF5211] font-bold text-lg">Q</span>
-                  </div>
+            <div className="space-y-4">
+              {[{
+                  q: "Is call recording really free?",
+                  a: "Yes! Call recording is completely free. You only pay for storage if you need to keep recordings longer than 30 days. The first 30 days of storage are always included at no cost.",
+                },
+                {
+                  q: "How does recording storage work?",
+                  a: "All recordings are stored for 30 days free. If you need to keep recordings longer, you can add extended storage for ₹99/quarter or ₹499/year. You can access and download any recording during this period.",
+                },
+                {
+                  q: "What's included in Call Monitoring?",
+                  a: "Call Monitoring includes auto-tracking for SIM calls, analytics dashboard, individual rep performance tracking, daily WhatsApp reports, and unlimited call logging.",
+                },
+                {
+                  q: "What are the quarterly prices?",
+                  a: "Call Monitoring is ₹447/quarter, Call Recording is free with optional ₹99/quarter for extended storage, and CRM Integration is ₹99/quarter.",
+                },
+                {
+                  q: "Can I add CRM features later?",
+                  a: "Yes! You can add CRM Integration at any time from your dashboard. It will be prorated for the remainder of your billing cycle.",
+                },
+                {
+                  q: "Is there a minimum team size?",
+                  a: "No minimum team size. You can start with as few as 1 user and add more as your team grows.",
+                },
+                {
+                  q: "How do refunds work for yearly plans?",
+                  a: "For yearly Call Monitoring plans: 90% refund within first month, 60% refund between 2-3 months, no refund after 3 months. Refunds don't apply to quarterly plans or add-ons.",
+                },
+              ].map((faq, i) => (
+                <div
+                  key={i}
+                  className="group bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-[#FF5211]/30 hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <span className="text-[#FF5211] font-bold text-lg">Q</span>
+                    </div>
 
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg mb-2 text-gray-900 group-hover:text-[#FF5211] transition-colors">
-                      {faq.q}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">{faq.a}</p>
-                  </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg mb-2 text-gray-900 group-hover:text-[#FF5211] transition-colors">
+                        {faq.q}
+                      </h3>
+                      <p className="text-gray-600 leading-relaxed">{faq.a}</p>
+                    </div>
 
-                  <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <svg
-                      className="w-5 h-5 text-[#FF5211]"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                    <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <svg
+                        className="w-5 h-5 text-[#FF5211]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          <div className="mt-12 text-center bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-2xl p-8 border border-[#FF5211]/20">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              Still have questions?
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Our team is here to help you get started
-            </p>
-            <a
-              onClick={() => router.push("/contact")}
-              className="inline-flex cursor-pointer items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#FF5211] to-orange-600 text-white font-bold hover:shadow-xl transition-all"
-            >
-              Contact Support
-              <ArrowRight className="w-4 h-4" />
-            </a>
+          {/* Refund Policy Sidebar */}
+          <div>
+            <RefundPolicy />
           </div>
+        </div>
+
+        {/* Contact Support */}
+        <div className="mt-12 text-center bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-2xl p-8 border border-[#FF5211]/20">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            Need a custom plan for your team?
+          </h3>
+          <p className="text-gray-600 mb-4">
+            Contact us for volume discounts and enterprise requirements
+          </p>
+          <a
+            onClick={() => router.push("/contact")}
+            className="inline-flex cursor-pointer items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-[#FF5211] to-orange-600 text-white font-bold hover:shadow-xl transition-all"
+          >
+            Contact Sales
+            <ArrowRight className="w-4 h-4" />
+          </a>
         </div>
       </div>
     </div>
   );
-}
+} 

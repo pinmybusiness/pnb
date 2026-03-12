@@ -125,7 +125,7 @@ export default function Hero() {
                 ))}
               </div>
               <div className="text-left">
-                <p className="text-xs sm:text-sm font-bold text-gray-900">200+ sales teams</p>
+                <p className="text-xs sm:text-sm font-bold text-gray-900">500+ sales teams</p>
                 <p className="text-xs text-gray-600">Already tracking smarter</p>
               </div>
             </div>

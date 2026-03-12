@@ -1,4 +1,5 @@
-import { Download, Shield, Zap, Check, Star, Users, ArrowRight, Smartphone, CheckCircle, Clock, Phone } from "lucide-react";
+import PhonePreview from "@/components/PhonePreview";
+import { Download, Shield, Zap, Check, Star, Users, ArrowRight, CheckCircle, Clock, Phone } from "lucide-react";
 
 const APK_URL = "https://cdn.fasterq.in/images/app/fasterq-3.0.2.apk";
 
@@ -31,23 +32,13 @@ export default function DownloadPage() {
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <div className="text-center mb-12 md:mb-16">
-            <div className="flex items-center justify-center mb-6">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#FF5211] to-orange-600 rounded-3xl blur-2xl opacity-30 animate-pulse"></div>
-                <div className="relative bg-white rounded-3xl p-4 shadow-2xl border-4 border-gray-100">
-                  <div className="w-20 h-20 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-2xl flex items-center justify-center">
-                    <Smartphone className="w-12 h-12 text-white" />
-                  </div>
-                </div>
-              </div>
-            </div>
 
             <span className="inline-block px-5 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-bold mb-4 border border-[#FF5211]/20 shadow-sm">
               📱 Mobile App
             </span>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 md:mb-6 leading-tight">
-              Download <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">Trackly</span> App
+              Download <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">FasterQ</span> App
             </h1>
             
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
@@ -58,7 +49,7 @@ export default function DownloadPage() {
             <div className="flex flex-wrap items-center justify-center gap-6 mb-8">
               <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-md border border-gray-100">
                 <Users className="w-5 h-5 text-[#FF5211]" />
-                <span className="text-sm font-bold text-gray-900">200+ Downloads</span>
+                <span className="text-sm font-bold text-gray-900">5,000+ Downloads</span>
               </div>
               <div className="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-md border border-gray-100">
                 <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
@@ -128,7 +119,7 @@ export default function DownloadPage() {
                     "Download the APK file to your device",
                     "Enable 'Install from Unknown Sources' in Settings",
                     "Open the downloaded file and tap Install",
-                    "Launch Trackly and start tracking calls!"
+                    "Launch FasterQ and start tracking calls!"
                   ].map((step, i) => (
                     <div key={i} className="flex items-start gap-3 group/step">
                       <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-full flex items-center justify-center text-white text-xs font-bold group-hover/step:scale-110 transition-transform">
@@ -157,59 +148,7 @@ export default function DownloadPage() {
             {/* Right: App Preview */}
             <div className="relative">
               {/* Main Phone Mockup */}
-              <div className="relative mx-auto max-w-sm">
-                <div className="absolute inset-0 bg-gradient-to-r from-[#FF5211] to-orange-600 rounded-[3rem] blur-3xl opacity-20 animate-pulse"></div>
-                
-                <div className="relative bg-gray-900 rounded-[3rem] p-3 shadow-2xl border-8 border-gray-800">
-                  {/* Phone Notch */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-900 rounded-b-3xl"></div>
-                  
-                  {/* Screen */}
-                  <div className="bg-white rounded-[2.5rem] overflow-hidden">
-                    <div className="aspect-[9/19] bg-gradient-to-br from-[#FFF5EC] to-orange-50 p-6">
-                      {/* App Content Preview */}
-                      <div className="space-y-4">
-                        {/* Header */}
-                        <div className="flex items-center justify-between mb-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-xl"></div>
-                            <div>
-                              <h3 className="font-bold text-sm">Trackly</h3>
-                              <p className="text-xs text-gray-600">Call Tracker</p>
-                            </div>
-                          </div>
-                          <div className="w-8 h-8 bg-gray-100 rounded-lg"></div>
-                        </div>
-
-                        {/* Stats Cards */}
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="bg-white rounded-2xl p-3 shadow-sm">
-                            <p className="text-xs text-gray-600 mb-1">Today's Calls</p>
-                            <p className="text-2xl font-bold text-[#FF5211]">24</p>
-                          </div>
-                          <div className="bg-white rounded-2xl p-3 shadow-sm">
-                            <p className="text-xs text-gray-600 mb-1">Duration</p>
-                            <p className="text-2xl font-bold text-[#FF5211]">2.4h</p>
-                          </div>
-                        </div>
-
-                        {/* Call List */}
-                        <div className="space-y-2">
-                          {[1, 2, 3].map((i) => (
-                            <div key={i} className="bg-white rounded-xl p-3 shadow-sm flex items-center gap-3">
-                              <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full"></div>
-                              <div className="flex-1">
-                                <div className="h-2 bg-gray-200 rounded w-24 mb-2"></div>
-                                <div className="h-2 bg-gray-100 rounded w-16"></div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <PhonePreview />
 
               {/* Floating Feature Cards */}
               <div className="absolute -left-4 top-1/4 bg-white rounded-2xl p-4 shadow-xl border border-gray-100 max-w-[140px] animate-float">
@@ -292,7 +231,7 @@ export default function DownloadPage() {
 
             <div className="relative z-10">
               <h3 className="text-3xl md:text-4xl font-extrabold mb-4">Ready to Transform Your Sales?</h3>
-              <p className="text-xl mb-8 text-white/90">Join 200+ businesses already using Trackly</p>
+              <p className="text-xl mb-8 text-white/90">Join 500+ businesses already using FasterQ</p>
               
               <a
                 href={APK_URL}

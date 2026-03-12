@@ -140,7 +140,7 @@ export default function Benefits() {
 
             {/* Text content */}
             <div className="text-left">
-              <p className="text-sm font-semibold text-gray-900">Join 200+ sales teams</p>
+              <p className="text-sm font-semibold text-gray-900">Join 500+ sales teams</p>
               <p className="text-xs text-gray-500">Already tracking smarter with Trackly</p>
             </div>
           </div>

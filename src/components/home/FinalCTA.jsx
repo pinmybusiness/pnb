@@ -21,7 +21,7 @@ export default function FinalCTA() {
         <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-5 py-2 rounded-full text-sm font-bold border border-white/30 min-w-0 flex-1">
             <span className="flex-shrink-0">⚡</span>
-            <span className="truncate">Join 200+ professionals</span>
+            <span className="truncate">Join 500+ professionals</span>
           </div>
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-5 py-2 rounded-full text-sm font-bold border border-white/30 min-w-0 flex-1">
             <span className="flex-shrink-0">🇮🇳</span>

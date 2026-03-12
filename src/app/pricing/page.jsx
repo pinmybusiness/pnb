@@ -361,45 +361,6 @@ export default function PricingPage() {
     );
   };
 
-  // Refund Policy Component
-  const RefundPolicy = () => (
-    <div className="bg-white rounded-2xl p-6 border-2 border-gray-100 hover:border-[#FF5211]/30 transition-all duration-300">
-      <div className="flex items-center gap-2 mb-4">
-        <span className="w-8 h-8 bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 rounded-lg flex items-center justify-center">
-          <span className="text-[#FF5211] font-bold">₹</span>
-        </span>
-        <h3 className="font-bold text-lg text-gray-900">Refund Policy</h3>
-      </div>
-      
-      {/* Yearly only badge */}
-      <div className="mb-4 inline-block px-3 py-1 bg-blue-50 border border-blue-200 rounded-full">
-        <span className="text-xs font-bold text-blue-700 flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          Available for Yearly Plans Only
-        </span>
-      </div>
-
-      <div className="space-y-3 text-gray-600">
-        <p className="flex items-start gap-2">
-          <span className="text-[#FF5211] font-bold">•</span>
-          <span>Less than one month - 90% refund</span>
-        </p>
-        <p className="flex items-start gap-2">
-          <span className="text-[#FF5211] font-bold">•</span>
-          <span>Between 2 months and 3 months - 60% refund</span>
-        </p>
-        <p className="flex items-start gap-2">
-          <span className="text-[#FF5211] font-bold">•</span>
-          <span>More than 3 months - No refund</span>
-        </p>
-        <p className="text-sm text-orange-600 bg-orange-50 p-3 rounded-xl mt-2">
-          <span className="font-bold">Note:</span> Refunds apply only to Call Monitoring on yearly plans. 
-          Other payments and add-ons are non-refundable.
-        </p>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF5EC] via-orange-50/40 to-white relative overflow-hidden">
       {/* Animated Background */}
@@ -565,7 +526,7 @@ export default function PricingPage() {
         <div className="mb-16 md:mb-20">
           <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100">
             <div className="grid md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-200">
-              {[{ icon: Users, stat: "1,000+", label: "Active Teams" },
+              {[{ icon: Users, stat: "500+", label: "Active Teams" },
                 { icon: Zap, stat: "98%", label: "Uptime SLA" },
                 { icon: Shield, stat: "Bank-Level", label: "Security" },
                 { icon: Star, stat: "4.9/5", label: "Customer Rating" },
@@ -587,7 +548,7 @@ export default function PricingPage() {
         <TestimonialsSection />
 
         {/* FAQ and Refund Policy */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16 md:mb-20">
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto mb-16 md:mb-20">
           <div className="md:col-span-2">
             <div className="text-center mb-8">
               <span className="inline-block px-5 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-bold mb-4 border border-[#FF5211]/20 shadow-sm">
@@ -666,11 +627,6 @@ export default function PricingPage() {
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Refund Policy Sidebar */}
-          <div>
-            <RefundPolicy />
           </div>
         </div>
 

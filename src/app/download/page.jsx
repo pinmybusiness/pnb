@@ -151,7 +151,7 @@ export default function DownloadPage() {
               <PhonePreview />
 
               {/* Floating Feature Cards */}
-              <div className="absolute -left-4 top-1/4 bg-white rounded-2xl p-4 shadow-xl border border-gray-100 max-w-[140px] animate-float">
+              <div className="hidden md:block absolute -left-4 top-1/4 bg-white rounded-2xl p-4 shadow-xl border border-gray-100 max-w-[140px] animate-float">
                 <div className="flex items-center gap-2 mb-2">
                   <Zap className="w-4 h-4 text-yellow-500" />
                   <span className="text-xs font-bold">Real-time</span>
@@ -159,7 +159,7 @@ export default function DownloadPage() {
                 <p className="text-xs text-gray-600">Live call tracking</p>
               </div>
 
-              <div className="absolute -right-4 top-1/2 bg-white rounded-2xl p-4 shadow-xl border border-gray-100 max-w-[140px] animate-float" style={{animationDelay: '1s'}}>
+              <div className="hidden md:block absolute -right-4 top-1/2 bg-white rounded-2xl p-4 shadow-xl border border-gray-100 max-w-[140px] animate-float" style={{animationDelay: '1s'}}>
                 <div className="flex items-center gap-2 mb-2">
                   <Shield className="w-4 h-4 text-green-500" />
                   <span className="text-xs font-bold">Secure</span>

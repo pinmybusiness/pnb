@@ -72,12 +72,29 @@ const TeamManagementPage = () => {
   } = useTeamData(period, pagination.page, pagination.limit);
 
   // ✅ FIXED: useEffect instead of useState
-  useEffect(() => {
-    if (response?.pagination) {
-      console.log("Pagination from API:", response.pagination); // Debug log
-      setPagination(response.pagination);
-    }
-  }, [response]);
+// useEffect mein yeh add karo debug ke liye
+useEffect(() => {
+  if (response?.pagination) {
+    console.log("📊 Pagination from API:", {
+      page: response.pagination.page,
+      limit: response.pagination.limit,
+      total: response.pagination.total,
+      totalPages: response.pagination.totalPages,
+      hasMore: response.pagination.hasMore
+    });
+    
+    setPagination({
+      page: response.pagination.page,
+      limit: response.pagination.limit,
+      total: response.pagination.total,
+      pages: response.pagination.totalPages, // ✅ Ye important hai
+      hasMore: response.pagination.hasMore
+    });
+  }
+}, [response]);
+
+// Component mein yeh debug add karo
+console.log("📱 Frontend pagination state:", pagination);
 
   const teamData = response?.data || [];
 

@@ -1,5 +1,5 @@
 import PhonePreview from "@/components/PhonePreview";
-import { Download, Shield, Zap, Check, Star, Users, ArrowRight, CheckCircle, Clock, Phone } from "lucide-react";
+import { Download, Shield, Zap, Star, Users, ArrowRight, CheckCircle, Clock, Phone } from "lucide-react";
 
 const APK_URL = "https://cdn.fasterq.in/images/app/fasterq-3.0.2.apk";
 
@@ -128,6 +128,53 @@ export default function DownloadPage() {
                       <p className="text-sm text-gray-700 flex-1">{step}</p>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* App Setup Instructions */}
+              <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
+                <h4 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
+                  <Phone className="w-5 h-5 text-[#FF5211]" />
+                  Important Setup Instructions
+                </h4>
+
+                <div className="space-y-3 text-sm text-gray-700">
+
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-4 h-4 text-[#FF5211] mt-1 flex-shrink-0"/>
+                    <p>
+                      Select your <span className="font-semibold">Business SIM</span> inside the app so that FasterQ tracks the correct calls.
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-4 h-4 text-[#FF5211] mt-1 flex-shrink-0"/>
+                    <p>
+                      Turn <span className="font-semibold">Call Recording ON</span> in your phone’s call settings. Recording will only sync if call recording is enabled.
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-4 h-4 text-[#FF5211] mt-1 flex-shrink-0"/>
+                    <p>
+                      Unrestrict <span className="font-semibold">Battery Optimization</span> for FasterQ to ensure smooth background syncing.
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-4 h-4 text-[#FF5211] mt-1 flex-shrink-0"/>
+                    <p>
+                      Enable <span className="font-semibold">Background Auto-Start</span> so FasterQ can run continuously and track calls reliably.
+                    </p>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-4 h-4 text-[#FF5211] mt-1 flex-shrink-0"/>
+                    <p>
+                      Configure your <span className="font-semibold">Working Hours</span> so the app remains active during business hours for live sync.
+                    </p>
+                  </div>
+
                 </div>
               </div>
 

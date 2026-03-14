@@ -12,7 +12,7 @@ import {
 import { useSelector } from 'react-redux';
 
 const roleOptions = [
-  { value: 7, label: 'Team Manager', scope: 'branch' },
+  { value: 7, label: 'Manager', scope: 'branch' },
   { value: 8, label: 'Team Member', scope: 'branch' },
 ];
 
@@ -28,7 +28,7 @@ const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
     mobile: '',
     email: '',
     password: '',
-    role: 7,
+    role: 8,
     restaurant: '',
     branch: user?.branch || ''
   });
@@ -44,7 +44,7 @@ const UserForm = ({ onSuccess, onClose, restaurants = [], branches = [] }) => {
       setFormData(prev => ({
         ...prev,
         branch: user.branch || '',
-        role: 7
+        role: 8
       }));
     }
 

@@ -144,11 +144,6 @@ const BranchView = () => {
               >
                 <IconComponent className="h-4 w-4" />
                 {tab.name}
-                {tab.id === 'team' && (
-                  <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded-full px-2 py-0.5">
-                    {teamMembers.length}
-                  </span>
-                )}
               </button>
             );
           })}

@@ -5,21 +5,35 @@ import {
   Phone,
   LayoutDashboard,
   ChevronDown,
+  TrendingUp,
+  Users,
+  Key,
+  BarChart,
+  History,
 } from "lucide-react";
-import { HistoryScreen } from "./HistoryScreen";
+import RecordingScreen from "./RecordingScreen";
 import { DashboardScreen } from "./DashboardScreen";
 import TeamPerformanceScreen from "./TeamPerformanceScreen";
+import HistoryScreen from "./HistoryScreen";
+import IntegrationsDemoScreen from "./Integrations";
+import BranchTeamsDemoScreen from "./BranchTeamsDemoScreen";
+import CustomerIntelligenceDemoScreen from "./CustomerIntelligenceDemoScreen";
+import MissedCallsDemoScreen from "./MissedCallsDemoScreen";
 
 // ─── Color (orange primary) ─────────────────────────────────────────────
 export const ORANGE = "#ff5a1f";
-const ORANGE_LIGHT = "#fff1e6";
 const ORANGE_GRADIENT = "linear-gradient(135deg, #ff5a1f 0%, #ff8a5c 100%)";
 
 // ─── Sidebar menu items ────────────────────────────────────────────────
 const MENU_ITEMS = [
   { name: "Dashboard", icon: LayoutDashboard, id: "dashboard" },
-  { name: "Calls History", icon: Phone, id: "history" },
-  { name: "Team Performance", icon: Phone, id: "team_performance" },
+  { name: "Follow-Ups", icon: Phone, id: "folloups" },
+  { name: "Calls History", icon: History, id: "history" },
+  { name: "Team Performance", icon: Users, id: "team_performance" },
+  { name: "Recordings", icon: BarChart, id: "recordings" },
+  { name: "Customer Intelligence", icon: TrendingUp, id: "intelligence" },
+  { name: "Teams", icon: Users, id: "teams" },
+  { name: "Integrations", icon: Key, id: "integrations" },
 ];
 
 // ─── Main Dashboard Component ──────────────────────────────────────────
@@ -32,9 +46,9 @@ const DashboardContent = () => {
   };
 
   return (
-    <div className="flex h-full w-full bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-full w-full bg-gray-50 font-sans overflow-hidden relative">
       {/* ===== SIDEBAR - FIXED HEIGHT ===== */}
-      <aside className=" bg-white border-r border-gray-200 flex flex-col shadow-sm h-full flex-shrink-0">
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm h-full flex-shrink-0 relative z-20">
         {/* Logo area - fixed top */}
         <div className="h-20 flex items-center px-6 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-3">
@@ -66,9 +80,6 @@ const DashboardContent = () => {
               >
                 <Icon size={20} />
                 <span>{item.name}</span>
-                {item.name === "FollowUp Calls" && (
-                  <span className="ml-auto bg-red-100 text-red-600 text-xs px-2 py-1 rounded-full">6</span>
-                )}
               </button>
             );
           })}
@@ -90,9 +101,9 @@ const DashboardContent = () => {
       </aside>
 
       {/* ===== MAIN CONTENT - FIXED HEIGHT ===== */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden">
+      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* ===== TOP NAVBAR - FIXED ===== */}
-        <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0">
+        <header className="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-8 flex-shrink-0 relative z-30">
           <div>
             <h4 className="text-2xl font-bold text-gray-800">
               {MENU_ITEMS.find((m) => m.id === activeMenu)?.name || "Dashboard"}
@@ -110,12 +121,24 @@ const DashboardContent = () => {
         </header>
 
         {/* ===== CONTENT AREA - SCROLLABLE ===== */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {activeMenu === "dashboard" && <DashboardScreen searchQuery={searchQuery} />}
-          {activeMenu === "history" && <HistoryScreen searchQuery={searchQuery} />}
-          {activeMenu === "team_performance" && <TeamPerformanceScreen  />}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden relative" style={{ position: 'relative' }}>
+          <div className="p-4 min-h-full">
+            {activeMenu === "dashboard" && <DashboardScreen searchQuery={searchQuery} />}
+            {activeMenu === "folloups" && <MissedCallsDemoScreen />}
+            {activeMenu === "history" && <HistoryScreen />}
+            {activeMenu === "team_performance" && <TeamPerformanceScreen  />}
+            {activeMenu === "recordings" && <RecordingScreen  />}
+            {activeMenu === "intelligence" && <CustomerIntelligenceDemoScreen  />}
+            {activeMenu === "teams" && <BranchTeamsDemoScreen  />}
+            {activeMenu === "integrations" && <IntegrationsDemoScreen  />}
+          </div>
         </div>
       </main>
+
+      {/* Timeline Drawer Portal - Yeh laptop ke andar hi rahega */}
+      <div id="timeline-portal" className="absolute inset-0 pointer-events-none z-50">
+        {/* Portal container for timeline drawer - yeh content area ke upar overlay karega but laptop ke andar */}
+      </div>
     </div>
   );
 };
@@ -123,14 +146,14 @@ const DashboardContent = () => {
 // ─── Main Laptop Demo Component ─────────────────────────────────────────
 export default function CompleteLaptopDemo() {
   return (
-    <section className="relative w-full py-6  flex items-center justify-center">
+    <section className="relative w-full py-6 flex items-center justify-center">
       {/* Enhanced laptop mockup with 3D effect */}
       <div className="relative perspective-2000 z-20 w-full max-w-6xl mx-auto">
         <div className="relative">
           {/* Laptop screen with premium finish */}
           <div className="relative bg-gradient-to-br from-gray-900 to-gray-800 rounded-t-2xl rounded-b-sm p-3 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.1)_inset]">
             {/* Camera and sensor bar */}
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-gray-700 border border-gray-600"></div>
               <div className="w-10 h-1.5 bg-gray-800 rounded-full border border-gray-700"></div>
               <div className="w-2 h-2 rounded-full bg-gray-700 border border-gray-600"></div>
@@ -142,7 +165,7 @@ export default function CompleteLaptopDemo() {
               <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent pointer-events-none z-10"></div>
               
               {/* Screen content - FIXED HEIGHT */}
-              <div className="h-[600px] lg:h-[650px] overflow-hidden">
+              <div className="h-[600px] lg:h-[650px] overflow-hidden relative">
                 <DashboardContent />
               </div>
             </div>

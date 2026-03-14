@@ -46,7 +46,7 @@ export const DashboardScreen = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">Total Calls</p>
-              <p className="text-3xl font-bold text-gray-900">{totalCalls.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">{totalCalls.toLocaleString()}</p>
             </div>
             <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
               <Phone size={24} color={ORANGE} />
@@ -59,7 +59,7 @@ export const DashboardScreen = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">Answered</p>
-              <p className="text-3xl font-bold text-gray-900">{answered.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">{answered.toLocaleString()}</p>
 
             </div>
             <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center">
@@ -73,7 +73,7 @@ export const DashboardScreen = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">Missed</p>
-              <p className="text-3xl font-bold text-gray-900">{missed.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-gray-900">{missed.toLocaleString()}</p>
             </div>
             <div className="w-12 h-12 rounded-lg bg-rose-100 flex items-center justify-center">
               <UserX size={24} color="#f43f5e" />
@@ -86,7 +86,7 @@ export const DashboardScreen = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">Avg Duration</p>
-              <p className="text-3xl font-bold text-gray-900">{avgHandleTime}</p>
+              <p className="text-2xl font-bold text-gray-900">{avgHandleTime}</p>
             </div>
             <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
               <Clock size={24} color="#3b82f6" />
@@ -102,7 +102,7 @@ export const DashboardScreen = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">Inbound</p>
-              <p className="text-2xl font-bold text-gray-900">{inbound.toLocaleString()}</p>
+              <p className="text-xl font-bold text-gray-900">{inbound.toLocaleString()}</p>
               <p className="text-xs text-gray-400 mt-1">{inboundPercentage}% of total</p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
@@ -122,7 +122,7 @@ export const DashboardScreen = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">Outgoing</p>
-              <p className="text-2xl font-bold text-gray-900">{outbound.toLocaleString()}</p>
+              <p className="text-xl font-bold text-gray-900">{outbound.toLocaleString()}</p>
               <p className="text-xs text-gray-400 mt-1">{outboundPercentage}% of total</p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
@@ -142,7 +142,7 @@ export const DashboardScreen = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-gray-500 mb-1">Follow-ups</p>
-              <p className="text-2xl font-bold text-gray-900">{pendingFollowups}</p>
+              <p className="text-xl font-bold text-gray-900">{pendingFollowups}</p>
               <p className="text-xs text-amber-600 mt-1">Requires attention</p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center">
@@ -160,8 +160,8 @@ export const DashboardScreen = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-sm text-gray-500 mb-1">Spam Numbers</p>
-              <p className="text-2xl font-bold text-gray-900">{spamNumbers}</p>
+              <p className="text-sm text-gray-500 mb-1">Spams</p>
+              <p className="text-xl font-bold text-gray-900">{spamNumbers}</p>
               <p className="text-xs text-gray-400 mt-1">Blocked this month</p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
@@ -195,7 +195,7 @@ export const DashboardScreen = () => {
             </button>
             <button className="text-left px-4 py-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors flex items-center justify-between">
               <div>
-                <span className="font-medium text-gray-800">Spam Numbers</span>
+                <span className="font-medium text-gray-800">Spams</span>
                 <p className="text-xs text-gray-400 mt-1">Review blocked calls</p>
               </div>
               <span className="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full text-xs font-medium">{spamNumbers}</span>

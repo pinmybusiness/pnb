@@ -88,45 +88,54 @@ const TeamTab = ({ branchId, teamMembers, setTeamMembers }) => {
     fetchTeamMembers();
   }, [filters]);
 
-  const fetchTeamMembers = async () => {
-    try {
-      setTeamLoading(true);
-      const res = await apiClient.get(`/api/teams?branch=${branchId}`);
-
-      if (res.data.success) {
-        let filteredMembers = res.data.data;
-
-        if (filters.role) {
-          filteredMembers = filteredMembers.filter((member) =>
-            member.roleName.toLowerCase().includes(filters.role.toLowerCase())
-          );
-        }
-
-        if (filters.status) {
-          filteredMembers = filteredMembers.filter((member) =>
-            member.isActive ? filters.status === 'active' : filters.status === 'inactive'
-          );
-        }
-
-        if (filters.search) {
-          const searchTerm = filters.search.toLowerCase();
-          filteredMembers = filteredMembers.filter(
-            (member) =>
-              member.name.toLowerCase().includes(searchTerm) ||
-              member.email.toLowerCase().includes(searchTerm) ||
-              member.mobile.includes(searchTerm)
-          );
-        }
-
-        setTeamMembers(filteredMembers);
+const fetchTeamMembers = async () => {
+  try {
+    setTeamLoading(true);
+    // Fix: Use the correct endpoint with pagination params
+    const res = await apiClient.get(`/api/teams/branch/${branchId}`, {
+      params: {
+        page: 1, // You can add pagination state if needed
+        limit: 20 // You can make this configurable
       }
-    } catch (error) {
-      toast.error('Failed to fetch team members');
-      console.error('Fetch team error:', error);
-    } finally {
-      setTeamLoading(false);
+    });
+
+    if (res.data.success) {
+      let filteredMembers = res.data.data;
+
+      if (filters.role) {
+        filteredMembers = filteredMembers.filter((member) =>
+          member.roleName?.toLowerCase().includes(filters.role.toLowerCase())
+        );
+      }
+
+      if (filters.status) {
+        filteredMembers = filteredMembers.filter((member) =>
+          member.isActive ? filters.status === 'active' : filters.status === 'inactive'
+        );
+      }
+
+      if (filters.search) {
+        const searchTerm = filters.search.toLowerCase();
+        filteredMembers = filteredMembers.filter(
+          (member) =>
+            member.name?.toLowerCase().includes(searchTerm) ||
+            member.email?.toLowerCase().includes(searchTerm) ||
+            member.mobile?.includes(searchTerm)
+        );
+      }
+
+      setTeamMembers(filteredMembers);
+      
+      // If you want to use pagination info
+      console.log('Pagination:', res.data.pagination);
     }
-  };
+  } catch (error) {
+    toast.error('Failed to fetch team members');
+    console.error('Fetch team error:', error);
+  } finally {
+    setTeamLoading(false);
+  }
+};
 
   // 🔹 ADD THIS FUNCTION - OPEN ASSIGN PLAN MODAL
   const openAssignPlanModal = async (memberId) => {

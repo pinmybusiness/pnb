@@ -253,7 +253,7 @@ export const HistoryScreen = ({ searchQuery = "" }) => {
 
   // Get sort indicator
   const getSortIndicator = (key) => {
-    if (sortConfig.key !== key) return "↕️";
+    if (sortConfig.key !== key) return "↕";
     return sortConfig.direction === "asc" ? "↑" : "↓";
   };
 

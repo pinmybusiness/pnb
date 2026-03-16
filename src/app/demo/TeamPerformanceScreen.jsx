@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Download, MoreVertical, Users, Phone, PhoneOutgoing, PhoneIncoming, PhoneMissed, CheckCircle, XCircle, Eye } from "lucide-react";
+import { Search, Download, Eye, PhoneOutgoing, PhoneIncoming, PhoneMissed, CheckCircle } from "lucide-react";
+import MemberDetailsModal from "./MemberDetailsModal";
+import * as XLSX from 'xlsx';
 
 // ─── Orange color constant ─────────────────────────────────────────────
 const ORANGE = "#ff5a1f";
@@ -10,6 +12,7 @@ const ORANGE = "#ff5a1f";
 const TEAM_DATA = [
   {
     id: 1,
+    userId: "user_123",
     name: "Neha",
     initials: "N",
     totalCalls: 237,
@@ -19,9 +22,14 @@ const TEAM_DATA = [
     missed: 37,
     status: "active",
     avatarColor: "bg-blue-600",
+    mobile: "+91 98765 43210",
+    role: "Senior Agent",
+    email: "neha@fasterq.in",
+    joinDate: "2025-12-15",
   },
   {
     id: 2,
+    userId: "user_456",
     name: "Amit",
     initials: "A",
     totalCalls: 137,
@@ -31,9 +39,14 @@ const TEAM_DATA = [
     missed: 19,
     status: "active",
     avatarColor: "bg-green-600",
+    mobile: "+91 87654 32109",
+    role: "Team Lead",
+    email: "amit@fasterq.in",
+    joinDate: "2025-10-10",
   },
   {
     id: 3,
+    userId: "user_789",
     name: "Rohit",
     initials: "R",
     totalCalls: 11,
@@ -43,17 +56,23 @@ const TEAM_DATA = [
     missed: 1,
     status: "inactive",
     avatarColor: "bg-gray-500",
+    mobile: "+91 76543 21098",
+    role: "Junior Agent",
+    email: "rohit@fasterq.in",
+    joinDate: "2026-01-05",
   },
 ];
 
 // ─── Team Performance Screen ──────────────────────────────────────────
 export const TeamPerformanceScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [showExportOptions, setShowExportOptions] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filter team members based on search
   const filteredTeam = TEAM_DATA.filter(member => 
-    member.name.toLowerCase().includes(searchQuery.toLowerCase())
+    member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    member.mobile.includes(searchQuery)
   );
 
   // Calculate team totals
@@ -65,49 +84,78 @@ export const TeamPerformanceScreen = () => {
     missed: TEAM_DATA.reduce((sum, member) => sum + member.missed, 0),
   };
 
+  // Handle eye icon click
+  const handleViewDetails = (member) => {
+    setSelectedMember(member);
+    setIsModalOpen(true);
+  };
+
+  // Handle close modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedMember(null);
+  };
+
+  // Export to Excel
+  const exportToExcel = () => {
+    // Prepare data for export
+    const exportData = filteredTeam.map(member => ({
+      'Team Member': member.name,
+      'Role': member.role,
+      'Mobile': member.mobile,
+      'Email': member.email,
+      'Total Calls': member.totalCalls,
+      'Outbound': member.outgoing,
+      'Connected': member.connected,
+      'Inbound': member.incoming,
+      'Missed': member.missed,
+      'Success Rate': member.totalCalls > 0 
+        ? `${Math.round((member.connected / member.totalCalls) * 100)}%` 
+        : '0%',
+      'Status': member.status === 'active' ? 'Active' : 'Inactive',
+      'Join Date': member.joinDate
+    }));
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Team Performance");
+    
+    // Generate filename with current date
+    const date = new Date();
+    const filename = `team_performance_${date.toISOString().split('T')[0]}.xlsx`;
+    
+    // Save file
+    XLSX.writeFile(wb, filename);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-                {/* Search Bar */}
+        {/* Search Bar */}
         <div className="relative">
-            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
+          <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
             type="text"
             placeholder="Search by name or mobile number"
             className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-200 focus:border-orange-400"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          />
         </div>
 
-        <div className="relative">
-          <button
-            onClick={() => setShowExportOptions(!showExportOptions)}
-            className="flex items-center gap-2 px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <Download size={16} />
-            Show Export Options
-          </button>
-          
-          {/* Export dropdown */}
-          {showExportOptions && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-              <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                Export as CSV
-              </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                Export as Excel
-              </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                Print Report
-              </button>
-            </div>
-          )}
-        </div>
-
+        {/* Export Button */}
+        <button
+          onClick={exportToExcel}
+          className="flex items-center gap-2 px-4 py-2 text-sm bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <Download size={16} />
+          Export
+        </button>
       </div>
-
 
       {/* Team Members Table */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -138,6 +186,7 @@ export const TeamPerformanceScreen = () => {
                       </div>
                       <div>
                         <span className="font-medium text-gray-900">{member.name}</span>
+                        <span className="text-xs text-gray-400 block">{member.role}</span>
                       </div>
                     </div>
                   </td>
@@ -181,8 +230,12 @@ export const TeamPerformanceScreen = () => {
 
                   {/* Actions */}
                   <td className="py-4 px-3">
-                    <button className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                      <Eye size={18} className="text-gray-400 hover:text-gray-600" />
+                    <button 
+                      onClick={() => handleViewDetails(member)}
+                      className="p-1 hover:bg-gray-100 rounded-lg transition-colors group"
+                      title="View Member Details"
+                    >
+                      <Eye size={18} className="text-gray-400 group-hover:text-orange-600 transition-colors" />
                     </button>
                   </td>
                 </tr>
@@ -204,6 +257,13 @@ export const TeamPerformanceScreen = () => {
           </table>
         </div>
       </div>
+
+      {/* Member Details Modal */}
+      <MemberDetailsModal
+        member={selectedMember}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };

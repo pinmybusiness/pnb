@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Phone, X, PhoneCall, PhoneMissed, PhoneIncoming, 
   PhoneOutgoing, Clock, History, Loader2, Calendar,
   User, ChevronRight
 } from "lucide-react";
+import ReactDOM from 'react-dom';
 
 // ─── Orange color constant ─────────────────────────────────────────────
 const ORANGE = "#ff5a1f";
@@ -31,7 +32,15 @@ const TimelineDrawer = ({
   customerName, 
   isLoading 
 }) => {
-  if (!isOpen) return null;
+  const [portalContainer, setPortalContainer] = useState(null);
+
+  useEffect(() => {
+    // Find the timeline portal container
+    const container = document.getElementById('timeline-portal');
+    setPortalContainer(container);
+  }, []);
+
+  if (!isOpen || !portalContainer) return null;
 
   // Calculate stats
   const stats = {
@@ -43,8 +52,8 @@ const TimelineDrawer = ({
       : 0
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/40 z-[100] flex justify-end">
+  const drawerContent = (
+    <div className="absolute inset-0 bg-black/40 z-[100] flex justify-end pointer-events-auto">
       <div className="w-full max-w-md bg-white h-full overflow-y-auto animate-slide-left shadow-2xl">
         {/* Header with Customer Info */}
         <div className="bg-gradient-to-r from-orange-600 to-orange-500 p-6 text-white">
@@ -208,6 +217,8 @@ const TimelineDrawer = ({
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(drawerContent, portalContainer);
 };
 
 export default TimelineDrawer;

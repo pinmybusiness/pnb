@@ -1,7 +1,7 @@
 import PhonePreview from "@/components/PhonePreview";
 import { Download, Shield, Zap, Star, Users, ArrowRight, CheckCircle, Clock, Phone } from "lucide-react";
 
-const APK_URL = "https://cdn.fasterq.in/images/app/fasterq-3.0.3.apk";
+const APK_URL = "https://cdn.fasterq.in/images/app/wa/fasterq-3.0.5.apk";
 
 export default function DownloadPage() {
   return (
@@ -38,11 +38,12 @@ export default function DownloadPage() {
             </span>
             
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-4 md:mb-6 leading-tight">
-              Download <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">FasterQ</span> App
+              Download <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">FasterQ WhatsApp + SIM Call Tracking</span> App
             </h1>
             
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed mb-8">
-              Smart call tracking for your business. Track calls, follow-ups & conversions — all in one place.
+              Track SIM Calls + WhatsApp Calls in One Powerful App.
+              Never miss a lead - monitor every conversation, follow-up & conversion in real-time.
             </p>
 
             {/* Trust Indicators */}
@@ -77,7 +78,7 @@ export default function DownloadPage() {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-gray-900">Android App</h3>
-                      <p className="text-sm text-gray-600">Version 3.0.3 • 7.7 MB</p>
+                      <p className="text-sm text-gray-600">Version 3.0.5 • 7.7 MB</p>
                     </div>
                   </div>
 
@@ -91,13 +92,10 @@ export default function DownloadPage() {
                     <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                   </a>
 
-
-                    <div className="flex items-center gap-3">
-                      <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-bold text-blue-900 text-sm mb-1">Coming Soon on Play Store</p>
-                      </div>
-                    </div>
+<p className="text-xs text-gray-500 text-center mt-3">
+  *This app is not affiliated with WhatsApp or Meta. It only tracks call activity on your device with user permission.
+</p>
+                    
                 </div>
               </div>
 
@@ -192,6 +190,13 @@ export default function DownloadPage() {
                 Set your <span className="font-semibold text-gray-900">Working Hours</span> in the app so FasterQ remains active in the foreground during business hours for live syncing. Calls are tracked 24/7.
               </p>
             </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle className="w-5 h-5 text-[#FF5211] mt-0.5 flex-shrink-0"/>
+              <p>
+                Enable <span className="font-semibold text-gray-900">required permissions</span> for WhatsApp tracking inside the app settings.
+              </p>
+                
+            </div>
 
           </div>
         </div>
@@ -212,12 +217,12 @@ export default function DownloadPage() {
 
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { icon: Phone, title: "Auto Call Logging", desc: "Every call tracked automatically" },
-                { icon: Zap, title: "Real-time Sync", desc: "Instant data synchronization" },
-                { icon: Shield, title: "Bank-Level Security", desc: "Your data stays protected" },
-                { icon: Users, title: "Team Management", desc: "Monitor entire team activity" },
-                { icon: Star, title: "Analytics Dashboard", desc: "Deep insights & reports" },
-                { icon: CheckCircle, title: "Easy Setup", desc: "Ready in under 2 minutes" }
+                { icon: Phone, title: "SIM Call Tracking", desc: "Track all incoming & outgoing calls automatically" },
+                { icon: Phone, title: "WhatsApp Call Tracking", desc: "Monitor WhatsApp calls with timestamps & logs" },
+                { icon: Zap, title: "Real-time Sync", desc: "Instant data sync to dashboard" },
+                { icon: Shield, title: "Secure Data", desc: "Your data stays protected & private" },
+                { icon: Users, title: "Team Monitoring", desc: "Track team performance easily" },
+                { icon: Star, title: "Lead Insights", desc: "Know which calls convert into sales" }
               ].map((feature, i) => (
                 <div key={i} className="group bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 hover:border-[#FF5211]/30 hover:-translate-y-1">
                   <div className="w-12 h-12 bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">

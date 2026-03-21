@@ -38,7 +38,7 @@ const CtaButton = ({
       : `bg-primary text-white hover:bg-primary/90`;
 
   const baseClasses = `
-    inline-flex items-center justify-center font-semibold border border-2
+    inline-flex items-center justify-center font-semibold border border-2 hover:scale-105
     ${sizeClasses} ${variantClasses} ${className}
   `;
 

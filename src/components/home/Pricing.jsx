@@ -40,12 +40,6 @@ export default function Pricing() {
                 </div>
               </div>
               <div className="mb-8">
-                {/* <div className="flex items-center justify-center gap-3 mb-2">
-                  <span className="text-2xl text-gray-400 line-through font-semibold">₹299</span>
-                  <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
-                    Save 67%
-                  </div>
-                </div> */}
                 <div className="flex items-baseline justify-center gap-2">
                   <span className="text-gray-600 text-xl">₹</span>
                   <span className="text-7xl font-extrabold bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">99</span>

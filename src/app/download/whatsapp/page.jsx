@@ -92,10 +92,10 @@ export default function DownloadPage() {
                     <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                   </a>
 
-<p className="text-xs text-gray-500 text-center mt-3">
-  *This app is not affiliated with WhatsApp or Meta. It only tracks call activity on your device with user permission.
-</p>
-                    
+                    <p className="text-xs text-gray-500 text-center mt-3">
+                      *This app is not affiliated with WhatsApp or Meta. It only tracks call activity on your device with user permission.
+                    </p>
+                                        
                 </div>
               </div>
 

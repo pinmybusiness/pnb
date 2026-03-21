@@ -309,7 +309,10 @@ export default function LandingPage() {
 
       <PricingWidget />
 
-      <FAQWidget faqs={faqs} />
+    <FAQWidget
+    faqs={faqs}
+    subtitle="Got questions? We've got answers. Chat with our team anytime."
+    />
 
       <FinalCTA
         title="Stop Losing Sales Calls Today"

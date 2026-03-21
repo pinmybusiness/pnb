@@ -5,7 +5,6 @@ import { Toaster } from "react-hot-toast";
 import ClientHeaderFooter from "./ClientHeaderFooter";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import Script from "next/script";
-import ChatWidget from "@/components/ChatWidget";
 
 export const metadata = {
   title: "Call Tracking Software India | Track & Record All Sales Calls",
@@ -21,8 +20,40 @@ export const metadata = {
     statusBarStyle: 'default',
     title: 'FasterQ',
   },
+   openGraph: {
+    title: "Call Tracking Software India | FasterQ",
+    description:
+      "Track & record all sales calls automatically. Works on SIM-based calls. No VoIP required.",
+    url: "https://www.fasterq.in", 
+    siteName: "FasterQ",
+    images: [
+      {
+        url: "https://www.fasterq.in/images/og-image.webp",
+        width: 1200,
+        height: 630,
+        alt: "FasterQ Call Tracking",
+      },
+    ],
+    type: "website",
+  },
+
+  // for WhatsApp / Twitter
+  twitter: {
+    card: "summary_large_image",
+    title: "Call Tracking Software India | FasterQ",
+    description:
+      "Track & record all sales calls automatically. No VoIP needed.",
+    images: ["https://www.fasterq.in/images/og-image.webp"],
+  },
+
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "FasterQ",
+  },
+
   viewport: {
-    width: 'device-width',
+    width: "device-width",
     initialScale: 1,
     maximumScale: 1,
     userScalable: false,

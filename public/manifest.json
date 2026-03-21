@@ -7,7 +7,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "/dashboard/tracking/missed-calls",
+  "start_url": "/dashboard",
   "categories": ["business", "productivity"],
   "icons": [
     {

@@ -3,7 +3,7 @@ import CtaButton from "../components/CtaButton";
 export default function FinalCTA({
   title = "Never Miss a Lead Again",
   subtitle = "Track every call, get team call reports on WhatsApp, and never miss a lead",
-  note = "Start — no credit card required.",
+  note = "Start - no credit card required.",
   primaryText = "Start for ₹99/month",
   primaryLink = "/contact",
   secondaryText = "Talk to Our Team",
@@ -69,7 +69,7 @@ export default function FinalCTA({
             text={secondaryText}
             size="xl"
             variant="outline"
-            className="bg-transparent text-white px-10 py-5 rounded-full font-bold text-lg border-2 border-white hover:text-[#FF5211] hover:bg-white transition-all hover:scale-105"
+            className="bg-transparent text-white px-10 py-5 rounded-full font-bold text-lg border-2 border-white hover:!text-[#FF5211] hover:bg-white transition-all hover:scale-105"
           />
         </div>
 

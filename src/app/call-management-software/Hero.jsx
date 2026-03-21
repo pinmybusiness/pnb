@@ -1,7 +1,5 @@
-"use client"
 import React from 'react';
 import Link from 'next/link';
-import CtaButton from '@/components/CtaButton';
 
 const agents = [
   { name: 'Rahul K.', width: '88%', count: '74', delay: '0.8s' },
@@ -188,14 +186,6 @@ export default function HeroSection() {
                         animation: `barGrow 0.6s ease ${0.3 + idx * 0.05}s both`,
                         transformOrigin: 'bottom',
                       }}
-                      onMouseEnter={(e) => {
-                        const originalHeight = h;
-                        e.currentTarget.style.height = `calc(${originalHeight} * 0.85)`;
-                      }}
-                      onMouseLeave={(e) => {
-                        const originalHeight = h;
-                        e.currentTarget.style.height = `calc(${originalHeight} * 0.7)`;
-                      }}
                     />
                   ))}
                 </div>
@@ -221,36 +211,6 @@ export default function HeroSection() {
         </div>
       </div>
 
-      {/* ── Keyframes ── */}
-      <style jsx>{`
-        @keyframes pulse-slow {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50%       { transform: scale(1.1); opacity: 0.7; }
-        }
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shimmer {
-          0%   { background-position: -200% center; }
-          100% { background-position:  200% center; }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50%      { transform: translateY(-8px); }
-        }
-        @keyframes barGrow {
-          from { width: 0; height: 0; opacity: 0; }
-          to   { width: var(--w); height: var(--h); opacity: 1; }
-        }
-        
-        /* Mobile optimizations */
-        @media (max-width: 640px) {
-          .stats-card {
-            padding: 0.5rem;
-          }
-        }
-      `}</style>
     </section>
   );
 }

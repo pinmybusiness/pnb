@@ -15,17 +15,7 @@ import {
   GraduationCap,
   ShoppingBag,
   Utensils,
-  Star,
-  ChevronDown,
-  IndianRupee,
-  Wrench,
-  Flag,
-  Play,
-  ArrowRight,
-  PhoneCall,
   Users,
-  Calendar,
-  Clock,
   Phone,
   BarChart3,
 } from "lucide-react";
@@ -40,6 +30,50 @@ import FeaturesWidget from "@/widget/Features";
 import TrustBarWidget from "@/widget/TrustBar";
 import ProblemSolutionWidget from "@/widget/ProblemSolution";
 import Hero from "./Hero";
+
+export const metadata = {
+  title: "Call Management Software India | Fasterq",
+
+  description:
+    "Call management software India for sales teams. Track SIM calls, WhatsApp reports & dashboards — just ₹99/month. Start free trial today.",
+
+  keywords: [
+    "call management software India",
+    "SIM call tracking software India",
+    "call tracking software for sales team",
+    "WhatsApp call tracking India",
+    "sales call monitoring software India",
+  ],
+
+  alternates: {
+    canonical: "https://www.fasterq.in/call-management-software",
+  },
+
+  openGraph: {
+    title: "Call Management Software India | Fasterq",
+    description:
+      "Track every sales call with SIM-based tracking, WhatsApp reports & dashboard — only ₹99/month.",
+    url: "https://www.fasterq.in/call-management-software",
+    siteName: "Fasterq",
+    type: "website",
+    images: [
+      {
+        url: "https://www.fasterq.in/images/og-image.webp",
+        width: 1200,
+        height: 630,
+        alt: "Fasterq Call Management Software India",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "Call Management Software India | Fasterq",
+    description:
+      "Track calls, get WhatsApp reports & dashboards — ₹99/month.",
+    images: ["https://www.fasterq.in/images/og-image.webp"],
+  },
+};
 
 const testimonials = [
   {
@@ -227,59 +261,63 @@ const solutions = [
   "Full visibility",
 ];
 
+/* ✅ MAIN PAGE */
 export default function LandingPage() {
+
   return (
     <>
-      {/* SEO */}
-      <title>Fasterq | India's Smartest Call Management Software — ₹99/month, No VoIP</title>
-      <meta
-        name="description"
-        content="Fasterq is India's smartest call management software for sales teams. Track SIM calls, get WhatsApp reports & live dashboards — starting at just ₹99/month. No hardware. No VoIP."
+     {/* Breadcrumb Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: "https://www.fasterq.in",
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Call Management Software",
+                item: "https://www.fasterq.in/call-management-software",
+              },
+            ],
+          }),
+        }}
       />
-      <meta name="keywords" content="call management software India, SIM call tracking app India, call tracking software sales teams" />
 
-      {/* HERO SECTION */}
-      <Hero/>
+      <Hero />
 
-      {/* TRUST BAR */}
-     <TrustBarWidget stats={statsData} />
+      <TrustBarWidget stats={statsData} />
 
-      {/* PROBLEM VS SOLUTION */}
-<ProblemSolutionWidget
-  problems={problems}
-  solutions={solutions}
-/>
+      <ProblemSolutionWidget problems={problems} solutions={solutions} />
 
-      {/* FEATURES */}
-<FeaturesWidget features={featuresData} />
+      <FeaturesWidget features={featuresData} />
 
-      {/* HOW IT WORKS */}
-<HowItWorksWidget steps={stepsData} />
+      <HowItWorksWidget steps={stepsData} />
 
-      {/* INDUSTRIES */}
-<IndustriesWidget industries={industriesData} />
+      <IndustriesWidget industries={industriesData} />
 
-      {/* TESTIMONIALS */}
-<TestimonialsWidget testimonials={testimonials} />
+      <TestimonialsWidget testimonials={testimonials} />
 
-      {/* COMPARISON TABLE */}
-<ComparisonWidget columns={columns} rows={rows} />
-<PricingWidget />
+      <ComparisonWidget columns={columns} rows={rows} />
 
-      {/* FAQ */}
-        <FAQWidget
-        faqs={faqs}
-        subtitle="Got questions? We've got answers. If you don't find what you're looking for, chat with our team."
-        />
+      <PricingWidget />
 
-    <FinalCTA
-    title="Stop Losing Sales Calls Today"
-    subtitle="Track every call & boost your conversions instantly"
-    primaryText="Start for ₹99/month"
-    primaryLink="/start"
-    secondaryText="Call Now"
-    secondaryLink="tel:+919798288748"
-    />
+      <FAQWidget faqs={faqs} />
+
+      <FinalCTA
+        title="Stop Losing Sales Calls Today"
+        subtitle="Track every call & boost conversions"
+        primaryText="Start for ₹99/month"
+        secondaryText="Call Now"
+        secondaryLink="tel:+919798288748"
+      />
     </>
   );
 }

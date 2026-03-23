@@ -30,7 +30,6 @@ import StatusBadge from "@/components/calls/StatusBadge";
 
 // ---------- REUSABLE COMPONENTS ----------
 const FollowUpBadge = ({ followUp }) => {
-  const attempts = followUp?.attempts || 0;
   const status = followUp?.status || 0;
 
   const followUpConfig = {
@@ -45,7 +44,7 @@ const FollowUpBadge = ({ followUp }) => {
 
   return (
     <Badge className={`px-2 py-1 text-xs font-medium rounded-full ${className}`}>
-      {attempts > 0 ? `${label} (${attempts})` : label}
+      {label}
     </Badge>
   );
 };
@@ -89,7 +88,7 @@ const MissedCalls = () => {
       inbound: call.inbound,
       startTime: call.startTime,
       isSpam: call.isSpam,
-      followUp: call.followUp || { status: 1, attempts: 0 }
+      followUp: call.followUp || { status: 1}
     };
   }, []);
 

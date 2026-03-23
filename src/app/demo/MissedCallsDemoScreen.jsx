@@ -109,7 +109,6 @@ const StatusBadge = ({ answered }) => (
 
 // ─── FollowUpBadge Component ──────────────────────────────────────
 const FollowUpBadge = ({ followUp }) => {
-  const attempts = followUp?.attempts || 0;
   const status = followUp?.status || 0;
 
   const followUpConfig = {
@@ -124,7 +123,7 @@ const FollowUpBadge = ({ followUp }) => {
 
   return (
     <Badge variant={variant}>
-      {attempts > 0 ? `${label} (${attempts})` : label}
+      {label}
     </Badge>
   );
 };
@@ -145,7 +144,7 @@ const MISSED_CALLS_DATA = [
     inbound: true,
     startTime: "2026-03-14T10:30:00",
     isSpam: false,
-    followUp: { status: 1, attempts: 1 }
+    followUp: { status: 1 }
   },
   {
     id: "+919876543211",
@@ -161,7 +160,7 @@ const MISSED_CALLS_DATA = [
     inbound: true,
     startTime: "2026-03-14T09:15:00",
     isSpam: false,
-    followUp: { status: 1, attempts: 1 }
+    followUp: { status: 1 }
   },
   {
     id: "+919876543212",
@@ -177,7 +176,7 @@ const MISSED_CALLS_DATA = [
     inbound: true,
     startTime: "2026-03-13T16:45:00",
     isSpam: false,
-    followUp: { status: 1, attempts: 1}
+    followUp: { status: 1}
   },
   {
     id: "+919876543213",
@@ -193,7 +192,7 @@ const MISSED_CALLS_DATA = [
     inbound: true,
     startTime: "2026-03-13T14:20:00",
     isSpam: false,
-    followUp: { status: 1, attempts: 0 }
+    followUp: { status: 1 }
   },
   {
     id: "+919876543214",
@@ -209,7 +208,7 @@ const MISSED_CALLS_DATA = [
     inbound: true,
     startTime: "2026-03-12T18:30:00",
     isSpam: false,
-    followUp: { status: 2, attempts: 1 }
+    followUp: { status: 2 }
   },
   {
     id: "+919876543215",
@@ -225,7 +224,7 @@ const MISSED_CALLS_DATA = [
     inbound: true,
     startTime: "2026-03-12T11:10:00",
     isSpam: false,
-    followUp: { status: 1, attempts: 0 }
+    followUp: { status: 1 }
   },
   {
     id: "+919876543216",
@@ -241,7 +240,7 @@ const MISSED_CALLS_DATA = [
     inbound: true,
     startTime: "2026-03-11T15:55:00",
     isSpam: false,
-    followUp: { status: 3, attempts: 2 }
+    followUp: { status: 3 }
   },
   {
     id: "+919876543217",
@@ -257,7 +256,7 @@ const MISSED_CALLS_DATA = [
     inbound: true,
     startTime: "2026-03-11T10:30:00",
     isSpam: true,
-    followUp: { status: 4, attempts: 0 }
+    followUp: { status: 4 }
   },
 ];
 
@@ -324,7 +323,7 @@ export default function MissedCallsDemoScreen() {
     setTimeout(() => {
       setCalls(prev => prev.map(call => 
         call.id === callId 
-          ? { ...call, followUp: { status: 3, attempts: call.followUp.attempts } }
+          ? { ...call, followUp: { status: 3 } }
           : call
       ));
       setResolvingCallId(null);
@@ -336,7 +335,7 @@ export default function MissedCallsDemoScreen() {
     
     setCalls(prev => prev.map(call => 
       call.id === callId 
-        ? { ...call, isSpam: true, followUp: { status: 4, attempts: 0 } }
+        ? { ...call, isSpam: true, followUp: { status: 4 } }
         : call
     ));
   };

@@ -355,28 +355,33 @@ const CallTracking = () => {
                            <div className="flex flex-col">
                           <span className="text-xs sm:text-sm font-medium text-gray-900">{call.receiver.name}</span>
 
-                          {/* 🔥 SIM INFO DEBUG */}
-                          {call.simInfo && (
-                          <span className="text-[10px] text-gray-400">
-                              
-                              {/* 🔥 LABEL FIRST (user friendly) */}
-                              {call.simInfo.simLabel && (
-                                <span className="font-medium text-gray-500">
-                                  {call.simInfo.simLabel}
-                                </span>
-                              )}
+{/* SIM INFO DEBUG */}
+{call.simInfo && (
+  <span className="text-[10px] text-gray-400">
+    
+    {/* LABEL FIRST */}
+    {call.simInfo.simLabel && (
+      <span className="font-medium text-gray-500">
+        {call.simInfo.simLabel}
+      </span>
+    )}
 
-                              {/* fallback if no label */}
-                              {!call.simInfo.simLabel && call.simInfo.subscriptionId && (
-                                <>SIM: {call.simInfo.subscriptionId}</>
-                              )}
+    {/* fallback */}
+    {!call.simInfo.simLabel && call.simInfo.subscriptionId && (
+      <>SIM: {call.simInfo.subscriptionId}</>
+    )}
 
-                              {/* extra debug info */}
-                              {call.simInfo.simSlot !== undefined && call.simInfo.simSlot >= 0 && (
-                                <> | Slot: {call.simInfo.simSlot}</>
-                              )}
-                            </span>
-                          )}
+    {/* SLOT safe */}
+    {(() => {
+      const slot = Number(call.simInfo?.simSlot);
+      if (!isNaN(slot) && slot >= 0) {
+        return <> | Slot: {slot}</>;
+      }
+      return null;
+    })()}
+    
+  </span>
+)}
                         </div>
                         </div>
                       </TableCell>

@@ -367,12 +367,12 @@ const CallTracking = () => {
                               )}
 
                               {/* fallback if no label */}
-                              {!call.simInfo.simLabel && call.simInfo.subscriptionId && (
+                              {/* {!call.simInfo.simLabel && call.simInfo.subscriptionId && (
                                 <>SIM: {call.simInfo.subscriptionId}</>
-                              )}
+                              )} */}
 
                               {/* extra debug info */}
-                              {call.simInfo.simSlot !== undefined && !call.simInfo.simLabel && call.simInfo.subscriptionId  && (
+                              {call.simInfo.simSlot !== undefined && call.simInfo.simLabel && call.simInfo.subscriptionId  && (
                                 <> | Slot: {call.simInfo.simSlot}</>
                               )}
                             </span>

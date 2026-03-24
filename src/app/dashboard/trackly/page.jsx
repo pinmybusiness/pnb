@@ -372,7 +372,7 @@ const CallTracking = () => {
                               )}
 
                               {/* extra debug info */}
-                              {call.simInfo.simSlot !== undefined && (
+                              {call.simInfo.simSlot !== undefined && call.simInfo.simSlot >= 0 && (
                                 <> | Slot: {call.simInfo.simSlot}</>
                               )}
                             </span>

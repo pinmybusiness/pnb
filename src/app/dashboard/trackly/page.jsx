@@ -357,21 +357,26 @@ const CallTracking = () => {
 
                           {/* 🔥 SIM INFO DEBUG */}
                           {call.simInfo && (
-  <span className="text-[10px] text-gray-400">
-    
-    {/* 🔥 LABEL FIRST (user friendly) */}
-    {call.simInfo.simLabel && (
-      <span className="font-medium text-gray-500">
-        {call.simInfo.simLabel}
-      </span>
-    )}
+                          <span className="text-[10px] text-gray-400">
+                              
+                              {/* 🔥 LABEL FIRST (user friendly) */}
+                              {call.simInfo.simLabel && (
+                                <span className="font-medium text-gray-500">
+                                  {call.simInfo.simLabel}
+                                </span>
+                              )}
 
-    {/* extra debug info */}
-    {call.simInfo.simSlot !== undefined && (
-      <> | Slot: {call.simInfo.simSlot}</>
-    )}
-  </span>
-)}
+                              {/* fallback if no label */}
+                              {!call.simInfo.simLabel && call.simInfo.subscriptionId && (
+                                <>SIM: {call.simInfo.subscriptionId}</>
+                              )}
+
+                              {/* extra debug info */}
+                              {call.simInfo.simSlot !== undefined && (
+                                <> | Slot: {call.simInfo.simSlot}</>
+                              )}
+                            </span>
+                          )}
                         </div>
                         </div>
                       </TableCell>

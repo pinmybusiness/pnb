@@ -339,12 +339,23 @@ const CallTracking = () => {
                 <TableBody>
                   {calls.map((call, index) => (
                     <TableRow key={call.id || index} className="hover:bg-gray-50">
-                      <TableCell className="whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <SourceIcon source={call.source} />
-                          <CallerDisplay caller={call.caller} />
-                        </div>
-                      </TableCell>
+<TableCell className="whitespace-nowrap">
+  <div className="flex items-center gap-2">
+    <SourceIcon source={call.source} />
+    
+    <div className="flex flex-col">
+      <CallerDisplay caller={call.caller} />
+
+      {/* 🔥 SIM INFO DEBUG */}
+      {call.simInfo?.subscriptionId && (
+        <span className="text-[10px] text-gray-400">
+          SIM: {call.simInfo.subscriptionId}
+          {call.simInfo.simSlot !== undefined && ` | Slot: ${call.simInfo.simSlot}`}
+        </span>
+      )}
+    </div>
+  </div>
+</TableCell>
                       <TableCell className="whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 rounded-md bg-gray-100 flex items-center justify-center">

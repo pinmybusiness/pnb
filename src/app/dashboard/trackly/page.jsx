@@ -93,6 +93,8 @@ const CallTracking = () => {
       inbound: call.inbound,
       startTime: call.startTime,
       recordingUrl: recordingUrl, // Processed recording URL
+       // ADD THIS
+      simInfo: call.simInfo || {},
     };
   }, []);
 
@@ -343,17 +345,8 @@ const CallTracking = () => {
   <div className="flex items-center gap-2">
     <SourceIcon source={call.source} />
     
-    <div className="flex flex-col">
       <CallerDisplay caller={call.caller} />
-
-      {/* 🔥 SIM INFO DEBUG */}
-      {call.simInfo?.subscriptionId && (
-        <span className="text-[10px] text-gray-400">
-          SIM: {call.simInfo.subscriptionId}
-          {call.simInfo.simSlot !== undefined && ` | Slot: ${call.simInfo.simSlot}`}
-        </span>
-      )}
-    </div>
+   
   </div>
 </TableCell>
                       <TableCell className="whitespace-nowrap">
@@ -361,7 +354,17 @@ const CallTracking = () => {
                           <div className="flex-shrink-0 h-6 w-6 sm:h-8 sm:w-8 rounded-md bg-gray-100 flex items-center justify-center">
                             <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
                           </div>
+                           <div className="flex flex-col">
                           <span className="text-xs sm:text-sm font-medium text-gray-900">{call.receiver.name}</span>
+
+                          {/* 🔥 SIM INFO DEBUG */}
+                          {call.simInfo?.subscriptionId && (
+                            <span className="text-[10px] text-gray-400">
+                              SIM: {call.simInfo.subscriptionId}
+                              {call.simInfo.simSlot !== undefined && ` | Slot: ${call.simInfo.simSlot}`}
+                            </span>
+                          )}
+                        </div>
                         </div>
                       </TableCell>
                       <TableCell>

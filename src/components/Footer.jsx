@@ -1,4 +1,3 @@
-// "use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -43,12 +42,15 @@ export default function Footer() {
               <div className="w-1 h-5 bg-gradient-to-b from-[#FF5211] to-orange-600 rounded-full"></div>
               Quick Links
             </h3>
-            <ul className="space-y-2">
+            <ul className="grid grid-cols-2 gap-x-6 gap-y-2">
               {[
                 { name: "Download App", href: "/download" },
                 { name: "Blog", href: "/blog" },
                 { name: "About Us", href: "/about" },
                 { name: "Contact", href: "/contact" },
+
+                // 👉 NEW LINK (2nd column me automatically shift ho jayega)
+                { name: "Call Management", href: "https://www.fasterq.in/call-management-software" },
               ].map((link, index) => (
                 <li key={index}>
                   <Link 

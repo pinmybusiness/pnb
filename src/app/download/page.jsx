@@ -2,7 +2,7 @@ import PhonePreview from "@/components/PhonePreview";
 import { Download, Shield, Zap, Star, Users, ArrowRight, CheckCircle, Clock, Phone } from "lucide-react";
 
 const APK_URL = "https://cdn.fasterq.in/images/app/fasterq-3.0.7.apk";
-
+ 
 export default function DownloadPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF5EC] via-orange-50/40 to-white relative overflow-hidden">

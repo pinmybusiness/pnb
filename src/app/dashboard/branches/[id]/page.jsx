@@ -153,7 +153,7 @@ const BranchView = () => {
       {/* Tab Content */}
       <div className="mt-6">
         {activeTab === 'team' && <TeamTab branchId={id} teamMembers={teamMembers} setTeamMembers={setTeamMembers} />}
-        {activeTab === 'settings' && <SettingsTab />}
+        {activeTab === 'settings' && <SettingsTab branch={branch} />}
       </div>
     </div>
   );

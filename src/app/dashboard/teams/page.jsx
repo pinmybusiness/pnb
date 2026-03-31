@@ -80,9 +80,9 @@ const Teams = () => {
       { value: ROLES.SUPER_ADMIN.toString(), label: 'Super Admin' },
       { value: ROLES.ADMIN.toString(), label: 'Company CRM Admin' },
       { value: ROLES.ADMIN_TEAM.toString(), label: 'Company Team' },
-      { value: ROLES.ORGANIZATION_ADMIN.toString(), label: 'Organization Admin' },
-      { value: ROLES.ORGANIZATION_MANAGER.toString(), label: 'Organization Manager' },
-      { value: ROLES.ORGANIZATION_TEAM.toString(), label: 'Organization Team' },
+      // { value: ROLES.ORGANIZATION_ADMIN.toString(), label: 'Organization Admin' },
+      // { value: ROLES.ORGANIZATION_MANAGER.toString(), label: 'Organization Manager' },
+      // { value: ROLES.ORGANIZATION_TEAM.toString(), label: 'Organization Team' },
       { value: ROLES.BRANCH_ADMIN.toString(), label: 'Branch Admin' },
       { value: ROLES.BRANCH_MANAGER.toString(), label: 'Branch Manager' },
       { value: ROLES.BRANCH_TEAM.toString(), label: 'Branch Team' }

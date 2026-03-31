@@ -269,13 +269,13 @@ const Branches = () => {
                     >
                       <Edit className="h-4 w-4" />
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => handleDelete(branch._id)}
                       className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-md"
                       title="Delete"
                     >
                       <Trash2 className="h-4 w-4" />
-                    </button>
+                    </button> */}
                   </div>
                 </TableCell>
               </TableRow>

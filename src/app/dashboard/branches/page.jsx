@@ -1,20 +1,17 @@
 'use client';
 import { useState, useEffect } from "react";
-import { MapPin, Search, Plus, DollarSign, Star, TrendingUp, ArrowUpDown, Eye, Edit, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, Search, Plus, ArrowUpDown, Eye, Edit, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import StatusBadge from "@/components/ui/StatusBadge";
-import KPICard from "@/components/ui/KPICard";
 import { toast } from "react-hot-toast";
 import apiClient from "@/lib/apiClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, Button, Input, Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui";
-import { useSelector } from "react-redux";
 import { useDebounce } from 'use-debounce';
 import { formatDateWithSuffix } from "@/utils/dateFormat";
 
 const Branches = () => {
   const router = useRouter();
-  const { user } = useSelector((state) => state.auth);
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -79,6 +76,22 @@ const Branches = () => {
     const restaurant = branch.parentRestaurant || branch.parentRestaurantData;
     return restaurant?.name || "Unknown";
   };
+
+  const handleDelete = async (id) => {
+  if (!confirm("Are you sure you want to delete this branch?")) return;
+
+  try {
+    await apiClient.delete(`/api/branches/${id}`);
+
+    toast.success("Branch deleted");
+
+    // refresh list
+    setBranches((prev) => prev.filter((b) => b._id !== id));
+
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Delete failed");
+  }
+};
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -186,7 +199,6 @@ const Branches = () => {
                   <ArrowUpDown className="h-4 w-4" />
                 </div>
               </TableHead>
-              <TableHead>Location</TableHead>
               <TableHead>Contact</TableHead>
               <TableHead onClick={() => handleSort("createdAt")} className="cursor-pointer">
                 <div className="flex items-center gap-2">
@@ -216,13 +228,6 @@ const Branches = () => {
                 <TableCell>
                   <div>
                     <div className="font-medium">{branch.name || 'Unnamed Branch'}</div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="max-w-[200px] truncate" title={branch.location?.address}>
-                    {branch.location && branch.location?.city
-                      ? `${branch.location?.city?.name}, ${branch.location?.city?.state?.name}`
-                      : 'No address'}
                   </div>
                 </TableCell>
                 <TableCell>
@@ -264,6 +269,13 @@ const Branches = () => {
                     >
                       <Edit className="h-4 w-4" />
                     </button>
+                    <button
+  onClick={() => handleDelete(branch._id)}
+  className="p-2 text-gray-600 hover:text-red-600 hover:bg-gray-100 rounded-md"
+  title="Delete"
+>
+  <Trash2 className="h-4 w-4" />
+</button>
                   </div>
                 </TableCell>
               </TableRow>

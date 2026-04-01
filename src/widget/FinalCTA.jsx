@@ -50,11 +50,9 @@ export default function FinalCTA({
           {title}
         </h2>
 
-        <p className="text-xl md:text-2xl mb-4 text-white/90 font-medium">
+        <p className="text-md md:text-xl mb-10 text-white/90 font-medium">
           {subtitle}
         </p>
-
-        <p className="text-lg mb-10 text-white/80">{note}</p>
 
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

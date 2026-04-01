@@ -2,6 +2,7 @@ export default function TrustBarWidget({
   stats = [],
   showBadge = true,
   badgeText = "🚀 Trusted by Growing Teams Across India",
+  title
 }) {
   return (
     <section className="py-16 px-4 bg-gradient-to-br from-white via-gray-50 to-orange-50/20 relative overflow-hidden">
@@ -12,8 +13,8 @@ export default function TrustBarWidget({
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-orange-400 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="max-w-[1100px] mx-auto relative z-10">
-
+      <div className="max-w-[1100px] text-center mx-auto relative z-10">
+         <div className="text-center mb-14">
         {/* Badge */}
         {showBadge && (
           <div className="text-center mb-10">
@@ -22,6 +23,12 @@ export default function TrustBarWidget({
             </span>
           </div>
         )}
+
+         <h2 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight tracking-tight">
+          {title}
+        </h2>
+          </div>
+
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

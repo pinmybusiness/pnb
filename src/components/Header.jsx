@@ -58,7 +58,7 @@ export default function Header({ activeLink = "" }) {
       items: [
         {
           label: "Overview",
-          path: "/call-tracker",
+          path: "/features",
           description: "See how FasterQ call tracking works end-to-end.",
           icon: <Phone className="w-4 h-4 text-gray-500" />,
         },
@@ -94,18 +94,7 @@ export default function Header({ activeLink = "" }) {
         },
       ],
     },
-    industries: {
-      label: "Industries",
-      icon: <Building2 className="w-4 h-4" />,
-      items: [
-        {
-          label: "Real Estate Call Tracking",
-          path: "/industries/real-estate-call-tracking",
-          description: "Track calls from property portals & campaigns.",
-          icon: <Building2 className="w-4 h-4 text-gray-500" />,
-        },
-      ],
-    },
+
   };
 
   // Close mega menu when clicking outside
@@ -170,48 +159,23 @@ export default function Header({ activeLink = "" }) {
                   }`}
                 >
                   <Phone className="w-4 h-4" />
-                  Call Tracker
+                   Features
                   <ChevronDown className={`w-4 h-4 transition-transform ${megaMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {/* Mega Menu Dropdown */}
                 {megaMenuOpen && (
                   <div 
-                    className="absolute left-0 mt-2 w-[760px] bg-white backdrop-blur-xl rounded-2xl shadow-2xl border border-orange-100"
+                    className="absolute left-0 mt-2 w-[520px] bg-white backdrop-blur-xl rounded-2xl shadow-2xl border border-orange-100"
                     onMouseEnter={() => setMegaMenuOpen(true)}
                     onMouseLeave={() => setMegaMenuOpen(false)}
                   >
-                    <div className="flex">
-                      {/* Left: Categories */}
-                      <div className="w-56 border-r border-orange-100 bg-orange-50/40 p-4">
-                        <p className="text-xs font-semibold text-orange-700 mb-3 uppercase tracking-wide">
-                          Call Tracker
-                        </p>
-                        <div className="space-y-1">
-                          {Object.entries(callTrackingTabs).map(([key, tab]) => (
-                            <button
-                              key={key}
-                              type="button"
-                              onMouseEnter={() => setActiveCategory(key)}
-                              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left text-sm font-medium transition-all ${
-                                activeCategory === key
-                                  ? "bg-white text-[#FF5211] shadow-sm border border-orange-100"
-                                  : "text-gray-700 hover:bg-white/70"
-                              }`}
-                            >
-                              <span className="w-7 h-7 rounded-lg bg-white border border-orange-100 flex items-center justify-center">
-                                {tab.icon}
-                              </span>
-                              <span>{tab.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Right: Active category items */}
-                      <div className="flex-1 p-4">
-                        <div className="grid grid-cols-2 gap-3">
-                          {callTrackingTabs[activeCategory]?.items.map((item) => (
+                    <div className="p-4">
+                      <p className="text-xs font-semibold text-orange-700 mb-3 uppercase tracking-wide">
+                        Features
+                      </p>
+                      <div className="grid grid-cols-2 gap-3">
+                          {callTrackingTabs["features"]?.items.map((item) => (
                             <Link
                               key={item.path}
                               href={item.path}
@@ -236,16 +200,7 @@ export default function Header({ activeLink = "" }) {
                             </Link>
                           ))}
                         </div>
-
-                        <Link
-                          href="/call-tracking"
-                          className="inline-flex items-center gap-2 mt-4 text-xs font-semibold text-[#FF5211] hover:text-orange-700 transition-colors"
-                          onClick={() => setMegaMenuOpen(false)}
-                        >
-                          View all call tracking pages
-                        </Link>
                       </div>
-                    </div>
                   </div>
                 )}
               </div>
@@ -392,7 +347,7 @@ export default function Header({ activeLink = "" }) {
               >
                 <div className="flex items-center gap-2">
                   <Phone className="w-4 h-4" />
-                  Call Tracker
+                  Features
                 </div>
                 <ChevronRight
                   className={`w-4 h-4 transition-transform ${
@@ -450,14 +405,6 @@ export default function Header({ activeLink = "" }) {
                     ))}
                   </div>
 
-                  {/* View All Link */}
-                  <Link
-                    href="/call-tracking"
-                    onClick={() => setMobileOpen(false)}
-                    className="inline-flex items-center gap-2 text-xs font-semibold text-[#FF5211] hover:text-orange-700 transition-colors mt-2 ml-1"
-                  >
-                    View all call tracking pages
-                  </Link>
                 </div>
               )}
             </div>

@@ -42,14 +42,12 @@ const StatCard = ({ icon: Icon, label, value, color = "blue", className = "" }) 
 
   return (
     <Card className={`p-4 border-2 ${colorClasses[color]} ${className}`}>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col items-center text-center gap-2">
         <div className="p-2 rounded-lg">
-          <Icon className="h-6 w-6" />
+          <Icon className="h-5 w-5" />
         </div>
-        <div>
-          <p className="text-sm text-gray-500">{label}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-        </div>
+        <p className="text-xs text-gray-500 leading-tight">{label}</p>
+        <p className="text-2xl font-bold text-gray-900">{value}</p>
       </div>
     </Card>
   );
@@ -175,7 +173,7 @@ const MemberDetailsModal = ({ member, onClose }) => {
           ) : memberStats ? (
             <div className="space-y-6">
               {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <StatCard
                   icon={Phone}
                   label="Total Calls Handled"
@@ -190,9 +188,15 @@ const MemberDetailsModal = ({ member, onClose }) => {
                 />
                 <StatCard
                   icon={Clock}
+                  label="Total Talk Time"
+                  value={memberStats?.totalTalkTime || "0:00"}
+                  color="purple"
+                />
+                <StatCard
+                  icon={BarChart3}
                   label="Avg Call Duration"
                   value={memberStats?.avgCallDuration || "0:00"}
-                  color="purple"
+                  color="blue"
                 />
               </div>
 

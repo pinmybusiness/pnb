@@ -15,8 +15,7 @@ export default function FasterqApiDocs() {
             Fasterq API Integration Guide
           </h1>
           <p className="text-lg text-gray-600">
-            Incremental sync using <span className="font-semibold">createdAt</span>.  
-            Minimal, production-ready documentation.
+            Incremental sync using <span className="font-semibold">createdAt</span>.
           </p>
         </div>
 
@@ -161,8 +160,6 @@ update lastFetchedCreatedAt = highest createdAt`}
 
         {/* Footer */}
         <div className="mt-16 pt-8 border-t text-sm text-gray-500">
-          Fasterq API © {new Date().getFullYear()}  
-          <br />
           Secure your API key. Use UTC time. Store createdAt.
         </div>
       </div>

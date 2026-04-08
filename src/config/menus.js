@@ -40,6 +40,7 @@ export const allMenus = [
   { name: "Team Performance", href: "/dashboard/trackly/team-performance", icon: TrendingUp, roles: [6,7] },
   { name: "Customer Intelligence", href: "/dashboard/trackly/customer-intelligence", icon: UsersRound, roles: [6,7] },
   { name: "Integrations", href: "/dashboard/integrations", icon: Cable, roles: [6] },
+  { name: "CRM Setup", href: "/dashboard/crm-config", icon: Settings, roles: [6] },
 
   { name: "Teams", href: "/dashboard/teams", icon: Users, roles: [0,3,6] },
   { name: "Services", href: "/dashboard/services", icon: Wrench, roles: [0] },

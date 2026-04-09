@@ -18,6 +18,26 @@ import {
   Button
 } from "@/components/ui";
 
+const formatDuration = (value) => {
+  if (!value) return "0m 0s";
+  let totalSeconds = 0;
+  if (typeof value === "number") {
+    totalSeconds = value;
+  } else if (typeof value === "string") {
+    const parts = value.split(":").map(Number);
+    if (parts.length === 3) totalSeconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+    else if (parts.length === 2) totalSeconds = parts[0] * 60 + parts[1];
+    else totalSeconds = parts[0] || 0;
+  }
+  if (totalSeconds <= 0) return "0m 0s";
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+};
+
 const PERIOD_OPTIONS = [
   { key: "today", label: "Today" },
   { key: "yesterday", label: "Yesterday" },
@@ -120,173 +140,118 @@ const MemberDetailsModal = ({ member, onClose }) => {
     : 0;
 
   return (
-    <div className="fixed inset-0 bg-black/70 bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        {/* Modal Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-400">
-          <div className="flex items-center gap-4">
-            <UserAvatar name={member.userName} className="w-12 h-12" />
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-3 z-50">
+      <Card className="w-full max-w-3xl">
+
+        {/* Header + Period in one row */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <UserAvatar name={member.userName} className="w-9 h-9" />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{member.name}</h2>
-              <p className="text-sm text-gray-500">{member.mobile || 'No mobile number'}</p>
+              <h2 className="text-base font-bold text-gray-900 leading-tight">{member.name}</h2>
+              <p className="text-xs text-gray-500">{member.mobile || 'No mobile number'}</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-            aria-label="Close modal"
-          >
-            <X className="h-5 w-5 text-gray-500" />
-          </button>
-        </div>
-
-        {/* Period Selector */}
-        <div className="p-6 border-b border-gray-400">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Performance Statistics</h3>
-              <p className="text-sm text-gray-500">Detailed call analytics</p>
-            </div>
-            <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1">
               {PERIOD_OPTIONS.map((option) => (
                 <Button
                   key={option.key}
                   variant={period === option.key ? "primary" : "outline"}
                   size="sm"
                   onClick={() => setPeriod(option.key)}
-                  className="flex-1 sm:flex-none"
+                  className="text-xs px-3 py-1"
                 >
                   {option.label}
                 </Button>
               ))}
             </div>
+            <button
+              onClick={onClose}
+              className="ml-1 p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+              aria-label="Close modal"
+            >
+              <X className="h-4 w-4 text-gray-500" />
+            </button>
           </div>
         </div>
 
         {/* Stats Content */}
-        <div className="p-6">
+        <div className="p-4">
           {detailsLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary border-gray-400"></div>
-              <span className="ml-3 text-gray-600">Loading statistics...</span>
+            <div className="flex justify-center items-center h-40">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary border-gray-400"></div>
+              <span className="ml-3 text-sm text-gray-600">Loading statistics...</span>
             </div>
           ) : memberStats ? (
-            <div className="space-y-6">
-              {/* Summary Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard
-                  icon={Phone}
-                  label="Total Calls Handled"
-                  value={memberStats.totalCalls || 0}
-                  color="blue"
-                />
-                <StatCard
-                  icon={CheckCircle}
-                  label="Successful Calls"
-                  value={successfulCalls}
-                  color="green"
-                />
-                <StatCard
-                  icon={Clock}
-                  label="Total Talk Time"
-                  value={memberStats?.totalTalkTime || "0:00"}
-                  color="purple"
-                />
-                <StatCard
-                  icon={BarChart3}
-                  label="Avg Call Duration"
-                  value={memberStats?.avgCallDuration || "0:00"}
-                  color="blue"
-                />
+            <div className="space-y-3">
+
+              {/* Summary Cards — horizontal compact */}
+              <div className="grid grid-cols-4 gap-3">
+                {[
+                  { icon: Phone,       label: "Total Calls",    value: memberStats.totalCalls || 0,                        color: "blue" },
+                  { icon: CheckCircle, label: "Successful",     value: successfulCalls,                                    color: "green" },
+                  { icon: Clock,       label: "Talk Time",      value: formatDuration(memberStats?.totalTalkTime),         color: "purple" },
+                  { icon: BarChart3,   label: "Avg Duration",   value: formatDuration(memberStats?.avgCallDuration),       color: "blue" },
+                ].map(({ icon: Icon, label, value, color }) => {
+                  const cls = { blue: "text-blue-600 bg-blue-50 border-blue-200", green: "text-green-600 bg-green-50 border-green-200", purple: "text-purple-600 bg-purple-50 border-purple-200" };
+                  return (
+                    <Card key={label} className={`p-3 border-2 ${cls[color]}`}>
+                      <div className="flex flex-col items-center text-center gap-1">
+                        <Icon className="h-4 w-4" />
+                        <p className="text-[11px] text-gray-500 leading-tight">{label}</p>
+                        <p className="text-xl font-bold text-gray-900">{value}</p>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
 
-              {/* Detailed Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Incoming Calls Breakdown */}
-                <Card className="p-6 border-2 border-green-100">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-green-50 rounded-lg">
-                      <PhoneIncoming className="h-5 w-5 text-green-600" />
+              {/* Incoming + Outgoing */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Incoming */}
+                <Card className="p-3 border-2 border-green-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="p-1.5 bg-green-50 rounded-lg">
+                      <PhoneIncoming className="h-4 w-4 text-green-600" />
                     </div>
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900">Incoming Calls</h4>
-                      <p className="text-sm text-gray-500">Received call performance</p>
-                    </div>
+                    <h4 className="text-sm font-semibold text-gray-900">Incoming Calls</h4>
                   </div>
-                  
-                  <div className="space-y-3">
-                    <DetailRow 
-                      label="Total Incoming" 
-                      value={memberStats.incoming?.total || 0} 
-                    />
-                    <DetailRow 
-                      label="Answered" 
-                      value={memberStats.incoming?.answered || 0}
-                      variant="success"
-                    />
-                    <DetailRow 
-                      label="Missed" 
-                      value={memberStats.incoming?.missed || 0}
-                      variant="danger"
-                    />
-                    
-                    <div className="pt-4 border-t border-gray-400 mt-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Answer Rate</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-blue-500"
-                              style={{ width: `${Math.min(incomingAnswerRate, 100)}%` }}
-                            />
-                          </div>
-                          <span className="font-bold text-blue-600">{incomingAnswerRate}%</span>
+                  <div className="space-y-1.5 text-sm">
+                    <DetailRow label="Total" value={memberStats.incoming?.total || 0} />
+                    <DetailRow label="Answered" value={memberStats.incoming?.answered || 0} variant="success" />
+                    <DetailRow label="Missed" value={memberStats.incoming?.missed || 0} variant="danger" />
+                    <div className="pt-2 border-t border-gray-200 flex justify-between items-center">
+                      <span className="text-xs text-gray-600">Answer Rate</span>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-14 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500" style={{ width: `${Math.min(incomingAnswerRate, 100)}%` }} />
                         </div>
+                        <span className="text-xs font-bold text-blue-600">{incomingAnswerRate}%</span>
                       </div>
                     </div>
                   </div>
                 </Card>
 
-                {/* Outgoing Calls Breakdown */}
-                <Card className="p-6 border-2 border-purple-100">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-purple-50 rounded-lg">
-                      <PhoneOutgoing className="h-5 w-5 text-purple-600" />
+                {/* Outgoing */}
+                <Card className="p-3 border-2 border-purple-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="p-1.5 bg-purple-50 rounded-lg">
+                      <PhoneOutgoing className="h-4 w-4 text-purple-600" />
                     </div>
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900">Outgoing Calls</h4>
-                      <p className="text-sm text-gray-500">Initiated call performance</p>
-                    </div>
+                    <h4 className="text-sm font-semibold text-gray-900">Outgoing Calls</h4>
                   </div>
-                  
-                  <div className="space-y-3">
-                    <DetailRow 
-                      label="Total Outgoing" 
-                      value={memberStats.outgoing?.total || 0} 
-                    />
-                    <DetailRow 
-                      label="Connected" 
-                      value={memberStats.outgoing?.answered || 0}
-                      variant="success"
-                    />
-                    <DetailRow 
-                      label="Failed" 
-                      value={memberStats.outgoing?.missed || 0}
-                      variant="danger"
-                    />
-                    
-                    <div className="pt-4 border-t border-gray-400 mt-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-600">Connect Rate</span>
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-blue-500"
-                              style={{ width: `${Math.min(outgoingConnectRate, 100)}%` }}
-                            />
-                          </div>
-                          <span className="font-bold text-blue-600">{outgoingConnectRate}%</span>
+                  <div className="space-y-1.5 text-sm">
+                    <DetailRow label="Total" value={memberStats.outgoing?.total || 0} />
+                    <DetailRow label="Connected" value={memberStats.outgoing?.answered || 0} variant="success" />
+                    <DetailRow label="Failed" value={memberStats.outgoing?.missed || 0} variant="danger" />
+                    <div className="pt-2 border-t border-gray-200 flex justify-between items-center">
+                      <span className="text-xs text-gray-600">Connect Rate</span>
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-14 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-500" style={{ width: `${Math.min(outgoingConnectRate, 100)}%` }} />
                         </div>
+                        <span className="text-xs font-bold text-blue-600">{outgoingConnectRate}%</span>
                       </div>
                     </div>
                   </div>
@@ -294,19 +259,15 @@ const MemberDetailsModal = ({ member, onClose }) => {
               </div>
 
               {/* Period Info */}
-              <div className="text-center pt-4 border-t border-gray-400">
-                <p className="text-sm text-gray-500">
-                  Showing data for <span className="font-medium text-gray-700">
-                    {PERIOD_OPTIONS.find(p => p.key === period)?.label.toLowerCase()}
-                  </span>
-                </p>
-              </div>
+              <p className="text-center text-xs text-gray-400 pt-1">
+                Showing data for <span className="font-medium text-gray-600">{PERIOD_OPTIONS.find(p => p.key === period)?.label.toLowerCase()}</span>
+              </p>
             </div>
           ) : (
-            <div className="text-center py-12">
-              <FileText className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No detailed statistics available</p>
-              <p className="text-sm text-gray-400 mt-2">Select a different period or try again</p>
+            <div className="text-center py-10">
+              <FileText className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+              <p className="text-sm text-gray-500">No detailed statistics available</p>
+              <p className="text-xs text-gray-400 mt-1">Select a different period or try again</p>
             </div>
           )}
         </div>

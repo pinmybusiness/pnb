@@ -27,7 +27,7 @@ const FilterBar = ({ filters, onFilterChange, onClearFilters }) => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search branches by name, address, or organization..."
+            placeholder="Search branches by organization..."
             value={filters.search}
             onChange={(e) => onFilterChange('search', e.target.value)}
             className="pl-10 pr-10 text-sm"
@@ -138,13 +138,6 @@ const BranchCard = ({ branch, getRestaurantName, onView, onEdit }) => {
             <span>{branch.createdAt ? formatDateWithSuffix(branch.createdAt) : 'Unknown'}</span>
           </div>
         </div>
-
-        {/* Address */}
-        {branch.address && (
-          <div className="text-sm text-gray-600 pt-1 border-t border-gray-100">
-            <p className="truncate">{branch.address}</p>
-          </div>
-        )}
 
         {/* Actions */}
         <div className="flex justify-end gap-2 pt-1">
@@ -324,14 +317,6 @@ const Branches = () => {
     router.push(`/dashboard/branches/${id}/edit`);
   }, [router]);
 
-  if (loading && pagination.page === 1) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4 animate-fade-in p-4 sm:p-6 md:p-8">
       {/* Header */}
@@ -363,10 +348,9 @@ const Branches = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Organization</TableHead>
                 <TableHead onClick={() => handleSort('name')} className="cursor-pointer">
                   <div className="flex items-center gap-2">
-                    Branch Name
+                    Organization (Branch)
                     <ArrowUpDown className="h-4 w-4" />
                   </div>
                 </TableHead>
@@ -387,15 +371,24 @@ const Branches = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedBranches.map((branch) => (
+              {loading && (
+                <TableRow>
+                  <TableCell colSpan={5} className="py-16 text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto"></div>
+                  </TableCell>
+                </TableRow>
+              )}
+              {!loading && sortedBranches.map((branch) => (
                 <TableRow key={branch._id} className="hover:bg-gray-50">
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-900">{getRestaurantName(branch)}</span>
+                    <div className="text-sm text-gray-900">
+                      <span title={getRestaurantName(branch)}>
+                        {getRestaurantName(branch).length > 18
+                          ? getRestaurantName(branch).slice(0, 18) + '...'
+                          : getRestaurantName(branch)}
+                      </span>
+                      <span className="text-gray-500"> ({branch.name || 'Unnamed'})</span>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="font-medium text-gray-900">{branch.name || 'Unnamed Branch'}</div>
                   </TableCell>
                   <TableCell>
                     <span className="text-sm text-gray-900">{branch.helplineNumber || '-'}</span>
@@ -434,7 +427,12 @@ const Branches = () => {
 
         {/* Mobile Grid View */}
         <div className="md:hidden space-y-3 p-3">
-          {sortedBranches.map((branch) => (
+          {loading && (
+            <div className="py-16 flex justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          )}
+          {!loading && sortedBranches.map((branch) => (
             <BranchCard 
               key={branch._id} 
               branch={branch}
@@ -446,7 +444,7 @@ const Branches = () => {
         </div>
 
         {/* No Data State */}
-        {sortedBranches.length === 0 && !loading && (
+        {!loading && sortedBranches.length === 0 && (
           <div className="p-12 text-center">
             <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No branches found</h3>

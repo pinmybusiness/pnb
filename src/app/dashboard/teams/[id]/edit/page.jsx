@@ -22,6 +22,7 @@ const EditTeamMember = () => {
 
   const [form, setForm] = useState({
     name: '',
+    email: '',
     mobile: '',
     role: '',
     managerId: '',
@@ -43,6 +44,7 @@ const EditTeamMember = () => {
 
       setForm({
         name: data.name || '',
+        email: data.email || '',
         mobile: data.mobile || '',
         role: data.role || '',
         managerId: data.managerId || '',
@@ -162,6 +164,20 @@ const EditTeamMember = () => {
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-[#FF5211] focus:ring-4 focus:ring-orange-500/10 outline-none"
                 required
+              />
+            </div>
+
+            {/* Email */}
+            <div className="col-span-1">
+              <label className="text-sm font-semibold text-gray-700 mb-3 block">
+                Email Address
+              </label>
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="Enter email address"
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:border-[#FF5211] focus:ring-4 focus:ring-orange-500/10 outline-none"
               />
             </div>
 

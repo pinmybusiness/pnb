@@ -104,7 +104,6 @@ const BranchView = () => {
             <h1 className="text-2xl font-bold text-gray-900">({branch.parentRestaurant.name})</h1>
             <StatusBadge status={branch.status?.current} />
           </div>
-          <p className="text-gray-500">{branch.location?.address}</p>
         </div>
         <div className="flex gap-2">
           <Button

@@ -11,10 +11,6 @@ import {
   UserCheck,
   Search,
   ArrowUpDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import apiClient from '@/lib/apiClient';
@@ -324,8 +320,7 @@ const TeamTab = ({ branchId }) => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">Team Members</h2>
-          <p className="text-sm text-gray-500">Manage your branch team members and their roles</p>
+          <h2 className="text-xl font-semibold text-gray-900">Total Teams <span className="text-gray-500 font-normal">({pagination.total})</span></h2>
         </div>
         <Button onClick={() => setShowAddModal(true)}>
           <UserPlus className="h-4 w-4 mr-2" />

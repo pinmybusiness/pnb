@@ -363,6 +363,9 @@ const Teams = () => {
                 Team Manager
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Last Call
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -428,6 +431,16 @@ const Teams = () => {
                         <div className="font-medium">{member.manager.name}</div>
                         <div className="text-gray-500 text-xs">{member.manager.mobile}</div>
                       </div>
+                    ) : '—'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {member.role === 8 ? (
+                      member.lastCallTime ? (
+                        <div className="text-sm">
+                          <div className="text-gray-900">{new Date(member.lastCallTime).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                          <div className="text-gray-500 text-xs">{new Date(member.lastCallTime).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+                        </div>
+                      ) : <span className="text-xs text-gray-400">No calls yet</span>
                     ) : '—'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

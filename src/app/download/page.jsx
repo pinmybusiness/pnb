@@ -1,12 +1,12 @@
 import PhonePreview from "@/components/PhonePreview";
-import { Download, Shield, Zap, Star, Users, ArrowRight, CheckCircle, Clock, Phone } from "lucide-react";
+import { Download, Shield, Zap, Star, Users, ArrowRight, CheckCircle, Phone } from "lucide-react";
 
-const APK_URL = "https://cdn.fasterq.in/images/app/fasterq-3.0.7.apk";
+const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.fasterq.phone&hl=en_IN";
  
 export default function DownloadPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#FFF5EC] via-orange-50/40 to-white relative overflow-hidden">
-{/* Animated background elements with mesh gradient */}
+      {/* Animated background elements with mesh gradient */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -left-20 w-96 h-96 bg-[#FF5211]/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 -right-20 w-[500px] h-[500px] bg-orange-300/20 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
@@ -77,27 +77,20 @@ export default function DownloadPage() {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-gray-900">Android App</h3>
-                      <p className="text-sm text-gray-600">Version 3.0.7 • 10.3 MB</p>
+                      <p className="text-sm text-gray-600">Available on Google Play</p>
                     </div>
                   </div>
 
                   <a
-                    href={APK_URL}
-                    download
-                    className="w-full bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-5 rounded-full font-bold text-lg hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center justify-center gap-3 group/btn shadow-xl mb-4"
+                    href={PLAY_STORE_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-5 rounded-full font-bold text-lg hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center justify-center gap-3 group/btn shadow-xl"
                   >
                     <Download className="w-6 h-6 group-hover/btn:animate-bounce" />
-                    <span>Download</span>
+                    <span>Get it on Google Play</span>
                     <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
                   </a>
-
-
-                    <div className="flex items-center gap-3">
-                      <Clock className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-bold text-blue-900 text-sm mb-1">Coming Soon on Play Store</p>
-                      </div>
-                    </div>
                 </div>
               </div>
 
@@ -109,9 +102,9 @@ export default function DownloadPage() {
                 </h4>
                 <div className="space-y-3">
                   {[
-                    "Download the APK file to your device",
-                    "Enable 'Install from Unknown Sources' in Settings",
-                    "Open the downloaded file and tap Install",
+                    "Open Google Play Store on your Android phone",
+                    "Search for 'FasterQ' or tap the button above",
+                    "Tap Install and wait for it to download",
                     "Launch FasterQ and start tracking calls!"
                   ].map((step, i) => (
                     <div key={i} className="flex items-start gap-3 group/step">
@@ -237,10 +230,10 @@ export default function DownloadPage() {
             </h3>
             <div className="grid md:grid-cols-2 gap-6">
               {[
-                { q: "Is it safe to install?", a: "Yes! Our APK is verified and completely safe. Scanned by multiple security tools." },
+                { q: "Is it safe to install?", a: "Yes! FasterQ is available on Google Play Store, so it's fully verified and safe to install." },
                 { q: "Do I need to pay?", a: "No payment needed to download. Start free and upgrade anytime." },
                 { q: "Works on all Android phones?", a: "Yes! Compatible with Android 8.0 and above. Works on all devices." },
-                { q: "When will it be on Play Store?", a: "We're in Google's review process. Expected launch within 2-3 weeks!" }
+                { q: "Is it available on Play Store?", a: "Yes! FasterQ is now live on Google Play Store. You can download it directly from there." }
               ].map((faq, i) => (
                 <div key={i} className="group p-4 bg-gray-50 rounded-xl hover:bg-orange-50 transition-colors">
                   <h4 className="font-bold text-gray-900 mb-2 group-hover:text-[#FF5211] transition-colors">{faq.q}</h4>
@@ -262,12 +255,13 @@ export default function DownloadPage() {
               <p className="text-xl mb-8 text-white/90">Join 500+ businesses already using FasterQ</p>
               
               <a
-                href={APK_URL}
-                download
+                href={PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="bg-white text-[#FF5211] px-10 py-5 rounded-full font-bold text-lg hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center gap-3 group"
               >
                 <Download className="w-6 h-6 group-hover:animate-bounce" />
-                <span>Download Now</span>
+                <span>Get it on Google Play</span>
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </a>
             </div>

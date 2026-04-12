@@ -32,7 +32,7 @@ const AudioPlayer = ({ recordingUrl, callId }) => {
   };
 
   return (
-    <div className="flex items-center gap-1 justify-between md:max-w-[160px]">
+    <div className="flex items-center gap-1 justify-between md:max-w-[100px]">
       {/* Hidden audio */}
       <audio
         ref={audioRef}
@@ -60,7 +60,7 @@ const AudioPlayer = ({ recordingUrl, callId }) => {
         ) : (
           <Play className="h-4 w-4" />
         )}
-        <span>Play Recording</span>
+        <span>Play</span>
       </button>
 
       {/* Download */}

@@ -1,7 +1,7 @@
 // config/menus.js
-import { 
-  Store, Users, BarChart3, MapPin, Settings, 
-  FileBarChart, LayoutDashboard, GraduationCap, 
+import {
+  Store, Users, BarChart3, MapPin, Settings,
+  FileBarChart, LayoutDashboard, GraduationCap,
   ClipboardList,
   PhoneCall,
   Building2,
@@ -12,7 +12,8 @@ import {
   Clock,
   UsersRound,
   TrendingUp,
-  Cable
+  Cable,
+  StickyNote
 } from "lucide-react";
 
 // ✅ Single menu list, roles are defined as numeric arrays
@@ -39,6 +40,7 @@ export const allMenus = [
   { name: "Recordings", href: "/dashboard/trackly/recordings", icon: AudioLines, roles: [6,7] },
   { name: "Team Performance", href: "/dashboard/trackly/team-performance", icon: TrendingUp, roles: [6,7] },
   { name: "Customer Intelligence", href: "/dashboard/trackly/customer-intelligence", icon: UsersRound, roles: [6,7] },
+  { name: "Notes", href: "/dashboard/trackly/notes", icon: StickyNote, roles: [6,7] },
   { name: "Integrations", href: "/dashboard/integrations", icon: Cable, roles: [6] },
   { name: "CRM Setup", href: "/dashboard/crm-config", icon: Settings, roles: [6] },
 

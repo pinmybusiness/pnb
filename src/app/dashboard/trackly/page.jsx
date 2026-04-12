@@ -229,8 +229,8 @@ const CallTracking = () => {
       {/* Header */}
       <div className="flex justify-between items-start gap-2">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Call Tracking Dashboard</h1>
-          <p className="text-sm text-gray-500">Monitor and manage all restaurant calls</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Call History</h1>
+          <p className="text-sm text-gray-500">Monitor and manage all calls</p>
         </div>
 
         {/* Toggle Export Button */}

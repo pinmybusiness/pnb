@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import apiClient from '@/lib/apiClient';
-import { ArrowLeft, Package, Calendar, DollarSign, Sparkles, Check, Crown, Zap, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Package, Calendar, DollarSign, Sparkles, Check, Crown, Zap, TrendingUp, Pencil } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ServiceDetail() {
@@ -36,7 +36,7 @@ export default function ServiceDetail() {
     const labels = {
       1: 'Monthly',
       2: 'Yearly',
-      3: 'One-time',
+      3: 'Quarterly',
       4: 'Trial'
     };
     return labels[cycle] || 'Custom';
@@ -196,6 +196,13 @@ export default function ServiceDetail() {
                         <h3 className="text-xl font-bold text-gray-900 group-hover:text-[#FF5211] transition-colors duration-300">
                           {plan.name}
                         </h3>
+                        <Link
+                          href={`/dashboard/services/plan/edit/${plan._id}`}
+                          className="w-8 h-8 flex items-center justify-center bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg transition-colors"
+                          title="Edit plan"
+                        >
+                          <Pencil className="w-4 h-4 text-[#FF5211]" />
+                        </Link>
                       </div>
 
                       {/* Price */}

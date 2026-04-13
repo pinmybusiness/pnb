@@ -26,7 +26,6 @@ import { useRouter } from "next/navigation";
 import LoginModal from "./auth/LoginModal";
 import { logoutUser } from "@/store/authThunks";
 import { toast } from "react-hot-toast";
-import Link from "next/link";
 
 export default function Header({ activeLink = "" }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -64,25 +63,25 @@ export default function Header({ activeLink = "" }) {
         },
         {
           label: "Inbound Call Tracking",
-          path: "/call-tracker/incoming-call-tracker",
+          path: "/features/incoming-call-tracker",
           description: "Track every incoming enquiry from all sources.",
           icon: <Phone className="w-4 h-4 text-gray-500" />,
         },
         {
           label: "Outbound Call Tracking",
-          path: "/call-tracker/outgoing-call-tracker",
+          path: "/features/outgoing-call-tracker",
           description: "Monitor your team's outbound sales calls.",
           icon: <Phone className="w-4 h-4 text-gray-500" />,
         },
         {
           label: "Missed Call tracker",
-          path: "/call-tracker/missed-call-tracker",
+          path: "/features/missed-call-tracker",
           description: "Never lose revenue from missed calls.",
           icon: <Phone className="w-4 h-4 text-gray-500" />,
         },
         {
           label: "Call Analytics Dashboard",
-          path: "/call-tracker/call-tracker-analytics",
+          path: "/features/call-tracker-analytics",
           description: "Real-time reports on calls, agents & campaigns.",
           icon: <BarChart3 className="w-4 h-4 text-gray-500" />,
         },
@@ -176,7 +175,7 @@ export default function Header({ activeLink = "" }) {
                       </p>
                       <div className="grid grid-cols-2 gap-3">
                           {callTrackingTabs["features"]?.items.map((item) => (
-                            <Link
+                            <a
                               key={item.path}
                               href={item.path}
                               className="group/link block p-3 rounded-xl border border-orange-100/70 hover:border-orange-200 hover:bg-orange-50/70 transition-all"
@@ -197,7 +196,7 @@ export default function Header({ activeLink = "" }) {
                                   )}
                                 </div>
                               </div>
-                            </Link>
+                            </a>
                           ))}
                         </div>
                       </div>
@@ -208,7 +207,7 @@ export default function Header({ activeLink = "" }) {
               {/* ROI Calculator Link - FIXED: remove .slice(1) */}
               {links.map((link) => (
                 <div key={link.name} className="relative group">
-                  <Link
+                  <a
                     href={link.path}
                     className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
                       activeLink === link.path
@@ -218,7 +217,7 @@ export default function Header({ activeLink = "" }) {
                   >
                     {link.icon}
                     {link.name}
-                  </Link>
+                  </a>
                 </div>
               ))}
             </nav>
@@ -304,12 +303,12 @@ export default function Header({ activeLink = "" }) {
                     </span>
                   </button>
 
-                  <Link
+                  <a
                     href="/contact"
                     className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#FF5211] to-orange-600 hover:from-[#FF5211] hover:to-orange-700 rounded-xl transition-all duration-300 shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105"
                   >
                     Book a Demo
-                  </Link>
+                  </a>
                 </>
               )}
             </div>
@@ -380,7 +379,7 @@ export default function Header({ activeLink = "" }) {
                   {/* Active Category Items */}
                   <div className="space-y-2">
                     {callTrackingTabs[activeCategory]?.items.map((item) => (
-                      <Link
+                      <a
                         key={item.path}
                         href={item.path}
                         onClick={() => setMobileOpen(false)}
@@ -401,7 +400,7 @@ export default function Header({ activeLink = "" }) {
                             )}
                           </div>
                         </div>
-                      </Link>
+                      </a>
                     ))}
                   </div>
 
@@ -410,7 +409,7 @@ export default function Header({ activeLink = "" }) {
             </div>
 
             {/* 2. ROI Calculator */}
-            <Link
+            <a
               href="/call-tracker-roi"
               onClick={() => setMobileOpen(false)}
               className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
@@ -421,7 +420,7 @@ export default function Header({ activeLink = "" }) {
             >
               <Calculator className="w-4 h-4" />
               ROI Calculator
-            </Link>
+            </a>
 
             {/* User Actions Mobile */}
             <div className="pt-3 border-t-2 border-orange-100 flex flex-col gap-2">
@@ -477,7 +476,7 @@ export default function Header({ activeLink = "" }) {
                     <span>Login</span>
                   </button>
 
-                  <Link
+                  <a
                     href="/contact"
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-3 w-full px-5 py-3.5 text-sm font-semibold text-white bg-gradient-to-r from-[#FF5211] to-orange-600 hover:from-[#FF5211] hover:to-orange-700 rounded-xl transition-all duration-300 shadow-lg shadow-orange-500/30"
@@ -486,7 +485,7 @@ export default function Header({ activeLink = "" }) {
                       <Building className="w-5 h-5" />
                     </div>
                     <span>Book a Demo</span>
-                  </Link>
+                  </a>
                 </>
               )}
             </div>

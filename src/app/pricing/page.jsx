@@ -17,12 +17,12 @@ const PackagePricing = ({ billingCycle }) => {
     quarterly: {
       callMonitoring: 447,
       extendedStorage: 99,
-      crmIntegration: 99,
+      crmIntegration: 149,
     },
     yearly: {
       callMonitoring: 1188,
       extendedStorage: 499,
-      crmIntegration: 499,
+      crmIntegration: 599,
     },
   };
 
@@ -495,8 +495,8 @@ export default function PricingPage() {
             {/* CRM Integration Add-on */}
             <AddonCard
               title="CRM Integration"
-              quarterlyPrice={99}
-              yearlyPrice={499}
+              quarterlyPrice={149}
+              yearlyPrice={599}
               description="Sync call data automatically with your CRM."
               icon={Globe}
               features={[

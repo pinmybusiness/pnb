@@ -58,7 +58,7 @@ export default function LoginPage() {
                   Welcome Back
                 </h2>
                 <p className="text-sm text-gray-600 font-medium">
-                  Login to access your Trackly dashboard
+                  Login to access your FasterQ dashboard
                 </p>
 
                 {/* Trust Badge */}

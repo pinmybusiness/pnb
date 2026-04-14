@@ -80,7 +80,7 @@ const testimonials = [
     name: "Rajesh Kumar",
     role: "Sales Director, TechFlow India",
     image: "/images/trackly/avatars/user1.webp",
-    quote: "Trackly transformed our sales process. We now track every lead from SIM calls without any manual entry. The WhatsApp reports are a game-changer for my morning reviews.",
+    quote: "FasterQ transformed our sales process. We now track every lead from SIM calls without any manual entry. The WhatsApp reports are a game-changer for my morning reviews.",
     rating: 5,
   },
   {
@@ -94,7 +94,7 @@ const testimonials = [
     name: "Amit Patel",
     role: "VP Sales, GrowthX",
     image: "/images/trackly/avatars/user3.webp",
-    quote: "The integration with Salesforce is seamless. We've seen a 30% increase in lead retention since we started using Trackly. Highly recommended for Indian sales teams.",
+    quote: "The integration with Salesforce is seamless. We've seen a 30% increase in lead retention since we started using FasterQ. Highly recommended for Indian sales teams.",
     rating: 5,
   },
 ];

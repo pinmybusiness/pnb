@@ -5,7 +5,7 @@ const steps = [
   {
     number: 1,
     title: "Sign Up",
-    description: "Create your Trackly account on our analytics dashboard.",
+    description: "Create your FasterQ account on our analytics dashboard.",
     icon: Users,
   },
   {

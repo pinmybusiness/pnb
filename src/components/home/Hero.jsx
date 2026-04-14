@@ -88,7 +88,7 @@ export default function Hero() {
           {/* Description */}
           <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8"
              data-animate="fade-up" data-delay="0.8">
-            Trackly automatically logs all your <span className="font-semibold text-gray-900">SIM calls</span> - no
+            FasterQ automatically logs all your <span className="font-semibold text-gray-900">SIM calls</span> - no
             VoIP, no number change. Get complete visibility into your team's daily
             calls.
           </p>
@@ -148,7 +148,7 @@ export default function Hero() {
             <div className="relative">
               <img
                 src="/images/hero-image.webp"
-                alt="Trackly dashboard preview"
+                alt="FasterQ dashboard preview"
                 width={550}
                 height={450}
                 className="drop-shadow-2xl rounded-3xl transform group-hover:scale-[1.02] transition-transform duration-500 relative z-10 border-4 border-white shadow-2xl"

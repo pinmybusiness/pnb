@@ -25,7 +25,7 @@ export default function Integrations() {
             Seamless CRM <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">Integrations</span>
           </h2>
           <p className="text-gray-600 text-lg mb-6 max-w-2xl mx-auto leading-relaxed">
-            Connect Trackly effortlessly with your favorite CRM platforms - from
+            Connect FasterQ effortlessly with your favorite CRM platforms - from
             Salesforce to LeadSquared. No setup headaches, just smooth syncing.
           </p>
           <div className="hidden md:flex items-center justify-center gap-6 text-sm text-gray-500">

@@ -11,12 +11,12 @@ export default function ChatWidget() {
 
   // Sample auto-replies for demo
   const autoReplies = {
-    "hello": "Hi there! 👋 How can I help you with Trackly today?",
-    "hi": "Hello! Welcome to Trackly support. What can I do for you?",
-    "pricing": "Trackly starts at just ₹99/month. Would you like to know more about our features?",
-    "feature": "Trackly automatically logs SIM calls, tracks team performance, and gives you complete visibility!",
+    "hello": "Hi there! 👋 How can I help you with FasterQ today?",
+    "hi": "Hello! Welcome to FasterQ support. What can I do for you?",
+    "pricing": "FasterQ starts at just ₹99/month. Would you like to know more about our features?",
+    "feature": "FasterQ automatically logs SIM calls, tracks team performance, and gives you complete visibility!",
     "demo": "You can schedule a free demo with our team. Would you like me to help you book one?",
-    "contact": "You can reach us at support@trackly.com or call us at +91 98765 43210",
+    "contact": "You can reach us at support@fasterq.in or call us at +91 97982 88748",
     "default": "Thanks for reaching out! Our team will get back to you soon. For immediate assistance, please check our FAQ section."
   };
 
@@ -46,7 +46,7 @@ export default function ChatWidget() {
         setMessages([
           {
             role: "bot",
-            text: "👋 Hi! Welcome to Trackly. How can I assist you today?",
+            text: "👋 Hi! Welcome to FasterQ. How can I assist you today?",
             time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }
         ]);
@@ -131,7 +131,7 @@ export default function ChatWidget() {
                 <span className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></span>
               </div>
               <div>
-                <h3 className="font-bold text-white">Trackly Support</h3>
+                <h3 className="font-bold text-white">FasterQ Support</h3>
                 <p className="text-xs text-orange-100">Typically replies instantly</p>
               </div>
             </div>
@@ -250,7 +250,7 @@ export default function ChatWidget() {
 
           {/* Footer */}
           <div className="px-4 py-2 bg-[#FFF5EC] text-center text-xs text-gray-500 border-t border-orange-500/10">
-            Powered by Trackly • Usually replies in 5 mins
+            Powered by FasterQ • Usually replies in 5 mins
           </div>
         </div>
       )}

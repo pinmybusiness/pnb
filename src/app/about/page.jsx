@@ -2,9 +2,9 @@
 import { ArrowRight, Users, Zap, Shield, Heart, Target, Rocket, Phone, Mail, MessageSquare } from "lucide-react";
 
 export const metadata = {
-  title: "About Trackly by FasterQ | SIM-Based Call Tracking in India",
+  title: "About FasterQ | SIM-Based Call Tracking in India",
   description:
-    "Trackly is India's SIM-based call tracking tool for SMBs. Real-time dashboards, missed call alerts, WhatsApp summaries, and India-hosted secure analytics.",
+    "FasterQ is India's SIM-based call tracking tool for SMBs. Real-time dashboards, missed call alerts, WhatsApp summaries, and India-hosted secure analytics.",
 };
 
 export default function AboutPage() {
@@ -28,7 +28,7 @@ export default function AboutPage() {
             Close Every Deal.
           </h1>
           <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto leading-relaxed text-white/90">
-            Trackly by FasterQ is your SIM-based call tracking powerhouse -logging every incoming, outgoing, and missed call in real-time, without changing your number. Built for Indian SMBs with rupee pricing, IST support, and a passion for simplifying sales.
+            FasterQ is your SIM-based call tracking powerhouse -logging every incoming, outgoing, and missed call in real-time, without changing your number. Built for Indian SMBs with rupee pricing, IST support, and a passion for simplifying sales.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -69,7 +69,7 @@ export default function AboutPage() {
               💡 Why Choose Us
             </span>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              Why Trackly Stands Out for
+              Why FasterQ Stands Out for
               <br />
               <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">Startups Like Yours</span>
             </h2>
@@ -111,7 +111,7 @@ export default function AboutPage() {
               ⚡ Simple Process
             </span>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              How Trackly Works -
+              How FasterQ Works -
               <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">Simple as That</span>
             </h2>
           </div>
@@ -197,13 +197,13 @@ export default function AboutPage() {
             </h2>
             <div className="max-w-4xl mx-auto space-y-4 text-lg text-gray-700 leading-relaxed">
               <p>
-                Launched in <span className="font-bold text-[#FF5211]">October 2025</span> right here in Bengaluru, FasterQ was born from three friends' late-night chats about broken call tracking tools that kill sales momentum. Tired of clunky VoIP setups and foreign software ignoring Indian realities, we bootstrapped Trackly to make sales tracking dead simple and hyper-local.
+                Launched in <span className="font-bold text-[#FF5211]">October 2025</span> right here in Bengaluru, FasterQ was born from three friends' late-night chats about broken call tracking tools that kill sales momentum. Tired of clunky VoIP setups and foreign software ignoring Indian realities, we built FasterQ to make sales tracking dead simple and hyper-local.
               </p>
               <p className="text-gray-600">
                 No VC fairy dust -just grit, code, and a love for helping Indian startups punch above their weight. From our co-working desk to your dashboard, we're all in on building tools that scale with your hustle.
               </p>
               <p className="text-gray-600">
-                Trackly isn't just software; it's our bet on a future where every SMB sales call counts. <span className="font-semibold text-[#FF5211]">Join us in writing this story.</span>
+                FasterQ isn't just software; it's our bet on a future where every SMB sales call counts. <span className="font-semibold text-[#FF5211]">Join us in writing this story.</span>
               </p>
             </div>
           </div>
@@ -269,7 +269,7 @@ export default function AboutPage() {
             Ready to Level Up Your Calls?
           </h2>
           <p className="text-xl md:text-2xl mb-8 text-white/90 max-w-3xl mx-auto">
-            Be part of our launch squad -unlock beta perks and shape Trackly's roadmap. No card needed to start.
+            Be part of our launch squad -unlock beta perks and shape FasterQ's roadmap. No card needed to start.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-10">

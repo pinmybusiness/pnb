@@ -81,7 +81,7 @@ export default function FAQs() {
               </span>
             </h2>
             <p className="text-gray-600 text-base md:text-lg px-4">
-              Everything you need to know about Trackly
+              Everything you need to know about FasterQ
             </p>
           </div>
 

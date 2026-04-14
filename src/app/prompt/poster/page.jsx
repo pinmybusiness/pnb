@@ -47,7 +47,7 @@ export default function SmartPosterPromptBuilder() {
   ];
 
   const defaultExample = () => {
-    setBrand("FasterQ Trackly");
+    setBrand("FasterQ");
     setGoal("promote call tracking automation for small businesses");
     setAudience("Indian business owners and sales teams");
     setStyle("modern & minimal");

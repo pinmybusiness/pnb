@@ -213,7 +213,7 @@ export default async function Page({ params }) {
 
                   <div>
                     <p className="font-semibold text-gray-900 capitalize">
-                      {post.author_username || "Trackly Team"}
+                      {post.author_username || "FasterQ Team"}
                     </p>
                     <p className="text-gray-500 text-xs">Content Team</p>
                   </div>
@@ -268,7 +268,7 @@ export default async function Page({ params }) {
                     Ready to Transform Your Sales?
                   </h3>
                   <p className="text-white/90 text-lg mb-6 max-w-2xl mx-auto">
-                    Join 200+ businesses using Trackly to track calls and close
+                    Join 200+ businesses using FasterQ to track calls and close
                     more deals.
                   </p>
 

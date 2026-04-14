@@ -68,7 +68,7 @@ export default function Benefits() {
             <span className="text-gray-700">We Handle the Rest</span>
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            Trackly logs calls in the background and syncs to your CRM. Works with SIM cards -no cloud phone needed.
+            FasterQ logs calls in the background and syncs to your CRM. Works with SIM cards -no cloud phone needed.
           </p>
         </div>
 
@@ -141,7 +141,7 @@ export default function Benefits() {
             {/* Text content */}
             <div className="text-left">
               <p className="text-sm font-semibold text-gray-900">Join 500+ sales teams</p>
-              <p className="text-xs text-gray-500">Already tracking smarter with Trackly</p>
+              <p className="text-xs text-gray-500">Already tracking smarter with FasterQ</p>
             </div>
           </div>
         </div>

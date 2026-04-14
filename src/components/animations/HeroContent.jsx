@@ -34,7 +34,7 @@ export default function HeroContent({ children }) {
       {/* Description */}
       <FadeIn delay={0.8} direction="up">
         <p className="text-base sm:text-lg lg:text-xl text-gray-700 leading-relaxed max-w-2xl mx-auto lg:mx-0 mb-8">
-          Trackly automatically logs all your{" "}
+          FasterQ automatically logs all your{" "}
           <span className="font-semibold text-gray-900">SIM calls</span> - no
           VoIP, no number change. Get complete visibility into your team's daily
           calls.

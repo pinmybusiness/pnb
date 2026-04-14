@@ -25,7 +25,7 @@ export default function Footer() {
             <div className="group cursor-pointer">
               <Image
                 src="/logo-white.png"
-                alt="Trackly Logo"
+                alt="FasterQ Logo"
                 width={160}
                 height={48}
                 className="object-contain group-hover:scale-105 transition-transform duration-300"

@@ -3,6 +3,8 @@ import "./globals.css";
 import { inter, yesteryear } from "@/lib/fonts";
 import { Toaster } from "react-hot-toast";
 import ClientHeaderFooter from "./ClientHeaderFooter";
+import HeaderWrapper from "./HeaderWrapper";
+import Header from "@/components/Header";
 import WhatsAppButton from "@/components/WhatsAppButton";
 import Script from "next/script";
 
@@ -87,8 +89,10 @@ export default function RootLayout({ children }) {
     </head>
       <body>
 
-        {/* Move Providers to individual pages or components that need them */}
-        <ClientHeaderFooter position="header" />
+        {/* Header rendered outside PersistGate so <a> links appear in HTML source (SSR) */}
+        <HeaderWrapper>
+          <Header />
+        </HeaderWrapper>
         {children}
          {/* <ChatWidget /> */}
         <WhatsAppButton />

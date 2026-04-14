@@ -1,24 +1,15 @@
-// app/ClientHeaderFooter.jsx (Client Component)
-'use client';
+// app/ClientHeaderFooter.js — footer only
+// Header has been moved to layout.js (rendered via HeaderWrapper outside PersistGate).
+"use client";
 
-import { usePathname } from 'next/navigation';
-import Header from "@/components/Header";
-import Footer from '@/components/Footer';
-import { GoogleOAuthProvider } from '@react-oauth/google';
-import { Providers } from './providers';
+import { usePathname } from "next/navigation";
+import Footer from "@/components/Footer";
 
 export default function ClientHeaderFooter({ position }) {
   const pathname = usePathname();
-  const isDashboardRoute = pathname.startsWith('/dashboard');
+  const isDashboardRoute = pathname.startsWith("/dashboard");
 
   if (isDashboardRoute) return null;
-
-  return (
-    <Providers>
-      <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
-        {position === "header" && <Header />}
-        {position === "footer" && <Footer />}
-      </GoogleOAuthProvider>
-    </Providers>
-  );
+  if (position === "footer") return <Footer />;
+  return null;
 }

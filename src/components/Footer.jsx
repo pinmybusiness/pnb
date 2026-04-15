@@ -54,12 +54,12 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <p className="text-xs uppercase tracking-widest text-[#FF5211] font-semibold mb-1">
-              Start today - it&apos;s free
+              Built for every team
             </p>
             <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight">
-              Track every call.{" "}
+              Every team call tracked.{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5211] to-orange-400">
-                Grow faster.
+                Nothing missed.
               </span>
             </h2>
           </div>

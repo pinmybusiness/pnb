@@ -10,7 +10,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const faqSections = [
+export const faqSections = [
   {
     id: "general",
     title: "Getting to know FasterQ",

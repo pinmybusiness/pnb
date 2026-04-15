@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+
+# Block dashboard and API routes
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /_next/
+
+# Block docs (developer-only pages)
+Disallow: /docs/
+Disallow: /fasterq-api
+
+# Block utility and auth pages
+Disallow: /demo
+Disallow: /login
+Disallow: /unsubscribe-spam-number
+Disallow: /prompt
+
+# Sitemap
+Sitemap: https://www.fasterq.in/sitemap.xml

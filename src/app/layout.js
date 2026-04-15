@@ -62,6 +62,70 @@ export const metadata = {
   },
 };
 
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.fasterq.in/#organization",
+      "name": "FasterQ",
+      "url": "https://www.fasterq.in",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://www.fasterq.in/favicon.png",
+        "width": 50,
+        "height": 50,
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "info@fasterq.in",
+        "contactType": "customer support",
+        "availableLanguage": ["English", "Hindi"],
+      },
+      "sameAs": [
+        "https://www.linkedin.com/company/fasterq",
+        "https://twitter.com/fasterqin",
+      ],
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://www.fasterq.in/#software",
+      "name": "FasterQ",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Android",
+      "url": "https://www.fasterq.in",
+      "description":
+        "Automatically track and record all SIMs. Get real-time call logs, CRM sync, and insights for your sales team - no VoIP, no number change.",
+      "offers": {
+        "@type": "Offer",
+        "price": "99",
+        "priceCurrency": "INR",
+        "priceValidUntil": "2026-12-31",
+      },
+      "publisher": {
+        "@id": "https://www.fasterq.in/#organization",
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://www.fasterq.in/#website",
+      "url": "https://www.fasterq.in",
+      "name": "FasterQ",
+      "publisher": {
+        "@id": "https://www.fasterq.in/#organization",
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.fasterq.in/blog?q={search_term_string}",
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
+};
+
 export default function RootLayout({ children }) {
     const isProduction = process.env.NODE_ENV === "production";
 
@@ -73,6 +137,10 @@ export default function RootLayout({ children }) {
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       <meta name="theme-color" content="#FF5211" />
       <link rel="icon" type="image/png" href="/favicon.png" />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
 
         {/* Microsoft Clarity – ONLY in Production */}
         {isProduction && (

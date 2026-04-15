@@ -55,13 +55,40 @@ export async function generateMetadata({ params }) {
     const data = await res.json();
     if (!data?.article) return {};
 
+    const article = data.article;
+    const ogImage = article.featured_image || "https://www.fasterq.in/images/og-image.webp";
+
     return {
-      title: data.article.title,
-      description: data.article.description,
+      title: article.title,
+      description: article.description,
+      alternates: {
+        canonical: `https://www.fasterq.in/${slug}`,
+      },
+      authors: article.author_username
+        ? [{ name: article.author_username }]
+        : [{ name: "FasterQ Team" }],
       openGraph: {
-        title: data.article.title,
-        description: data.article.description,
+        title: article.title,
+        description: article.description,
         url: `https://www.fasterq.in/${slug}`,
+        type: "article",
+        publishedTime: article.created_on,
+        modifiedTime: article.updated_on,
+        authors: article.author_username ? [article.author_username] : ["FasterQ Team"],
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: article.title,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: article.title,
+        description: article.description,
+        images: [ogImage],
       },
     };
   } catch (e) {

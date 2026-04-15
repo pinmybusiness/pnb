@@ -1,5 +1,6 @@
 // app/faq/page.jsx
-import FAQClient, { faqSections } from "./FAQClient";
+import FAQClient from "./FAQClient";
+import { faqSections } from "./faqData";
 
 export const metadata = {
   title: "FAQs | FasterQ Call Tracking Software Questions & Answers",

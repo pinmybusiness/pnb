@@ -36,7 +36,6 @@ export default function FinalCTA() {
         <p className="text-xl md:text-2xl mb-4 text-white/90 font-medium">
           Track every call, get team call reports on WhatsApp, and never miss a lead
         </p>
-        <p className="text-lg mb-10 text-white/80">Start no credit card required.</p>
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

@@ -59,7 +59,7 @@ export default function Pricing() {
                 {[
                   "No credit card required",
                   "Setup in minutes",
-                  "Money-back guarantee",
+                  "Dedicated onboarding support",
                 ].map((item) => (
                   <p key={item} className="flex items-center gap-2.5 text-sm text-gray-500">
                     <span className="w-4 h-4 rounded-full bg-green-50 border border-green-200 flex items-center justify-center shrink-0">

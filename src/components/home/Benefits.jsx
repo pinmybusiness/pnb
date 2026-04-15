@@ -14,7 +14,7 @@ const benefits = [
   },
   {
     title: "Use Your Current Number",
-    description: "No VOIP or cloud telephony-use your existing number.",
+    description: "Use your existing SIM number — no new number, no extra setup.",
     bullets: ["Higher pickup rates", "Builds customer trust", "Zero setup hassle", "Keep your existing SIM"],
     icon: Phone,
   },
@@ -22,10 +22,10 @@ const benefits = [
     title: "SIM Calls in One Dashboard",
     description: "Unified call logs across channels with easy reporting.",
     bullets: [
-      "Compare call type performance",
-      "Identify conversion sources",
+      "See which calls lead to sales",
+      "Track every team member's calls",
       "Manager-friendly reports",
-      "All-in-one analytics"
+      "All call data in one place"
     ],
     icon: MessageSquare,
   },
@@ -37,7 +37,7 @@ const benefits = [
   },
   {
     title: "Skip Complex Tech",
-    description: "Works on your team's existing phones-no PBX needed.",
+    description: "Works on your team's existing phones — nothing extra to buy.",
     bullets: ["Quick setup", "Cost-effective for teams", "Install and start"],
     icon: Shield,
   },
@@ -60,7 +60,7 @@ export default function Benefits() {
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-16" data-animate="fade-up">
           <span className="inline-block px-4 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-semibold mb-4 border border-[#FF5211]/20 shadow-sm">
-            ⚡ Zero Effort, Maximum Results
+            Works with your existing phone & SIM
           </span>
           <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
             Use Your Phone <span className="bg-gradient-to-r from-[#FF5211] to-orange-600 bg-clip-text text-transparent">Normally</span>

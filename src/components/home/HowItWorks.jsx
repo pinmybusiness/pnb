@@ -1,86 +1,86 @@
 import { Users, Phone, Zap, BarChart3 } from "lucide-react";
-import CtaButton from "./CtaButton";
 
 const steps = [
   {
-    number: 1,
-    title: "Sign Up",
-    description: "Create your FasterQ account on our analytics dashboard.",
+    number: "01",
+    title: "Get Your Account",
+    description: "Contact us and we set up your team's FasterQ account - no waiting.",
     icon: Users,
   },
   {
-    number: 2,
-    title: "Invite Your Team",
-    description: "Add sales reps to track calls effortlessly.",
+    number: "02",
+    title: "Add Your Team",
+    description: "We onboard your agents. Each member gets access on their own phone.",
     icon: Phone,
   },
   {
-    number: 3,
+    number: "03",
     title: "Install the App",
-    description: "Install on team phones for SIM call tracking.",
+    description: "Agents install FasterQ on their Android phone. It runs silently in the background.",
     icon: Zap,
   },
   {
-    number: 4,
-    title: "View Insights",
-    description: "View real-time call data and insights on your dashboard.",
+    number: "04",
+    title: "Track Every Call",
+    description: "Every team call shows up on your dashboard in real-time. Nothing missed.",
     icon: BarChart3,
   },
 ];
 
 export default function HowItWorks() {
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-50 to-orange-50/30 px-6 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#FF5211] rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#FF5211] rounded-full blur-3xl"></div>
-      </div>
-      
-      <div className="max-w-6xl mx-auto relative z-10">
+    <section className="py-24 bg-white px-6">
+      <div className="max-w-6xl mx-auto">
+
+        {/* Heading */}
         <div className="text-center mb-16" data-animate="fade-up">
-          <span className="inline-block px-4 py-2 bg-[#FF5211]/10 text-[#FF5211] rounded-full text-sm font-semibold mb-4">
-            Simple Process
+          <span className="inline-block px-4 py-1.5 bg-orange-50 text-[#FF5211] rounded-full text-sm font-semibold mb-4 border border-orange-100">
+            How it works
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-            Get Started in Minutes
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Up and running in minutes
           </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Four simple steps to transform your call tracking experience
+          <p className="text-gray-500 text-lg max-w-xl mx-auto">
+            No complex setup. No IT team needed.
           </p>
         </div>
 
-        <div className="relative">
-          <div className="hidden md:block absolute top-20 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#FF5211]/20 to-transparent"></div>
-          
-          <div className="grid md:grid-cols-4 gap-8" data-stagger-parent data-stagger="0.1" data-stagger-duration="0.6" data-stagger-offset="24">
-            {steps.map((step, i) => (
-              <div key={i} data-stagger-item className="relative group">
-                <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
-                  <div className="absolute -top-4 -right-4 w-12 h-12 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg group-hover:scale-110 transition-transform">
-                    {String(step.number).padStart(2, "0")}
-                  </div>
-                  <div className="relative mb-6">
-                    <div className="absolute inset-0 bg-[#FF5211]/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all"></div>
-                    <div className="relative bg-gradient-to-br from-[#FF5211]/10 to-orange-100/50 p-4 rounded-2xl inline-flex">
-                      <step.icon className="h-10 w-10 text-[#FF5211]" />
-                    </div>
-                  </div>
-                  <h3 className="font-bold text-xl mb-3 text-gray-900">{step.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{step.description}</p>
-                  <div className="mt-6 h-1 w-12 bg-gradient-to-r from-[#FF5211] to-orange-400 rounded-full group-hover:w-full transition-all duration-300"></div>
-                </div>
+        {/* Steps */}
+        <div
+          className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-12 md:gap-0"
+          data-stagger-parent data-stagger="0.1" data-stagger-duration="0.5" data-stagger-offset="20"
+        >
+          {steps.map((step, i) => (
+            <div key={i} data-stagger-item className="relative flex flex-col items-center text-center px-4 md:px-6 group">
+
+              {/* Connector line — desktop only */}
+              {i < steps.length - 1 && (
+                <div className="hidden md:block absolute top-8 left-1/2 w-full h-px bg-gray-200 z-0" />
+              )}
+
+              {/* Icon */}
+              <div className="relative z-10 w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-orange-50 border-2 border-orange-100 group-hover:border-[#FF5211] group-hover:bg-orange-100 flex items-center justify-center mb-4 transition-all duration-200">
+                <step.icon className="w-6 h-6 md:w-7 md:h-7 text-[#FF5211]" />
               </div>
-            ))}
-          </div>
+
+              {/* Step number */}
+              <span className="text-xs font-bold text-[#FF5211] tracking-widest uppercase mb-1.5">
+                Step {step.number}
+              </span>
+
+              {/* Title */}
+              <h3 className="text-base md:text-lg font-bold text-gray-900 mb-2">
+                {step.title}
+              </h3>
+
+              {/* Description */}
+              <p className="text-xs md:text-sm text-gray-500 leading-relaxed max-w-[160px]">
+                {step.description}
+              </p>
+            </div>
+          ))}
         </div>
-        
-        <div className="text-center mt-16" data-animate="fade-up" data-delay="0.4">
-          <CtaButton
-            href="/contact"
-            text="Start for ₹99/month"
-            className="bg-[#FF5211] text-white hover:bg-orange-600 hover:shadow-xl hover:scale-105"
-          />
-        </div>
+
       </div>
     </section>
   );

@@ -10,7 +10,7 @@ const integrations = [
 
 export default function Integrations() {
   return (
-    <section className="py-20 px-6 bg-gradient-to-br from-[#FFF5EC] via-white to-orange-50/30 relative overflow-hidden">
+    <section className="py-20 px-6 bg-gradient-to-b from-white via-gray-50 to-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-30">
         <div className="absolute top-20 left-10 w-72 h-72 bg-[#FF5211]/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-orange-200/20 rounded-full blur-3xl animate-pulse delay-700"></div>

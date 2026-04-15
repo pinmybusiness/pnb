@@ -1,181 +1,152 @@
-import { Check, BarChart3, Users, Volume2 } from "lucide-react";
+import { Check, Phone, Mic, RefreshCw, MessageSquare, Users, BarChart3 } from "lucide-react";
 
 const features = [
   {
-    title: "100% Accurate Call Tracking",
-    description: "Automatically tracks all your phone calls.",
+    icon: Phone,
+    title: "SIM Call Tracking",
+    description: "Automatically log every inbound, outbound, and missed call - directly from your team's SIM.",
     bullets: [
-      "Works with SIM card calls",
-      "Keeps your current phone number",
-      "Logs all incoming, outgoing and missed calls",
-      "Precise call timings",
+      "Works on existing SIM & phone number",
+      "Tracks inbound, outbound & missed calls",
+      "No VoIP or number change needed",
       "Real-time call logging",
     ],
-    icon: Check,
   },
   {
-    title: "Smart Performance Reports",
-    description: "Get clear insights to improve your team's calling.",
-    bullets: [
-      "See call volume and patterns",
-      "Track each team member's performance",
-      "Create custom reports",
-      "Syncs with your CRM automatically",
-      "Get daily WhatsApp reports of team calls",
-      "Real-time alerts to managers",
-    ],
-    icon: BarChart3,
-  },
-  {
-    title: "Better Team Management",
-    description: "Complete data to train your team and manage resources.",
-    bullets: [
-      "Track number of calls and time spent",
-      "See team activity in real-time",
-      "Use recordings for training",
-      "Complete visibility of team performance",
-      "Identify top performers",
-    ],
-    icon: Users,
-  },
-  {
+    icon: Mic,
     title: "Call Recording",
-    description: "Record calls to improve your team's skills.",
+    description: "Record both sides of every business call. Review, coach, and improve your team's conversations.",
     bullets: [
-      "Clear recordings of both sides",
-      "Safe and secure storage",
-      "Instant coaching feedback",
-      "Personalized training for team members",
-      "Improve customer conversations",
+      "Records both caller & agent audio",
+      "Secure cloud storage",
+      "Instant playback from dashboard",
+      "Use recordings for team training",
     ],
-    icon: Volume2,
+  },
+  {
+    icon: RefreshCw,
+    title: "CRM Integration",
+    description: "Auto-sync every call log to your CRM - no manual entry, no missed leads.",
+    bullets: [
+      "Supports LeadSquared, HubSpot, Zoho & Salesforce",
+      "Calls synced automatically after every call",
+      "Recording URL pushed to CRM",
+      "Failed syncs retried automatically",
+    ],
+  },
+  {
+    icon: MessageSquare,
+    title: "WhatsApp Call Reports",
+    description: "Get your team's daily call summary delivered straight to WhatsApp - no dashboard login needed.",
+    bullets: [
+      "Daily summary for every manager",
+      "Agent-wise call count & duration",
+      "Missed call highlights",
+      "Works on any Android phone",
+    ],
+  },
+  {
+    icon: Users,
+    title: "Team Performance",
+    description: "See exactly how each agent is performing - calls made, time spent, and activity patterns.",
+    bullets: [
+      "Per-agent call count & duration",
+      "Compare team members side by side",
+      "Identify top performers instantly",
+      "Real-time activity visibility",
+    ],
+  },
+  {
+    icon: BarChart3,
+    title: "Analytics Dashboard",
+    description: "A clean web dashboard with everything your managers need - call trends, agent stats, and more.",
+    bullets: [
+      "Hourly & daily call distribution",
+      "Call answered vs missed breakdown",
+      "Export reports to Excel",
+      "Access from any browser",
+    ],
   },
 ];
 
-// SSR-first: animations applied by clients/RevealClient via data-* attributes
-
 export default function Features() {
   return (
-    <section className="py-20 px-4 bg-gradient-to-br from-[#FFF5EC] via-orange-50/30 to-white relative overflow-hidden">
-      {/* Soft background glows */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#FF5211] rounded-full blur-3xl animate-pulse" />
-        <div
-          className="absolute bottom-0 right-1/3 w-80 h-80 bg-orange-400 rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        />
-      </div>
+    <section className="py-20 px-4 bg-gradient-to-b from-white via-gray-50 to-white relative">
+      <div className="max-w-7xl mx-auto">
 
-      {/* Subtle grid overlay */}
-      <div className="absolute inset-0 opacity-3 pointer-events-none">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(#FF5211 1px, transparent 1px), linear-gradient(90deg, #FF5211 1px, transparent 1px)",
-            backgroundSize: "50px 50px",
-          }}
-        />
-      </div>
-
-      <div className="max-w-7xl mx-auto relative z-10">
         {/* Heading */}
-        <div
-          className="text-center mb-16"
-          data-animate="fade-up"
-          data-duration="0.7"
-        >
-          <span className="inline-block px-5 py-2 bg-white/80 backdrop-blur-sm text-[#FF5211] rounded-full text-sm font-bold mb-4 border border-[#FF5211]/20 shadow-sm">
-            🚀 Everything You Need
+        <div className="text-center mb-14" data-animate="fade-up">
+          <span className="inline-block px-4 py-1.5 bg-orange-50 text-[#FF5211] rounded-full text-sm font-semibold mb-4 border border-orange-100">
+            Everything in one plan
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Powerful Features for <br />
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Every feature your team needs
+            <br />
             <span className="bg-gradient-to-r from-[#FF5211] via-orange-500 to-orange-600 bg-clip-text text-transparent">
-              Explosive Growth
+              to track calls better
             </span>
           </h2>
-          <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-            Built for modern sales teams who demand more from their tools
+          <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+            From SIM call tracking to CRM sync - everything works out of the box, no complex setup.
           </p>
         </div>
 
         {/* Cards Grid */}
         <div
-          className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
           data-stagger-parent
           data-stagger="0.08"
           data-stagger-duration="0.6"
-          data-stagger-offset="32"
+          data-stagger-offset="28"
         >
           {features.map((feature, i) => (
             <div
               key={i}
               data-stagger-item
-              className="group relative bg-white rounded-3xl p-6 shadow-md hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#FF5211]/30 hover:-translate-y-3"
+              className="group bg-white border border-gray-100 hover:border-[#FF5211]/30 rounded-2xl p-7 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
             >
-              {i === 0 && (
-                <div className="absolute -top-3 -right-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-pulse">
-                  ⭐ Popular
-                </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/0 to-orange-500/0 group-hover:from-[#FF5211]/10 group-hover:to-orange-500/5 rounded-3xl transition-all duration-500" />
-              <div className="relative mb-6">
-                <div className="absolute inset-0 bg-gradient-to-br from-[#FF5211]/20 to-orange-400/20 rounded-2xl blur-lg group-hover:blur-xl transition-all" />
-                <div className="relative bg-gradient-to-br from-[#FF5211]/10 via-orange-100/50 to-orange-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 group-hover:-rotate-6 transition-all duration-300 shadow-sm">
-                  <feature.icon className="h-8 w-8 text-[#FF5211] group-hover:scale-110 transition-transform" />
-                </div>
+              {/* Icon */}
+              <div className="w-12 h-12 bg-orange-50 group-hover:bg-[#FF5211] rounded-xl flex items-center justify-center mb-5 transition-colors duration-300">
+                <feature.icon className="w-6 h-6 text-[#FF5211] group-hover:text-white transition-colors duration-300" />
               </div>
-              <div className="relative">
-                <h3 className="text-lg font-bold mb-3 text-center text-gray-900 group-hover:text-[#FF5211] transition-colors">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600 text-sm mb-5 text-center leading-relaxed">
-                  {feature.description}
-                </p>
-                <div className="relative h-px mb-5">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-200 to-transparent" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FF5211] to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                </div>
-                <ul className="space-y-2.5" data-stagger-parent data-stagger-from="x" data-stagger-offset="10" data-stagger-duration="0.35" data-stagger="0.04">
-                  {feature.bullets.map((bullet, j) => (
-                    <li
-                      key={j}
-                      data-stagger-item
-                      className="flex items-start text-xs text-gray-700 group/item"
-                    >
-                      <div className="flex-shrink-0 w-4 h-4 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mr-2 mt-0.5 group-hover/item:scale-125 transition-transform shadow-sm">
-                        <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
-                      </div>
-                      <span className="flex-1 leading-relaxed">{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-gradient-to-r from-transparent via-[#FF5211] to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 rounded-b-3xl" />
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-[#FF5211]/10 to-transparent rounded-tr-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+
+              {/* Title + Description */}
+              <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-[#FF5211] transition-colors duration-200">
+                {feature.title}
+              </h3>
+              <p className="text-sm text-gray-500 leading-relaxed mb-5">
+                {feature.description}
+              </p>
+
+              {/* Divider */}
+              <div className="h-px bg-gray-100 mb-5" />
+
+              {/* Bullets */}
+              <ul className="space-y-2.5">
+                {feature.bullets.map((bullet, j) => (
+                  <li key={j} className="flex items-start gap-2.5 text-sm text-gray-600">
+                    <div className="w-4 h-4 bg-green-50 border border-green-200 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="w-2.5 h-2.5 text-green-600" strokeWidth={3} />
+                    </div>
+                    {bullet}
+                  </li>
+                ))}
+              </ul>
             </div>
           ))}
         </div>
 
-        {/* Bottom CTA pill */}
-        <div
-          className="mt-16 text-center"
-          data-animate="fade-up"
-          data-duration="0.6"
-          data-delay="0.1"
-        >
-          <div className="inline-flex flex-col items-center gap-4 bg-white rounded-3xl px-10 py-8 shadow-xl border border-gray-100">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-              </span>
-              <span className="text-gray-600 font-medium">
-                All features included in every plan
-              </span>
-            </div>
-          </div>
+        {/* Bottom note */}
+        <div className="mt-12 text-center" data-animate="fade-up" data-delay="0.2">
+          <p className="text-sm text-gray-400 flex items-center justify-center gap-2">
+            <span className="flex h-2 w-2 relative">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+            </span>
+            All features included in every plan - no add-ons, no hidden charges
+          </p>
         </div>
+
       </div>
     </section>
   );

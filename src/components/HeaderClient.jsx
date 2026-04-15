@@ -2,17 +2,8 @@
 
 import Image from "next/image";
 import {
-  Menu,
-  X,
-  User,
-  Building,
-  LogOut,
-  ChevronDown,
-  ChevronRight,
-  Phone,
-  BarChart3,
-  Calculator,
-  Layers,
+  Menu, X, User, LogOut, ChevronDown,
+  Phone, BarChart3,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,86 +12,45 @@ import LoginModal from "./auth/LoginModal";
 import { logoutUser } from "@/store/authThunks";
 import { toast } from "react-hot-toast";
 
+const featureLinks = [
+  { label: "Overview",                  path: "/features",                              description: "See how FasterQ works end-to-end.",    icon: <Phone className="w-4 h-4 text-[#FF5211]" /> },
+  { label: "Inbound Call Tracking",     path: "/features/inbound-call-tracking",        description: "Track every incoming enquiry.",        icon: <Phone className="w-4 h-4 text-[#FF5211]" /> },
+  { label: "Outbound Call Tracking",    path: "/features/outbound-call-tracking",       description: "Monitor outbound sales calls.",        icon: <Phone className="w-4 h-4 text-[#FF5211]" /> },
+  { label: "Missed Call Tracker",       path: "/features/missed-call-tracker",          description: "Never lose a missed call.",             icon: <Phone className="w-4 h-4 text-[#FF5211]" /> },
+  { label: "Call Analytics Dashboard",  path: "/features/call-analytics-dashboard",     description: "Real-time reports on calls & agents.", icon: <BarChart3 className="w-4 h-4 text-[#FF5211]" /> },
+  { label: "Call Recording",            path: "/call-recording/call-recording-auto",    description: "Record and review conversations.",     icon: <Phone className="w-4 h-4 text-[#FF5211]" /> },
+];
+
 export default function HeaderClient({ activeLink = "" }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState({});
-  const [megaMenuOpen, setMegaMenuOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState("features");
-  const megaMenuRef = useRef(null);
+  const [mobileOpen, setMobileOpen]             = useState(false);
+  const [profileOpen, setProfileOpen]           = useState(false);
+  const [modalOpen, setModalOpen]               = useState(false);
+  const [featuresOpen, setFeaturesOpen]         = useState(false);
+  const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
+  const [scrolled, setScrolled]                 = useState(false);
+  const featuresRef = useRef(null);
 
   const dispatch = useDispatch();
-  const router = useRouter();
+  const router   = useRouter();
   const { user } = useSelector((state) => state.auth);
 
-  const links = [
-    {
-      name: "ROI Calculator",
-      path: "/call-tracker-roi",
-      icon: <Calculator className="w-4 h-4" />
-    },
-  ];
-
-  const callTrackingTabs = {
-    features: {
-      label: "Features",
-      icon: <Layers className="w-4 h-4" />,
-      items: [
-        {
-          label: "Overview",
-          path: "/features",
-          description: "See how FasterQ call tracking works end-to-end.",
-          icon: <Phone className="w-4 h-4 text-gray-500" />,
-        },
-        {
-          label: "Inbound Call Tracking",
-          path: "/features/inbound-call-tracking",
-          description: "Track every incoming enquiry from all sources.",
-          icon: <Phone className="w-4 h-4 text-gray-500" />,
-        },
-        {
-          label: "Outbound Call Tracking",
-          path: "/features/outbound-call-tracking",
-          description: "Monitor your team's outbound sales calls.",
-          icon: <Phone className="w-4 h-4 text-gray-500" />,
-        },
-        {
-          label: "Missed Call tracker",
-          path: "/features/missed-call-tracker",
-          description: "Never lose revenue from missed calls.",
-          icon: <Phone className="w-4 h-4 text-gray-500" />,
-        },
-        {
-          label: "Call Analytics Dashboard",
-          path: "/features/call-analytics-dashboard",
-          description: "Real-time reports on calls, agents & campaigns.",
-          icon: <BarChart3 className="w-4 h-4 text-gray-500" />,
-        },
-        {
-          label: "Call Recording for Business",
-          path: "/call-recording/call-recording-auto",
-          description: "Record and review important conversations.",
-          icon: <Phone className="w-4 h-4 text-gray-500" />,
-        },
-      ],
-    },
-  };
-
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (megaMenuRef.current && !megaMenuRef.current.contains(event.target)) {
-        setMegaMenuOpen(false);
+    function handleClickOutside(e) {
+      if (featuresRef.current && !featuresRef.current.contains(e.target)) {
+        setFeaturesOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const openModal = () => {
-    setModalOpen(true);
-    setMobileOpen(false);
-  };
+  useEffect(() => {
+    function handleScroll() { setScrolled(window.scrollY > 10); }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const openModal = () => { setModalOpen(true); setMobileOpen(false); };
 
   const handleLogout = async () => {
     try {
@@ -110,173 +60,131 @@ export default function HeaderClient({ activeLink = "" }) {
       setProfileOpen(false);
       router.push("/");
     } catch (error) {
-      console.error("Logout error:", error);
       toast.error(error.message || "Logout failed. Please try again.");
     }
   };
 
+  const navLinkClass = (path) =>
+    `text-base font-medium transition-colors duration-150 ${
+      activeLink === path ? "text-[#FF5211]" : "text-gray-500 hover:text-gray-900"
+    }`;
+
   return (
     <>
-      <header className="w-full !z-50 sticky top-0 backdrop-blur-xl bg-[#FFF5EC]/20">
-        {/* Animated gradient line */}
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-[#FF5211] to-transparent opacity-50"></div>
-
+      <header className={`w-full sticky top-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-white/90 backdrop-blur-xl shadow-[0_1px_20px_rgba(0,0,0,0.06)]"
+          : "bg-transparent"
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
+          <div className="flex items-center justify-between h-[72px]">
+
             {/* Logo */}
-            <a href="/" className="flex items-center group relative">
-              <div className="absolute -inset-2 bg-gradient-to-r from-[#FF5211]/0 via-[#FF5211]/5 to-[#FF5211]/0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm"></div>
+            <a href="/" className="flex-shrink-0">
               <Image
                 src="/logo.png"
-                alt="FasterQ.in Logo"
-                width={185}
-                height={48}
-                className="object-contain relative z-10 group-hover:scale-105 transition-transform duration-300"
+                alt="FasterQ"
+                width={148}
+                height={38}
+                className="object-contain"
               />
             </a>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-2">
-              {/* Call Tracker Mega Menu */}
-              <div className="relative" ref={megaMenuRef}>
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex items-center gap-8">
+
+              {/* Features dropdown */}
+              <div className="relative" ref={featuresRef}>
                 <button
-                  onMouseEnter={() => setMegaMenuOpen(true)}
-                  className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                    megaMenuOpen
-                      ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-500/30"
-                      : "text-gray-700 hover:text-[#FF5211] hover:bg-orange-50/80"
+                  onMouseEnter={() => setFeaturesOpen(true)}
+                  className={`flex items-center gap-1 text-base font-medium transition-colors duration-150 ${
+                    featuresOpen ? "text-gray-900" : "text-gray-500 hover:text-gray-900"
                   }`}
                 >
-                  <Phone className="w-4 h-4" />
-                   Features
-                  <ChevronDown className={`w-4 h-4 transition-transform ${megaMenuOpen ? 'rotate-180' : ''}`} />
+                  Features
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${featuresOpen ? "rotate-180" : ""}`} />
                 </button>
 
-                {/* Mega Menu Dropdown */}
-                {megaMenuOpen && (
+                {featuresOpen && (
                   <div
-                    className="absolute left-0 mt-2 w-[520px] bg-white backdrop-blur-xl rounded-2xl shadow-2xl border border-orange-100"
-                    onMouseEnter={() => setMegaMenuOpen(true)}
-                    onMouseLeave={() => setMegaMenuOpen(false)}
+                    className="absolute left-0 top-full mt-4 w-[500px] bg-white border border-gray-100 rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.10)] p-3"
+                    onMouseEnter={() => setFeaturesOpen(true)}
+                    onMouseLeave={() => setFeaturesOpen(false)}
                   >
-                    <div className="p-4">
-                      <p className="text-xs font-semibold text-orange-700 mb-3 uppercase tracking-wide">
-                        Features
-                      </p>
-                      <div className="grid grid-cols-2 gap-3">
-                          {callTrackingTabs["features"]?.items.map((item) => (
-                            <a
-                              key={item.path}
-                              href={item.path}
-                              className="group/link block p-3 rounded-xl border border-orange-100/70 hover:border-orange-200 hover:bg-orange-50/70 transition-all"
-                              onClick={() => setMegaMenuOpen(false)}
-                            >
-                              <div className="flex items-start gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
-                                  {item.icon}
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-sm font-semibold text-gray-900 group-hover/link:text-[#FF5211]">
-                                    {item.label}
-                                  </p>
-                                  {item.description && (
-                                    <p className="mt-1 text-xs text-gray-600 leading-snug">
-                                      {item.description}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </a>
-                          ))}
-                        </div>
-                      </div>
+                    {/* Pointer arrow */}
+                    <div className="absolute -top-[5px] left-6 w-2.5 h-2.5 bg-white border-l border-t border-gray-100 rotate-45" />
+                    <div className="grid grid-cols-2 gap-0.5">
+                      {featureLinks.map((item) => (
+                        <a
+                          key={item.path}
+                          href={item.path}
+                          onClick={() => setFeaturesOpen(false)}
+                          className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center shrink-0 mt-0.5">
+                            {item.icon}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-800 group-hover:text-[#FF5211] transition-colors">
+                              {item.label}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5 leading-snug">
+                              {item.description}
+                            </p>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* ROI Calculator Link */}
-              {links.map((link) => (
-                <div key={link.name} className="relative group">
-                  <a
-                    href={link.path}
-                    className={`flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                      activeLink === link.path
-                        ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-500/30"
-                        : "text-gray-700 hover:text-[#FF5211] hover:bg-orange-50/80"
-                    }`}
-                  >
-                    {link.icon}
-                    {link.name}
-                  </a>
-                </div>
-              ))}
+              <a href="/call-tracker-roi" className={navLinkClass("/call-tracker-roi")}>
+                ROI Calculator
+              </a>
+
+              <a href="/blog" className={navLinkClass("/blog")}>
+                Blog
+              </a>
+
             </nav>
 
             {/* Desktop Actions */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="hidden md:flex items-center gap-3">
               {user ? (
                 <div className="relative">
                   <button
                     onClick={() => setProfileOpen(!profileOpen)}
-                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white/80 backdrop-blur-sm hover:bg-white border-2 border-orange-100 hover:border-orange-200 rounded-xl transition-all duration-300 hover:shadow-lg group"
+                    className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                   >
-                    <div className="w-8 h-8 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                    <div className="w-8 h-8 bg-[#FF5211] rounded-full flex items-center justify-center text-white font-bold text-xs">
                       {user.name?.charAt(0).toUpperCase() || "U"}
                     </div>
-                    <span className="group-hover:text-[#FF5211] transition-colors">
-                      {user.name || "Profile"}
-                    </span>
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform duration-300 ${
-                        profileOpen ? "rotate-180" : ""
-                      }`}
-                    />
+                    <span>{user.name || "Profile"}</span>
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${profileOpen ? "rotate-180" : ""}`} />
                   </button>
 
                   {/* Profile Dropdown */}
-                  <div
-                    className={`absolute top-full right-0 mt-3 w-64 z-50 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border-2 border-orange-100 overflow-hidden transition-all duration-300 ${
-                      profileOpen
-                        ? "opacity-100 translate-y-0 visible"
-                        : "opacity-0 -translate-y-2 invisible"
-                    }`}
-                  >
-                    <div className="p-4 bg-gradient-to-br from-orange-50 to-white border-b border-orange-100">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                          {user.name?.charAt(0).toUpperCase() || "U"}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-bold text-gray-900 truncate">
-                            {user.name || "User"}
-                          </p>
-                          <p className="text-xs text-gray-600 truncate">
-                            {user.mobile}
-                          </p>
-                        </div>
-                      </div>
+                  <div className={`absolute top-full right-0 mt-3 w-56 bg-white border border-gray-100 rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.10)] overflow-hidden transition-all duration-200 ${
+                    profileOpen ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-1 invisible"
+                  }`}>
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-semibold text-gray-900 truncate">{user.name || "User"}</p>
+                      <p className="text-xs text-gray-400 truncate">{user.mobile}</p>
                     </div>
-
-                    <div className="p-2">
+                    <div className="p-1.5">
                       <a
                         href="/dashboard"
-                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100/50 hover:text-[#FF5211] rounded-xl transition-all duration-200 group"
                         onClick={() => setProfileOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2.5 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors"
                       >
-                        <div className="w-8 h-8 bg-orange-100 group-hover:bg-orange-200 rounded-lg flex items-center justify-center transition-colors">
-                          <User className="w-4 h-4" />
-                        </div>
-                        <span>Dashboard</span>
+                        <User className="w-4 h-4" /> Dashboard
                       </a>
-
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-4 py-3 mt-1 text-sm font-medium text-gray-700 hover:bg-gradient-to-r hover:from-red-50 hover:to-red-100/50 hover:text-red-600 rounded-xl transition-all duration-200 group"
+                        className="flex items-center gap-2.5 w-full px-3 py-2.5 text-sm text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
                       >
-                        <div className="w-8 h-8 bg-red-100 group-hover:bg-red-200 rounded-lg flex items-center justify-center transition-colors">
-                          <LogOut className="w-4 h-4" />
-                        </div>
-                        <span>Log Out</span>
+                        <LogOut className="w-4 h-4" /> Log Out
                       </button>
                     </div>
                   </div>
@@ -285,17 +193,14 @@ export default function HeaderClient({ activeLink = "" }) {
                 <>
                   <button
                     onClick={openModal}
-                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white/80 backdrop-blur-sm hover:bg-white border-2 border-orange-100 hover:border-orange-200 rounded-xl transition-all duration-300 hover:shadow-lg group"
+                    className="flex items-center gap-1.5 text-base font-medium text-gray-500 hover:text-gray-900 transition-colors px-1"
                   >
-                    <User className="w-4 h-4 group-hover:text-[#FF5211] transition-colors" />
-                    <span className="group-hover:text-[#FF5211] transition-colors">
-                      Login
-                    </span>
+                    <User className="w-4 h-4" />
+                    Login
                   </button>
-
                   <a
                     href="/contact"
-                    className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-[#FF5211] to-orange-600 hover:from-[#FF5211] hover:to-orange-700 rounded-xl transition-all duration-300 shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105"
+                    className="bg-[#FF5211] hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-150 hover:shadow-lg hover:shadow-orange-500/20"
                   >
                     Book a Demo
                   </a>
@@ -303,170 +208,88 @@ export default function HeaderClient({ activeLink = "" }) {
               )}
             </div>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Hamburger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="md:hidden flex items-center justify-center w-11 h-11 text-gray-700 hover:text-[#FF5211] bg-white/80 hover:bg-white border-2 border-orange-100 hover:border-orange-200 rounded-xl transition-all duration-300 hover:shadow-lg"
+              className="md:hidden text-gray-500 hover:text-gray-900 transition-colors p-1"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
+
           </div>
         </div>
 
         {/* Mobile Menu */}
-        <div
-          className={`md:hidden bg-white/95 backdrop-blur-xl border-t-2 border-orange-100 shadow-2xl transition-all duration-300 overflow-hidden ${
-            mobileOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
-          }`}
-        >
-          <nav className="flex flex-col p-4 space-y-2">
-            {/* Call Tracker Toggle */}
-            <div className="mt-2">
-              <button
-                onClick={() =>
-                  setDropdownOpen((prev) => ({
-                    ...prev,
-                    callTracker: !prev.callTracker,
-                  }))
-                }
-                className="flex items-center justify-between w-full px-5 py-3.5 text-sm font-semibold rounded-xl text-gray-700 hover:bg-orange-50 transition"
-              >
-                <div className="flex items-center gap-2">
-                  <Phone className="w-4 h-4" />
-                  Features
-                </div>
-                <ChevronRight
-                  className={`w-4 h-4 transition-transform ${
-                    dropdownOpen?.callTracker ? "rotate-90" : ""
-                  }`}
-                />
-              </button>
+        <div className={`md:hidden border-t border-gray-100 bg-white/95 backdrop-blur-xl overflow-hidden transition-all duration-300 ${
+          mobileOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
+        }`}>
+          <nav className="px-4 py-4 flex flex-col gap-1">
 
-              {dropdownOpen?.callTracker && (
-                <div className="mt-2 ml-4 space-y-4">
-                  <div className="flex overflow-x-auto pb-2 space-x-2">
-                    {Object.entries(callTrackingTabs).map(([key, tab]) => (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setActiveCategory(key)}
-                        className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                          activeCategory === key
-                            ? "bg-[#FF5211] text-white"
-                            : "bg-orange-50 text-gray-700 hover:bg-orange-100"
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="space-y-2">
-                    {callTrackingTabs[activeCategory]?.items.map((item) => (
-                      <a
-                        key={item.path}
-                        href={item.path}
-                        onClick={() => setMobileOpen(false)}
-                        className="block p-3 rounded-xl border border-orange-100/70 hover:bg-orange-50/70 transition-all"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-                            {item.icon}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900">
-                              {item.label}
-                            </p>
-                            {item.description && (
-                              <p className="mt-1 text-xs text-gray-600 leading-snug">
-                                {item.description}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* ROI Calculator */}
-            <a
-              href="/call-tracker-roi"
-              onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-2 px-5 py-3.5 text-sm font-semibold rounded-xl transition-all duration-300 ${
-                activeLink === "/call-tracker-roi"
-                  ? "text-white bg-gradient-to-r from-[#FF5211] to-orange-600 shadow-lg shadow-orange-500/30"
-                  : "text-gray-700 hover:text-[#FF5211] hover:bg-orange-50"
-              }`}
+            {/* Features toggle */}
+            <button
+              onClick={() => setMobileFeaturesOpen(!mobileFeaturesOpen)}
+              className="flex items-center justify-between w-full px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
             >
-              <Calculator className="w-4 h-4" />
-              ROI Calculator
-            </a>
+              Features
+              <ChevronDown className={`w-4 h-4 transition-transform ${mobileFeaturesOpen ? "rotate-180" : ""}`} />
+            </button>
 
-            {/* User Actions Mobile */}
-            <div className="pt-3 border-t-2 border-orange-100 flex flex-col gap-2">
+            {mobileFeaturesOpen && (
+              <div className="ml-3 mt-1 flex flex-col gap-0.5">
+                {featureLinks.map((item) => (
+                  <a
+                    key={item.path}
+                    href={item.path}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-xl transition-colors"
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+
+            {[
+              { name: "ROI Calculator", path: "/call-tracker-roi" },
+              { name: "Blog",           path: "/blog" },
+              { name: "Pricing",        path: "/pricing" },
+            ].map((link) => (
+              <a
+                key={link.path}
+                href={link.path}
+                onClick={() => setMobileOpen(false)}
+                className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                {link.name}
+              </a>
+            ))}
+
+            <div className="pt-3 mt-2 border-t border-gray-100 flex flex-col gap-2">
               {user ? (
                 <>
-                  <div className="p-4 bg-gradient-to-br from-orange-50 to-white rounded-xl border-2 border-orange-100 mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                        {user.name?.charAt(0).toUpperCase() || "U"}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-gray-900 truncate">
-                          {user.name || "User"}
-                        </p>
-                        <p className="text-xs text-gray-600 truncate">
-                          {user.mobile}
-                        </p>
-                      </div>
+                  <div className="px-3 py-2 flex items-center gap-3">
+                    <div className="w-9 h-9 bg-[#FF5211] rounded-full flex items-center justify-center text-white font-bold">
+                      {user.name?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                      <p className="text-xs text-gray-400">{user.mobile}</p>
                     </div>
                   </div>
-
-                  <a
-                    href="/dashboard"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 w-full px-5 py-3.5 text-sm font-semibold text-gray-700 hover:text-[#FF5211] bg-orange-50/50 hover:bg-orange-50 rounded-xl transition-all duration-300"
-                  >
-                    <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                      <User className="w-5 h-5" />
-                    </div>
-                    <span>Dashboard</span>
+                  <a href="/dashboard" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-xl transition-colors">
+                    <User className="w-4 h-4" /> Dashboard
                   </a>
-
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-3 w-full px-5 py-3.5 text-sm font-semibold text-gray-700 hover:text-red-600 bg-red-50/50 hover:bg-red-50 rounded-xl transition-all duration-300"
-                  >
-                    <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                      <LogOut className="w-5 h-5" />
-                    </div>
-                    <span>Log Out</span>
+                  <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-colors">
+                    <LogOut className="w-4 h-4" /> Log Out
                   </button>
                 </>
               ) : (
                 <>
-                  <button
-                    onClick={openModal}
-                    className="flex items-center gap-3 w-full px-5 py-3.5 text-sm font-semibold text-gray-700 hover:text-[#FF5211] bg-orange-50/50 hover:bg-orange-50 rounded-xl transition-all duration-300"
-                  >
-                    <div className="w-9 h-9 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                      <User className="w-5 h-5" />
-                    </div>
-                    <span>Login</span>
+                  <button onClick={openModal} className="px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-xl transition-colors text-left">
+                    Login
                   </button>
-
-                  <a
-                    href="/contact"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 w-full px-5 py-3.5 text-sm font-semibold text-white bg-gradient-to-r from-[#FF5211] to-orange-600 hover:from-[#FF5211] hover:to-orange-700 rounded-xl transition-all duration-300 shadow-lg shadow-orange-500/30"
-                  >
-                    <div className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center shadow-sm">
-                      <Building className="w-5 h-5" />
-                    </div>
-                    <span>Book a Demo</span>
+                  <a href="/contact" onClick={() => setMobileOpen(false)} className="bg-[#FF5211] hover:bg-orange-500 text-white text-sm font-semibold px-4 py-2.5 rounded-full transition-colors text-center">
+                    Book a Demo
                   </a>
                 </>
               )}

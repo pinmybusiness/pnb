@@ -1,4 +1,4 @@
-import { ChevronDown, HelpCircle, Check, CircleQuestionMark } from "lucide-react";
+import { ChevronDown, Check } from "lucide-react";
 
 const faqs = [
   {
@@ -61,7 +61,7 @@ export default function FAQs() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      <section className="py-16 md:py-20 px-4 bg-gradient-to-br from-white via-gray-50 to-orange-50/20 relative overflow-hidden">
+      <section className="py-16 md:py-20 px-4 bg-white relative overflow-hidden">
         {/* Background decorations */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 right-1/4 w-64 md:w-72 h-64 md:h-72 bg-[#FF5211] rounded-full blur-3xl"></div>
@@ -95,7 +95,7 @@ export default function FAQs() {
                   <summary className="cursor-pointer list-none p-5 md:p-6 flex items-center justify-between gap-4">
                     <div className="flex items-start gap-3 md:gap-4 flex-1">
                       <div className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br transition-all duration-300 group-open:bg-gradient-to-br from-[#FF5211] to-orange-600">
-                        <CircleQuestionMark className="w-5 h-5 text-white group-open:hidden " />
+                        <span className="text-white text-lg font-bold group-open:hidden">Q</span>
                         <Check className="w-5 h-5 text-white hidden group-open:inline-block" strokeWidth={3} />
                       </div>
                       <h3 className="font-bold text-base md:text-lg transition-colors">
@@ -115,41 +115,6 @@ export default function FAQs() {
             ))}
           </div>
 
-          {/* Contact Support CTA */}
-          <div className="mt-12 md:mt-16">
-            <div className="bg-gradient-to-r from-orange-50 via-orange-100/50 to-orange-50 rounded-3xl p-8 md:p-10 border-2 border-[#FF5211]/20 shadow-lg text-center relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF5211]/10 rounded-full blur-2xl"></div>
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-orange-400/10 rounded-full blur-2xl"></div>
-              
-              <div className="relative z-10">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-2xl mb-4 shadow-lg">
-                  <HelpCircle className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                  Still have questions?
-                </h3>
-                <p className="text-gray-600 mb-6 text-base md:text-lg max-w-xl mx-auto">
-                  Our team is here to help you get started and answer any questions you may have
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <a
-                    href="/contact"
-                    className="bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-4 rounded-full font-bold hover:shadow-2xl transition-all hover:scale-105 inline-flex items-center justify-center gap-2 group"
-                  >
-                    <span>Start for ₹99/month</span>
-                    <span className="text-xl group-hover:translate-x-1 transition-transform">→</span>
-                  </a>
-                  <a
-                    href="tel:+919798288748"
-                    className="bg-white text-[#FF5211] px-8 py-4 rounded-full font-bold border-2 border-[#FF5211]/20 hover:border-[#FF5211] hover:shadow-xl transition-all hover:scale-105 inline-flex items-center justify-center gap-2"
-                  >
-                    <span>📞</span>
-                    <span>Call Us</span>
-                  </a>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* <div className="mt-8 text-center">
             <p className="text-sm text-gray-500">

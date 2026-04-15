@@ -2,7 +2,6 @@ import HeroAnimationClient from "@/components/clients/HeroAnimationClient";
 import LenisClient from "@/components/clients/LenisClient";
 import RevealClient from "@/components/clients/RevealClient";
 import ScrollProgressClient from "@/components/clients/ScrollProgressClient";
-import Benefits from "@/components/home/Benefits";
 import FAQs from "@/components/home/FAQs";
 import Features from "@/components/home/Features";
 import FinalCTA from "@/components/home/FinalCTA";
@@ -12,8 +11,6 @@ import Industries from "@/components/home/Industries";
 import Integrations from "@/components/home/Integrations";
 import Pricing from "@/components/home/Pricing";
 import TestimonialsSection from "@/components/home/Testimonials";
-
-// Generate dynamic metadata
 export async function generateMetadata() {
   return {
     title: "Call Tracking Software India | Track & Record All Sales Calls",
@@ -27,42 +24,22 @@ export async function generateMetadata() {
 
 export default function TracklyLanding() {
   return (
-      <>
-          <LenisClient />
-          <ScrollProgressClient />
-          <RevealClient />
-          <HeroAnimationClient />
-          <div className="min-h-screen font-sans">
-            {/* Hero Section */}
-            <Hero />
-
-            {/* Benefits */}
-            <Benefits />
-
-            {/* Industries */}
-            <Industries />
-
-            {/* How It Works */}
-            <HowItWorks />
-
-            {/* Features */}
-            <Features />
-
-            {/* Integrations */}
-            <Integrations />
-
-            {/* Testimonials */}
-            <TestimonialsSection />
-
-            {/* Pricing */}
-            <Pricing />
-
-            {/* FAQs */}
-            <FAQs />
-
-            {/* Final CTA */}
-            <FinalCTA />
-          </div>
-      </>
+    <>
+      <LenisClient />
+      <ScrollProgressClient />
+      <RevealClient />
+      <HeroAnimationClient />
+      <div className="min-h-screen font-sans">
+        <Hero />
+        <HowItWorks />
+        <Features />
+        <Industries />
+        <Integrations />
+        <TestimonialsSection />
+        <Pricing />
+        <FAQs />
+        <FinalCTA />
+      </div>
+    </>
   );
 }

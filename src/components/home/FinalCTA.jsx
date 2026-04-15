@@ -1,80 +1,56 @@
-import CtaButton from "./CtaButton";
+import Link from "next/link";
 
 export default function FinalCTA() {
   return (
-    <section className="py-24 px-4 bg-gradient-to-br from-[#FF5211] via-orange-600 to-orange-700 text-white text-center relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-white rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+    <section className="bg-gradient-to-b from-white via-orange-50/50 to-white py-28 px-4 relative overflow-hidden">
+      {/* Soft orange glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-[#FF5211]/8 rounded-full blur-[100px]" />
       </div>
 
-      {/* Floating elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-10 w-3 h-3 bg-white/30 rounded-full animate-bounce" style={{animationDelay: '0.5s'}}></div>
-        <div className="absolute top-40 right-20 w-2 h-2 bg-white/30 rounded-full animate-bounce" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-32 left-1/4 w-4 h-4 bg-white/30 rounded-full animate-bounce" style={{animationDelay: '1.5s'}}></div>
-      </div>
+      <div className="max-w-3xl mx-auto relative z-10 text-center" data-animate="fade-up">
 
-      <div className="max-w-3xl mx-auto relative z-10" data-animate="scale-in">
-        {/* Combined Badge – Merged for better flow */}
-        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-5 py-2 rounded-full text-sm font-bold border border-white/30 min-w-0 flex-1">
-            <span className="flex-shrink-0">⚡</span>
-            <span className="truncate">Join 500+ professionals</span>
-          </div>
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-5 py-2 rounded-full text-sm font-bold border border-white/30 min-w-0 flex-1">
-            <span className="flex-shrink-0">🇮🇳</span>
-            <span className="truncate">Made in India – Join the Movement</span>
-          </div>
-        </div>
-
-        {/* Heading */}
-        <h2 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
-          Never Miss a Lead Again
-        </h2>
-        <p className="text-xl md:text-2xl mb-4 text-white/90 font-medium">
-          Track every call, get team call reports on WhatsApp, and never miss a lead
+        {/* Eyebrow */}
+        <p className="text-xs uppercase tracking-widest text-[#FF5211] font-semibold mb-5">
+          Built for every team
         </p>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <CtaButton
+        {/* Heading */}
+        <h2 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+          Never miss a call.{" "}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5211] to-orange-400">
+            Never miss a lead.
+          </span>
+        </h2>
+
+        {/* Subtext */}
+        <p className="text-gray-500 text-lg md:text-xl max-w-xl mx-auto mb-10 leading-relaxed">
+          Your team is already making calls. FasterQ makes sure none of them go untracked.
+        </p>
+
+        {/* CTAs */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+          <Link
             href="/contact"
-            text="Start for ₹99/month"
-            size="xl"
-            className="bg-white !text-[#FF5211] px-10 py-5 rounded-full font-bold text-lg hover:shadow-2xl hover:bg-white transition-all hover:scale-105 inline-flex items-center gap-3 group"
-          />
-          <CtaButton
+            className="bg-[#FF5211] hover:bg-orange-500 text-white px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 hover:scale-105 hover:shadow-xl hover:shadow-orange-500/20"
+          >
+            Start for ₹99 / month
+          </Link>
+          <Link
             href="/contact"
-            text="Talk to Our Team"
-            size="xl"
-            variant="secondary"
-            className="bg-transparent text-white px-10 py-5 rounded-full font-bold text-lg border-2 border-white  hover:text-[#FF5211] transition-all hover:scale-105 inline-flex items-center gap-3"
-          />
+            className="border-2 border-gray-300 hover:border-[#FF5211] text-gray-700 hover:text-[#FF5211] px-8 py-4 rounded-xl font-bold text-base transition-all duration-200 hover:scale-105"
+          >
+            Talk to our team
+          </Link>
         </div>
 
-        {/* Trust indicators */}
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-sm text-white/80">
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span>No credit card required</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span>Cancel anytime</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <span>Setup in 2 minutes</span>
-          </div>
+        {/* Trust strip */}
+        <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-600">
+          <span className="text-gray-400">✓ No credit card required</span>
+          <span className="text-gray-400">✓ Cancel anytime</span>
+          <span className="text-gray-400">✓ Setup in 2 minutes</span>
         </div>
+
       </div>
     </section>
   );

@@ -1,9 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export', // 🔥 MOST IMPORTANT
+
   reactStrictMode: true,
+
   images: {
     remotePatterns: [],
+    unoptimized: true, // ⚠️ required for static export
   },
+
   async headers() {
     return [
       {

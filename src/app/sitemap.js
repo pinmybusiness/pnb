@@ -1,5 +1,7 @@
 import { TOOLS, SITE } from '@/lib/tools';
 
+export const dynamic = 'force-static';
+
 export default function sitemap() {
   const toolUrls = TOOLS.map((tool) => ({
     url: `${SITE.url}${tool.href}`,

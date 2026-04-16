@@ -1,15 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: false, // Disable for MediaPipe to work
+  reactStrictMode: true,
   images: {
-    domains: ['lh3.googleusercontent.com', 'localhost', 'www.fasterq.in', 'api.fasterq.in', 'cdn.fasterq.in'],
+    remotePatterns: [],
   },
-  output: 'standalone', // For AWS Amplify serverful deployment
-  async rewrites() {
+  async headers() {
     return [
       {
-        source: '/restaurant/register',
-        destination: '/restaurant/register',
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
       },
     ];
   },

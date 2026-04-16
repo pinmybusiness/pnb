@@ -1,65 +1,53 @@
-import { Home, ArrowRight, Search } from "lucide-react";
+import Link from 'next/link';
+import { Home, ArrowRight, Zap } from 'lucide-react';
+import { TOOLS } from '@/lib/tools';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
-      <div className="max-w-2xl w-full text-center">
-        {/* 404 Number with Gradient */}
-        <div className="mb-8">
-          <h1 className="text-[150px] md:text-[200px] font-black leading-none bg-gradient-to-r from-[#FF5211] via-orange-500 to-orange-600 bg-clip-text text-transparent">
-            404
-          </h1>
-        </div>
+    <div className="min-h-[80vh] bg-white flex items-center justify-center px-4">
+      <div className="max-w-lg w-full text-center">
+        {/* 404 */}
+        <h1 className="text-[120px] font-black leading-none gradient-text mb-4">404</h1>
 
-        {/* Message */}
-        <div className="mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-            Page Not Found
-          </h2>
-          <p className="text-lg text-gray-600 max-w-md mx-auto">
-            Sorry, we couldn't find the page you're looking for. It might have been moved or deleted.
-          </p>
-        </div>
+        <h2 className="text-2xl font-bold text-slate-900 mb-3">Page not found</h2>
+        <p className="text-slate-600 mb-8 max-w-sm mx-auto">
+          Sorry, we couldn&apos;t find that page. It may have moved or been removed.
+        </p>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-          <a
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
+          <Link
             href="/"
-            className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#FF5211] to-orange-600 text-white px-8 py-4 rounded-full font-semibold hover:shadow-xl transition-all hover:scale-105 group"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-white rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-md shadow-indigo-200 transition-all"
           >
-            <Home className="w-5 h-5" />
-            <span>Back to Home</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </a>
-          
-          <a
-            href="/contact"
-            className="inline-flex items-center justify-center gap-2 bg-white text-[#FF5211] border-2 border-[#FF5211]/20 px-8 py-4 rounded-full font-semibold hover:border-[#FF5211] hover:bg-orange-50 transition-all"
+            <Home size={15} /> Back to Home
+          </Link>
+          <Link
+            href="/tools"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-semibold text-slate-700 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 transition-all"
           >
-            <span>Contact Support</span>
-          </a>
+            <Zap size={15} /> Try Free Tools
+          </Link>
         </div>
 
-        {/* Popular Links */}
-        {/* <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
-          <p className="text-sm font-semibold text-gray-700 mb-4">Popular Pages</p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {[
-              { label: 'Pricing', href: '/pricing' },
-              { label: 'Features', href: '/features' },
-              { label: 'Download', href: '/download' },
-              { label: 'Blog', href: '/blog' }
-            ].map(link => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-sm text-gray-600 hover:text-[#FF5211] transition-colors p-2 hover:bg-white rounded-lg"
+        {/* Quick links to tools */}
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+          Popular Tools
+        </p>
+        <div className="flex flex-wrap gap-2 justify-center">
+          {TOOLS.slice(0, 4).map((tool) => {
+            const Icon = tool.icon;
+            return (
+              <Link
+                key={tool.slug}
+                href={tool.href}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-50 border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all"
               >
-                {link.label}
-              </a>
-            ))}
-          </div>
-        </div> */}
+                <Icon size={12} /> {tool.name}
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

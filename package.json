@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "pinmybusiness",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,30 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@react-oauth/google": "^0.12.2",
-    "@reduxjs/toolkit": "^2.8.2",
-    "@studio-freight/lenis": "^1.0.42",
-    "@tanstack/react-query": "^5.90.5",
-    "axios": "^1.12.2",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.23.12",
-    "gsap": "^3.13.0",
     "lucide-react": "^0.539.0",
     "next": "15.4.6",
+    "qrcode": "^1.5.4",
     "react": "19.1.0",
-    "react-datepicker": "^8.5.0",
     "react-dom": "19.1.0",
-    "react-hot-toast": "^2.6.0",
-    "react-icons": "^5.5.0",
-    "react-redux": "^9.2.0",
-    "react-select": "^5.10.2",
-    "recharts": "^3.1.2",
-    "redux-persist": "^6.0.0",
-    "sanitize-html": "^2.17.0",
-    "slugify": "^1.6.6",
-    "tailwind-merge": "^3.3.1",
-    "use-debounce": "^10.0.6",
-    "xlsx": "^0.18.5"
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

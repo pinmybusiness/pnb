@@ -1,194 +1,206 @@
-// src/app/blog/page.jsx
-import { API_CONFIG } from '../../../config/api';
-import { notFound } from 'next/navigation';
-import BlogListing from './BlogListing';
-import BlogSchema from './BlogSchema';
+import Link from 'next/link';
+import { SITE, TOOLS } from '@/lib/tools';
+import { ArrowRight, Clock } from 'lucide-react';
 
-export async function generateMetadata({ searchParams }) {
-  const params = await searchParams; // ✅ Next.js 15 required
-  const currentPage = parseInt(params?.page || "1", 10);
+export const metadata = {
+  title: 'Blog - Business Tips & Tool Guides',
+  description: `Practical guides, tips, and tutorials for small businesses and freelancers from ${SITE.name}.`,
+  alternates: { canonical: '/blog' },
+};
 
-  const baseTitle = "Blog | FasterQ Call Tracking Software";
-  const title =
-    currentPage > 1
-      ? `Blog - Page ${currentPage} | FasterQ Call Tracking Software`
-      : baseTitle;
+const POSTS = [
+  {
+    slug: 'how-to-add-whatsapp-button-to-website',
+    title: 'How to Add a WhatsApp Button to Your Website (2024 Guide)',
+    excerpt:
+      'Adding a WhatsApp contact button is one of the fastest ways to increase conversions. Here\'s the complete guide with code examples.',
+    category: 'WhatsApp',
+    readTime: '4 min read',
+    date: '2024-01-15',
+    featured: true,
+  },
+  {
+    slug: 'qr-code-marketing-small-business',
+    title: 'QR Code Marketing for Small Businesses: 10 Creative Ideas',
+    excerpt:
+      'QR codes are back - and smarter than ever. Learn 10 creative ways to use QR codes to drive traffic, sales, and engagement.',
+    category: 'Marketing',
+    readTime: '6 min read',
+    date: '2024-01-10',
+    featured: true,
+  },
+  {
+    slug: 'how-to-write-a-professional-invoice',
+    title: 'How to Write a Professional Invoice: Complete Template Guide',
+    excerpt:
+      'A proper invoice can mean the difference between getting paid on time or chasing clients for months. This guide covers everything.',
+    category: 'Finance',
+    readTime: '7 min read',
+    date: '2024-01-05',
+    featured: false,
+  },
+  {
+    slug: 'email-signature-best-practices',
+    title: '7 Email Signature Best Practices That Make You Look Professional',
+    excerpt:
+      'Your email signature is seen by every person you email. Make it count with these proven best practices.',
+    category: 'Productivity',
+    readTime: '5 min read',
+    date: '2023-12-28',
+    featured: false,
+  },
+  {
+    slug: 'password-security-guide-small-business',
+    title: 'Password Security for Small Businesses: The Complete 2024 Guide',
+    excerpt:
+      '43% of cyberattacks target small businesses. Here\'s how to protect yourself with strong password practices.',
+    category: 'Security',
+    readTime: '8 min read',
+    date: '2023-12-20',
+    featured: false,
+  },
+  {
+    slug: 'free-tools-every-freelancer-needs',
+    title: '12 Free Online Tools Every Freelancer Needs in 2024',
+    excerpt:
+      'Working solo doesn\'t mean you can\'t have professional-grade tools. Here are the best free tools for freelancers.',
+    category: 'Freelancing',
+    readTime: '5 min read',
+    date: '2023-12-15',
+    featured: false,
+  },
+];
 
-  const description =
-    "Read expert insights, tips, and updates on SIM-based call tracking, sales productivity, and business growth by FasterQ.";
+const CATEGORY_COLORS = {
+  WhatsApp:    'bg-emerald-100 text-emerald-700',
+  Marketing:   'bg-indigo-100 text-indigo-700',
+  Finance:     'bg-amber-100 text-amber-700',
+  Productivity:'bg-sky-100 text-sky-700',
+  Security:    'bg-rose-100 text-rose-700',
+  Freelancing: 'bg-violet-100 text-violet-700',
+};
 
-  const canonicalUrl =
-    currentPage > 1
-      ? `https://www.fasterq.in/blog?page=${currentPage}`
-      : `https://www.fasterq.in/blog`;
+export default function BlogPage() {
+  const featured = POSTS.filter((p) => p.featured);
+  const rest     = POSTS.filter((p) => !p.featured);
 
-  return {
-    title,
-    description,
-
-    alternates: {
-      canonical: canonicalUrl,
-    },
-
-    robots: {
-      index: true,
-      follow: true,
-    },
-
-    openGraph: {
-      title,
-      description,
-      url: canonicalUrl,
-      siteName: "FasterQ",
-      type: "website",
-    },
-
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
-  };
-}
-
-
-async function getBlogPosts(page = 1, pageSize = 6) {
-  const url = `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.getArticles}?website=${API_CONFIG.websiteId}&page=${page}&pageSize=${pageSize}`;
-  
-  try {
-    const res = await fetch(url, { next: { revalidate: 3600 } });
-    if (!res.ok) throw new Error('Failed to fetch posts');
-    
-    const data = await res.json();
-    return {
-      posts: data.posts || [],
-      pagination: data.pagination || {
-        totalPosts: data.posts ? data.posts.length : 0,
-        totalPages: 1,
-        currentPage: page,
-        pageSize: pageSize
-      }
-    };
-  } catch (error) {
-    console.error('Error fetching blog posts:', error);
-    return { posts: [], totalPosts: 0 };
-  }
-}
-
-export default async function BlogPage({ searchParams }) {
- const params = await searchParams; // ✅ REQUIRED in Next 15
-  const currentPage = parseInt(params?.page || "1", 10);
-
-  if (isNaN(currentPage) || currentPage < 1) {
-    notFound();
-  }
-
-  const { posts, pagination } = await getBlogPosts(currentPage);
-  const hasNextPage = pagination ? currentPage < pagination.totalPages : false;
-
-  if (!posts || posts.length === 0) {
-    notFound();
-  }
-  
   return (
-    <>
-      <BlogSchema posts={posts} />
-
-      {/* Hero Section */}
-      <div className="relative -mt-5 bg-gradient-to-br from-orange-50 via-white to-orange-50/30 overflow-hidden">
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-10">
-          <div className="text-center max-w-4xl mx-auto">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 text-white text-sm font-bold rounded-full mb-6 shadow-lg shadow-orange-500/30">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-              Our Blog
-            </div>
-
-            {/* Heading */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Insights & <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF5211] to-orange-600">Updates</span>
-            </h1>
-            
-            {/* Description */}
-            <p className="text-lg md:text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
-              Discover the latest tips, insights, and industry trends to help you grow your business and optimize your operations
-            </p>
-
-            {/* Stats */}
-            <div className="flex flex-wrap items-center justify-center gap-8 mt-10">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="text-2xl font-bold text-gray-900">{pagination?.totalPosts || posts.length}</div>
-                  <div className="text-sm text-gray-600">Articles</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="text-left">
-                  <div className="text-2xl font-bold text-gray-900">Weekly</div>
-                  <div className="text-sm text-gray-600">Updates</div>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 text-center">
+          <span className="inline-block px-3 py-1 text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-full border border-indigo-100 mb-4 uppercase tracking-wider">
+            Blog
+          </span>
+          <h1 className="text-4xl font-extrabold text-slate-900 mb-4">
+            Business Tips & Tool Guides
+          </h1>
+          <p className="text-lg text-slate-600 max-w-xl mx-auto">
+            Practical guides to help small businesses, freelancers, and creators work smarter.
+          </p>
         </div>
       </div>
 
-      {/* Blog Content */}
-      <div className="bg-gradient-to-br from-white via-orange-50/30 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20">
-          
-          {/* Section Header */}
-          <div className="flex items-center justify-between mb-12">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-[#FF5211] to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                  Latest Articles
-                </h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  {currentPage > 1 ? `Page ${currentPage}` : 'Fresh content for you'}
-                </p>
-              </div>
-            </div>
-
-            {/* Page Indicator */}
-            {pagination && pagination.totalPages > 1 && (
-              <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border-2 border-orange-100 rounded-xl shadow-sm">
-                <span className="text-sm font-semibold text-gray-700">Page</span>
-                <span className="px-3 py-1 bg-gradient-to-r from-[#FF5211] to-orange-600 text-white text-sm font-bold rounded-lg">
-                  {currentPage}
-                </span>
-                <span className="text-sm text-gray-500">of {pagination.totalPages}</span>
-              </div>
-            )}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        {/* Featured posts */}
+        <div className="mb-12">
+          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6">Featured</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {featured.map((post) => (
+              <article
+                key={post.slug}
+                className="bg-white rounded-2xl border border-slate-200 p-6 hover:border-indigo-200 hover:shadow-lg hover:shadow-indigo-50 transition-all tool-card group"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <span
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-full ${CATEGORY_COLORS[post.category] ?? 'bg-slate-100 text-slate-700'}`}
+                  >
+                    {post.category}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs text-slate-400">
+                    <Clock size={11} /> {post.readTime}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-indigo-600 transition-colors leading-snug">
+                  {post.title}
+                </h3>
+                <p className="text-sm text-slate-600 leading-relaxed mb-4">{post.excerpt}</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">
+                    {new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 group-hover:gap-2 transition-all">
+                    Read more <ArrowRight size={13} />
+                  </span>
+                </div>
+              </article>
+            ))}
           </div>
+        </div>
 
-          {/* Blog Listing */}
-          <BlogListing 
-            posts={posts} 
-            currentPage={currentPage} 
-            hasNextPage={hasNextPage}
-            totalPages={pagination?.totalPages}
-          />
+        {/* All posts */}
+        <div>
+          <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6">All Posts</h2>
+          <div className="space-y-4">
+            {rest.map((post) => (
+              <article
+                key={post.slug}
+                className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-indigo-200 hover:shadow-md transition-all group flex flex-col sm:flex-row sm:items-center gap-4"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span
+                      className={`px-2.5 py-0.5 text-xs font-semibold rounded-full ${CATEGORY_COLORS[post.category] ?? 'bg-slate-100 text-slate-700'}`}
+                    >
+                      {post.category}
+                    </span>
+                    <span className="flex items-center gap-1 text-xs text-slate-400">
+                      <Clock size={11} /> {post.readTime}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm text-slate-500 mt-1 line-clamp-1">{post.excerpt}</p>
+                </div>
+                <div className="shrink-0 flex items-center gap-3">
+                  <span className="text-xs text-slate-400 hidden sm:block">
+                    {new Date(post.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-indigo-600 group-hover:gap-2 transition-all">
+                    Read <ArrowRight size={13} />
+                  </span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA to tools */}
+        <div className="mt-16 bg-gradient-to-br from-indigo-600 to-violet-700 rounded-3xl p-8 text-center">
+          <h2 className="text-2xl font-extrabold text-white mb-3">
+            Try our free tools while you&apos;re here
+          </h2>
+          <p className="text-indigo-200 mb-6 max-w-md mx-auto">
+            Everything you read about - WhatsApp links, QR codes, invoices - available free, right now.
+          </p>
+          <div className="flex flex-wrap gap-3 justify-center">
+            {TOOLS.slice(0, 3).map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <Link
+                  key={tool.slug}
+                  href={tool.href}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white text-sm font-semibold rounded-xl transition-all backdrop-blur-sm"
+                >
+                  <Icon size={14} />
+                  {tool.name}
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

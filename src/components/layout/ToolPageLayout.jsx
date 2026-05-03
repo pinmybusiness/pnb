@@ -1,14 +1,40 @@
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { TOOLS } from '@/lib/tools';
+import { TOOLS, SITE } from '@/lib/tools';
 
 export default function ToolPageLayout({ tool, children }) {
   const ToolIcon = tool.icon;
   const related = TOOLS.filter((t) => t.slug !== tool.slug).slice(0, 4);
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: tool.name,
+    url: `${SITE.url}${tool.href}`,
+    description: tool.description,
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript. Requires HTML5.',
+    isAccessibleForFree: true,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: SITE.name,
+      url: SITE.url,
+    },
+  };
+
   return (
     <div className="min-h-screen bg-slate-50/60">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       {/* Tool header */}
       <div className="bg-white border-b border-slate-200">

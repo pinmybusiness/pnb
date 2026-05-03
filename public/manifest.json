@@ -1,14 +1,14 @@
 {
-  "name": "FasterQ",
-  "short_name": "FasterQ",
-  "description": "Smart queue management system",
-  "theme_color": "#FF5211",
-  "background_color": "#FFFFFF",
+  "name": "PinMyBusiness - Free Business Tools",
+  "short_name": "PinMyBusiness",
+  "description": "Free online tools for small businesses, freelancers, and creators. WhatsApp links, QR codes, invoices, email signatures, password generators - no signup required.",
+  "theme_color": "#4f46e5",
+  "background_color": "#ffffff",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "/dashboard",
-  "categories": ["business", "productivity"],
+  "start_url": "/",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "/icons/icon-192.png",

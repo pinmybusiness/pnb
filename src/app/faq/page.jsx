@@ -5,6 +5,18 @@ import { ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { SITE } from '@/lib/tools';
 
+const FAQ_JSON_LD_BUILDER = (faqs) => ({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.flatMap((s) =>
+    s.items.map((item) => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    }))
+  ),
+});
+
 const FAQS = [
   { category: 'General', items: [
     { q: 'Are all the tools really free?',       a: "Yes - 100% free forever. No hidden fees, no premium paywalls. We're supported by advertising." },
@@ -48,8 +60,13 @@ function FAQItem({ q, a }) {
 }
 
 export default function FAQPage() {
+  const jsonLd = FAQ_JSON_LD_BUILDER(FAQS);
   return (
     <div className="min-h-screen bg-slate-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="bg-white border-b border-slate-200">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16 text-center">
           <span className="inline-block px-3 py-1 text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-full border border-indigo-100 mb-4 uppercase tracking-wider">FAQ</span>

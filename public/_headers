@@ -4,3 +4,23 @@
   X-XSS-Protection: 1; mode=block
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/icon
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable
+
+/icon1
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable
+
+/apple-icon
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable
+
+/opengraph-image
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable
+
+/twitter-image
+  Content-Type: image/png
+  Cache-Control: public, max-age=31536000, immutable

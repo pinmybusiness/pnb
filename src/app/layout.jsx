@@ -10,13 +10,6 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
-const OG_IMAGE = {
-  url: '/images/og-image.webp',
-  width: 1200,
-  height: 630,
-  alt: `${SITE.name} - ${SITE.tagline}`,
-};
-
 export const metadata = {
   metadataBase: new URL(SITE.url),
   title: {
@@ -38,14 +31,6 @@ export const metadata = {
   creator: SITE.name,
   publisher: SITE.name,
   manifest: '/manifest.json',
-  icons: {
-    icon: [
-      { url: '/favicon.png', type: 'image/png' },
-      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: '/icons/icon-192.png',
-  },
   openGraph: {
     type: 'website',
     locale: 'en_US',
@@ -53,14 +38,12 @@ export const metadata = {
     siteName: SITE.name,
     title: `${SITE.name} - ${SITE.tagline}`,
     description: SITE.description,
-    images: [OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: `${SITE.name} - ${SITE.tagline}`,
     description: SITE.description,
     creator: '@pinmybusiness',
-    images: [OG_IMAGE.url],
   },
   robots: {
     index: true,

@@ -1,6 +1,7 @@
 import HeroSection from '@/components/home/HeroSection';
 import ToolsGrid from '@/components/home/ToolsGrid';
 import FeaturesSection from '@/components/home/FeaturesSection';
+import TestimonialsSection from '@/components/home/TestimonialsSection';
 import TrustSection from '@/components/home/TrustSection';
 import { SITE } from '@/lib/tools';
 
@@ -16,6 +17,7 @@ export default function HomePage() {
       <HeroSection />
       <ToolsGrid />
       <FeaturesSection />
+      <TestimonialsSection />
       <TrustSection />
     </>
   );

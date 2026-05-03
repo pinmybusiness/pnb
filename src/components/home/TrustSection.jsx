@@ -2,41 +2,33 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronDown, ArrowRight, Zap, CheckCircle2 } from 'lucide-react';
-import { TOOLS } from '@/lib/tools';
+import { ChevronDown, ArrowUpRight, Check } from 'lucide-react';
+
+const COMPARE = [
+  { label: 'QR Code Generator',     theirs: '$15+/mo' },
+  { label: 'Invoice Software',      theirs: '$30+/mo' },
+  { label: 'Email Signature Tools', theirs: '$10+/mo' },
+  { label: 'WhatsApp Link Builder', theirs: '$9+/mo'  },
+  { label: 'Password Generator',    theirs: '$3+/mo'  },
+];
 
 const FAQS = [
   {
-    q: 'Are these tools really 100% free?',
-    a: 'Yes. No trial, no freemium, no hidden upgrade. Every tool is fully functional for free, forever. We cover costs through advertising — you never pay a cent.',
+    q: 'Are these tools genuinely free?',
+    a: 'Yes — every tool is fully featured, with no trial expiry, no premium tier, and no locked exports. Costs are covered by simple, non-intrusive advertising.',
   },
   {
-    q: 'Do I need to create an account or give my email?',
+    q: 'Do I need to create an account or share my email?',
     a: "No. Open any tool and start using it immediately. We don't ask for your name, email, phone, or any personal information — ever.",
   },
   {
-    q: 'Where does my data go when I use these tools?',
-    a: 'Nowhere. All processing happens locally in your browser tab. When you close the tab, everything is gone. We have zero access to anything you create.',
+    q: 'Where does my data go when I use a tool?',
+    a: 'Nowhere. All processing happens locally in your browser tab. We never see, store, or transmit anything you create. GDPR-friendly by design.',
   },
   {
-    q: 'Can I use these tools for my US business legally?',
-    a: 'Absolutely. These tools generate standard outputs — WhatsApp links, QR codes, invoice PDFs, HTML email signatures — that you own fully and can use commercially without restriction.',
+    q: 'Can I use the tools commercially in the US or UK?',
+    a: 'Absolutely. Every output — WhatsApp links, QR codes, invoices, signatures — is yours to use commercially with no attribution, no restrictions, no licensing fees.',
   },
-  {
-    q: "Why are these tools free? What's the catch?",
-    a: "No catch. We display non-intrusive ads on the site to cover hosting costs. The tools themselves will always be free. We believe basic business utilities shouldn't cost money.",
-  },
-  {
-    q: 'Do the tools work outside the US?',
-    a: 'Yes — we support international phone formats (33 country codes), 18 global currencies, and work in every country. We just focus our marketing on the US market.',
-  },
-];
-
-const COMPARE = [
-  { label: 'QR Code Generator', theirs: '$15/mo', tag: 'Beaconstac, QR Tiger' },
-  { label: 'Invoice Software', theirs: '$30/mo', tag: 'FreshBooks, Wave' },
-  { label: 'Email Signature Builder', theirs: '$10/mo', tag: 'WiseStamp, Newoldstamp' },
-  { label: 'WhatsApp Link Tool', theirs: '$9/mo', tag: 'WATI, Respond.io' },
 ];
 
 function FAQItem({ q, a }) {
@@ -47,14 +39,14 @@ function FAQItem({ q, a }) {
         onClick={() => setOpen((v) => !v)}
         className="w-full flex items-center justify-between gap-4 py-5 text-left"
       >
-        <span className="text-[15px] font-semibold text-slate-800 leading-snug">{q}</span>
+        <span className="text-[15px] font-semibold text-slate-900 leading-snug">{q}</span>
         <ChevronDown
           size={16}
           className={`shrink-0 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         />
       </button>
       {open && (
-        <p className="pb-5 text-sm text-slate-500 leading-relaxed pr-6">{a}</p>
+        <p className="pb-5 text-[14px] text-slate-600 leading-[1.65] pr-6 fade-up">{a}</p>
       )}
     </div>
   );
@@ -63,184 +55,165 @@ function FAQItem({ q, a }) {
 export default function TrustSection() {
   return (
     <>
-      {/* Comparison section */}
-      <section className="py-28 bg-slate-50">
+      {/* Pricing comparison */}
+      <section className="py-24 sm:py-32 bg-slate-50/60 border-y border-slate-100">
         <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
 
-            {/* Left: copy */}
+            {/* Left copy */}
             <div>
-              <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-4">
-                vs. paid alternatives
+              <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-[0.14em] mb-4">
+                Vs. paid alternatives
               </p>
-              <h2 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight leading-[1.1] mb-5">
-                They charge $20–$100/mo.
-                <span className="block gradient-text-dark">We charge $0.</span>
+              <h2 className="text-[34px] sm:text-[44px] font-black text-slate-900 tracking-[-0.035em] leading-[1.05] mb-5">
+                Most charge $15–$50 a month.{' '}
+                <span className="gradient-text-dark">We charge nothing.</span>
               </h2>
-              <p className="text-slate-500 text-lg leading-relaxed mb-8">
-                QR code generators, invoice builders, and email signature tools are standard
-                SaaS products charging monthly fees. We made them free because they should be.
+              <p className="text-[16.5px] text-slate-600 leading-[1.6] mb-8">
+                Standard SaaS products lock these basic utilities behind monthly fees, signup walls, and feature tiers. We made them free because, for a small business, they should be.
               </p>
               <Link
                 href="/tools"
-                className="btn-primary inline-flex items-center gap-2 px-6 py-3 text-sm rounded-xl"
+                className="inline-flex items-center gap-1.5 px-5 py-3 text-[14.5px] font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all shadow-sm hover:shadow-md"
               >
-                Start for Free <ArrowRight size={14} />
+                Open a tool — $0
+                <ArrowUpRight size={14} strokeWidth={2.5} />
               </Link>
             </div>
 
-            {/* Right: comparison table */}
-            <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white">
-              {/* Header row */}
-              <div className="grid grid-cols-3 px-5 py-3 bg-slate-50 border-b border-slate-200">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest col-span-2">Tool</span>
-                <div className="grid grid-cols-2">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Others</span>
-                  <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest">Ours</span>
-                </div>
+            {/* Right table */}
+            <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-sm">
+              <div className="grid grid-cols-12 px-6 py-3.5 bg-slate-50 border-b border-slate-200">
+                <span className="col-span-6 text-[10.5px] font-bold text-slate-500 uppercase tracking-[0.12em]">Tool</span>
+                <span className="col-span-3 text-[10.5px] font-bold text-slate-500 uppercase tracking-[0.12em]">Typical</span>
+                <span className="col-span-3 text-right text-[10.5px] font-bold text-indigo-600 uppercase tracking-[0.12em]">Ours</span>
               </div>
 
               {COMPARE.map((row, i) => (
                 <div
                   key={row.label}
-                  className={`grid grid-cols-3 px-5 py-4 items-center ${i !== COMPARE.length - 1 ? 'border-b border-slate-100' : ''}`}
+                  className={`grid grid-cols-12 px-6 py-4 items-center ${i !== COMPARE.length - 1 ? 'border-b border-slate-100' : ''}`}
                 >
-                  <div className="col-span-2">
-                    <p className="text-sm font-semibold text-slate-800">{row.label}</p>
-                    <p className="text-[11px] text-slate-400 mt-0.5">{row.tag}</p>
-                  </div>
-                  <div className="grid grid-cols-2 items-center">
-                    <span className="text-sm text-slate-400 line-through">{row.theirs}</span>
-                    <span className="inline-flex items-center gap-1 text-sm font-bold text-emerald-600">
-                      <CheckCircle2 size={13} className="text-emerald-500" />
-                      Free
-                    </span>
-                  </div>
+                  <p className="col-span-6 text-[14px] font-semibold text-slate-900">{row.label}</p>
+                  <span className="col-span-3 text-[14px] text-slate-400 line-through font-medium">{row.theirs}</span>
+                  <span className="col-span-3 inline-flex items-center justify-end gap-1 text-[14px] font-bold text-emerald-600">
+                    <Check size={13} strokeWidth={3} />
+                    Free
+                  </span>
                 </div>
               ))}
 
-              <div className="px-5 py-4 bg-indigo-600">
-                <Link
-                  href="/tools"
-                  className="flex items-center justify-center gap-2 text-sm font-semibold text-white"
-                >
-                  Try all 5 tools — $0 <ArrowRight size={14} />
-                </Link>
-              </div>
+              <Link
+                href="/tools"
+                className="block px-6 py-4 bg-slate-900 hover:bg-slate-800 transition-colors group"
+              >
+                <span className="flex items-center justify-center gap-1.5 text-[14px] font-semibold text-white">
+                  Browse all 5 tools
+                  <ArrowUpRight size={14} strokeWidth={2.5} className="group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-transform" />
+                </span>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="py-28 bg-white">
-        <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-16">
-
-            {/* Left */}
-            <div className="lg:col-span-2">
-              <span className="section-label mb-6 inline-flex">FAQ</span>
-              <h2 className="text-4xl font-black text-slate-900 tracking-tight leading-[1.1] mb-4">
-                Questions
-                <span className="block gradient-text-dark">answered.</span>
-              </h2>
-              <p className="text-slate-500 text-[15px] leading-relaxed mb-8">
-                Everything you need to know before you start using our tools.
-              </p>
-
-              <div className="space-y-2">
-                {TOOLS.slice(0, 3).map((tool) => {
-                  const Icon = tool.icon;
-                  return (
-                    <Link
-                      key={tool.slug}
-                      href={tool.href}
-                      className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 hover:border-indigo-100 hover:bg-indigo-50/40 transition-all group"
-                    >
-                      <span className={`flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br ${tool.gradient} shrink-0`}>
-                        <Icon size={14} className="text-white" />
-                      </span>
-                      <span className="text-sm font-semibold text-slate-700 group-hover:text-indigo-600 transition-colors">
-                        {tool.name}
-                      </span>
-                      <ArrowRight size={12} className="ml-auto text-slate-300 group-hover:text-indigo-400 transition-colors" />
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Right: accordion */}
-            <div className="lg:col-span-3">
-              <div className="rounded-2xl border border-slate-100 px-8 py-1">
-                {FAQS.map((faq) => (
-                  <FAQItem key={faq.q} {...faq} />
-                ))}
-              </div>
-            </div>
+      <section className="py-24 sm:py-32 bg-white">
+        <div className="mx-auto max-w-5xl px-5 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-14">
+            <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-[0.14em] mb-4">
+              Frequently asked
+            </p>
+            <h2 className="text-[34px] sm:text-[44px] font-black text-slate-900 tracking-[-0.035em] leading-[1.05] mb-5">
+              Questions, <span className="gradient-text-dark">answered.</span>
+            </h2>
+            <p className="text-[16.5px] text-slate-600 leading-[1.55]">
+              Everything you might want to know before opening your first tool.
+            </p>
           </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white px-6 sm:px-8">
+            {FAQS.map((faq) => (
+              <FAQItem key={faq.q} {...faq} />
+            ))}
+          </div>
+
+          <p className="text-center text-[13.5px] text-slate-500 mt-8">
+            Still curious?{' '}
+            <Link href="/faq" className="font-semibold text-indigo-600 hover:text-indigo-700">
+              See the full FAQ
+            </Link>{' '}or{' '}
+            <Link href="/contact" className="font-semibold text-indigo-600 hover:text-indigo-700">
+              get in touch
+            </Link>.
+          </p>
         </div>
       </section>
 
       {/* Final CTA */}
-      <section className="pb-28 bg-white">
-        <div className="mx-auto max-w-5xl px-5 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl overflow-hidden bg-slate-900 px-8 sm:px-16 py-16 text-center">
+      <section className="pb-24 sm:pb-32 bg-white">
+        <div className="mx-auto max-w-6xl px-5 sm:px-6 lg:px-8">
+          <div className="relative rounded-[28px] overflow-hidden bg-slate-950 px-8 sm:px-16 py-20 sm:py-24">
             {/* Top glow */}
             <div
               aria-hidden="true"
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99,102,241,0.3) 0%, transparent 70%)',
+                background:
+                  'radial-gradient(ellipse 70% 45% at 50% 0%, rgba(99,102,241,0.30) 0%, transparent 70%), radial-gradient(ellipse 50% 35% at 80% 100%, rgba(139,92,246,0.18) 0%, transparent 70%)',
               }}
             />
-            {/* Grid overlay */}
+            {/* Grid */}
             <div
               aria-hidden="true"
-              className="absolute inset-0 pointer-events-none opacity-30"
+              className="absolute inset-0 pointer-events-none opacity-25"
               style={{
-                backgroundImage: 'linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)',
-                backgroundSize: '40px 40px',
+                backgroundImage:
+                  'linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)',
+                backgroundSize: '48px 48px',
               }}
             />
 
-            <div className="relative">
-              {/* Stats row */}
-              <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-2 mb-10">
-                {[
-                  { val: '5', label: 'free tools' },
-                  { val: '0', label: 'accounts needed' },
-                  { val: '$0', label: 'cost forever' },
-                  { val: '100%', label: 'browser-based' },
-                ].map((s) => (
-                  <div key={s.label} className="text-center">
-                    <div className="text-2xl font-black text-white">{s.val}</div>
-                    <div className="text-xs text-slate-500 uppercase tracking-widest">{s.label}</div>
-                  </div>
-                ))}
-              </div>
-
-              <h2 className="text-4xl sm:text-5xl font-black text-white tracking-tight leading-[1.1] mb-3">
-                Start in 10 seconds.
+            <div className="relative max-w-3xl mx-auto text-center">
+              <p className="text-[11px] font-bold text-indigo-300 uppercase tracking-[0.14em] mb-5">
+                Ready when you are
+              </p>
+              <h2 className="text-[36px] sm:text-[52px] font-black text-white tracking-[-0.035em] leading-[1.05] mb-5">
+                Start in <span className="gradient-text">10 seconds.</span>
               </h2>
-              <p className="text-slate-400 text-lg mb-10 max-w-lg mx-auto">
-                No account. No credit card. No catch. Just tools that work.
+              <p className="text-[17px] text-slate-300 leading-[1.55] mb-10 max-w-lg mx-auto">
+                No account. No credit card. No catch. Pick a tool, get your output, get on with your day.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
                 <Link
                   href="/tools"
-                  className="btn-primary inline-flex items-center gap-2 px-8 py-3.5 text-[15px] rounded-xl"
+                  className="inline-flex items-center gap-1.5 px-7 py-3.5 text-[15px] font-semibold text-slate-900 bg-white hover:bg-slate-100 rounded-xl transition-all shadow-md"
                 >
-                  <Zap size={16} strokeWidth={2.5} />
-                  Try All 5 Free Tools
+                  Open a Tool
+                  <ArrowUpRight size={15} strokeWidth={2.5} />
                 </Link>
                 <Link
                   href="/blog"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 text-[14px] font-medium text-slate-400 rounded-xl border border-white/10 hover:border-white/20 hover:text-white transition-all"
+                  className="inline-flex items-center gap-1.5 px-6 py-3.5 text-[14.5px] font-semibold text-slate-300 hover:text-white rounded-xl border border-white/10 hover:border-white/25 transition-all"
                 >
-                  Read the Blog
+                  Read the blog
                 </Link>
+              </div>
+
+              {/* Stats */}
+              <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-4 pt-8 border-t border-white/10">
+                {[
+                  { val: '5',     label: 'Free tools' },
+                  { val: '0',     label: 'Accounts needed' },
+                  { val: '$0',    label: 'Cost forever' },
+                  { val: '50+',   label: 'Countries served' },
+                ].map((s) => (
+                  <div key={s.label} className="text-center">
+                    <div className="text-[24px] font-black text-white tracking-tight">{s.val}</div>
+                    <div className="text-[11px] text-slate-500 uppercase tracking-[0.12em] mt-1">{s.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

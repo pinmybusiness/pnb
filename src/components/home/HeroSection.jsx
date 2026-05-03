@@ -1,153 +1,111 @@
-'use client';
-
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Zap, Clock } from 'lucide-react';
+import { ArrowUpRight, Sparkles } from 'lucide-react';
 import { TOOLS } from '@/lib/tools';
 
 export default function HeroSection() {
   return (
-    <section className="relative overflow-hidden w-full" style={{ backgroundColor: '#020617' }}>
-      {/* Glow blobs */}
+    <section className="relative overflow-hidden bg-white">
+      {/* Soft ambient gradient */}
       <div
         aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          position: 'absolute', top: '-80px', right: '10%',
-          width: '500px', height: '500px', borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)',
-          pointerEvents: 'none',
+          background:
+            'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 40% at 50% 100%, rgba(124,58,237,0.06) 0%, transparent 60%)',
         }}
       />
+      {/* Fine grid */}
       <div
         aria-hidden="true"
+        className="absolute inset-0 pointer-events-none opacity-[0.35]"
         style={{
-          position: 'absolute', bottom: '0', left: '0',
-          width: '400px', height: '400px', borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(139,92,246,0.10) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Subtle grid */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute', inset: 0,
           backgroundImage:
-            'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
-          backgroundSize: '64px 64px',
-          pointerEvents: 'none',
+            'linear-gradient(rgba(15,23,42,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,0.04) 1px, transparent 1px)',
+          backgroundSize: '56px 56px',
+          maskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 100%)',
         }}
       />
 
-      {/* Main container - FIXED CENTERING */}
-      <div className="relative w-full px-5 sm:px-6 lg:px-8 pt-24 pb-32">
-        <div className="max-w-4xl mx-auto text-center">
+      <div className="relative mx-auto max-w-7xl px-5 sm:px-6 lg:px-8 pt-24 sm:pt-32 pb-24 sm:pb-32">
+        <div className="max-w-3xl mx-auto text-center">
 
-          {/* Pill */}
-          <div
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8 mx-auto"
-            style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" style={{ boxShadow: '0 0 6px #34d399' }} />
-            <span style={{ fontSize: '12px', fontWeight: 500, color: '#94a3b8', letterSpacing: '0.02em' }}>
-              Free forever · No account · Made for US small businesses
+          {/* Eyebrow pill */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-8 rounded-full bg-white border border-slate-200 shadow-sm">
+            <Sparkles size={12} className="text-indigo-500" strokeWidth={2.25} />
+            <span className="text-[12px] font-semibold text-slate-600 tracking-tight">
+              Free forever · No accounts · Privacy-first
             </span>
           </div>
 
           {/* Headline */}
-          <h1
-            className="font-black tracking-tight text-white mb-6"
-            style={{ fontSize: 'clamp(40px, 6.5vw, 74px)', lineHeight: '1.04', letterSpacing: '-0.03em' }}
-          >
-            Free Business Tools
+          <h1 className="font-black text-slate-900 tracking-[-0.035em] leading-[1.02] mb-7"
+              style={{ fontSize: 'clamp(40px, 6vw, 76px)' }}>
+            Free business tools,
             <br />
-            <span style={{
-              background: 'linear-gradient(135deg, #a5b4fc 0%, #818cf8 50%, #c4b5fd 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
-              American Entrepreneurs
-            </span>
-            <br />
-            Actually Use
+            <span className="gradient-text-dark">made beautifully simple.</span>
           </h1>
 
           {/* Sub */}
-          <p className="text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto mb-10">
-            WhatsApp link generator, QR code maker, invoice builder, email signatures, and
-            password generator - all free, all instant, all private. No subscriptions. No BS.
+          <p className="text-[17px] sm:text-[19px] text-slate-600 leading-[1.55] max-w-2xl mx-auto mb-10 font-normal">
+            WhatsApp links, QR codes, invoices, email signatures, and password generators —
+            trusted by founders, freelancers, and small business owners across the US, UK, and beyond.
           </p>
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-14">
             <Link
               href="/tools"
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl text-white font-semibold text-[15px] transition-all"
-              style={{
-                background: '#4f46e5',
-                boxShadow: '0 0 0 0 rgba(99,102,241,0)',
-                transition: 'background 0.15s, box-shadow 0.2s',
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#4338ca'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(99,102,241,0.2), 0 4px 20px rgba(79,70,229,0.4)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = '#4f46e5'; e.currentTarget.style.boxShadow = '0 0 0 0 rgba(99,102,241,0)'; }}
+              className="inline-flex items-center gap-1.5 px-6 py-3.5 text-[15px] font-semibold text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all shadow-md hover:shadow-lg hover:shadow-slate-300/50"
             >
-              <Zap size={15} strokeWidth={2.5} />
-              Explore All 5 Free Tools
-              <ArrowRight size={14} />
+              Open a Tool
+              <ArrowUpRight size={15} strokeWidth={2.5} />
             </Link>
             <Link
               href="/about"
-              className="inline-flex items-center gap-2 px-6 py-3.5 text-[14px] font-medium text-slate-400 rounded-xl transition-all hover:text-white"
-              style={{ border: '1px solid rgba(255,255,255,0.1)' }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}
+              className="inline-flex items-center gap-1.5 px-5 py-3.5 text-[14.5px] font-semibold text-slate-700 hover:text-slate-900 rounded-xl transition-all"
             >
-              Learn more
+              See how it works →
             </Link>
           </div>
 
-          {/* Trust row */}
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-            {[
-              { icon: ShieldCheck, text: 'No data stored ever' },
-              { icon: Clock,       text: 'Results in seconds' },
-              { icon: Zap,         text: '100% browser-based' },
-            ].map(({ icon: Icon, text }) => (
-              <span key={text} className="flex items-center gap-1.5" style={{ fontSize: '13px', color: '#64748b' }}>
-                <Icon size={13} style={{ color: '#818cf8' }} />
-                {text}
-              </span>
-            ))}
+          {/* Trust line */}
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12.5px] text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Used in 50+ countries
+            </span>
+            <span className="text-slate-300">·</span>
+            <span>Runs in your browser</span>
+            <span className="text-slate-300">·</span>
+            <span>Zero data ever stored</span>
           </div>
         </div>
 
         {/* Tool quick links */}
-        <div className="mt-16 flex flex-wrap justify-center gap-2.5 max-w-4xl mx-auto">
-          {TOOLS.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <Link
-                key={tool.slug}
-                href={tool.href}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full transition-all"
-                style={{
-                  background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  color: '#94a3b8',
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.09)'; e.currentTarget.style.color = '#f1f5f9'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#94a3b8'; }}
-              >
-                <span className={`inline-flex items-center justify-center w-5 h-5 rounded-md ${tool.bgLight}`}>
-                  <Icon size={11} className={tool.textColor} />
-                </span>
-                {tool.name}
-              </Link>
-            );
-          })}
+        <div className="mt-20">
+          <p className="text-center text-[11px] font-bold text-slate-400 uppercase tracking-[0.14em] mb-6">
+            Five free tools, ready in seconds
+          </p>
+          <div className="flex flex-wrap justify-center gap-2.5 max-w-3xl mx-auto">
+            {TOOLS.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <Link
+                  key={tool.slug}
+                  href={tool.href}
+                  className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-white border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all"
+                >
+                  <span className={`flex items-center justify-center w-5 h-5 rounded-md ${tool.bgLight}`}>
+                    <Icon size={11} className={tool.textColor} strokeWidth={2} />
+                  </span>
+                  <span className="text-[13px] font-medium text-slate-700 group-hover:text-slate-900 transition-colors">
+                    {tool.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
     </section>

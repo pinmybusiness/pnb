@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Mail, Copy, Check, Linkedin, Twitter, Globe, Phone, Briefcase } from 'lucide-react';
 import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
 import { copyToClipboard } from '@/lib/utils';
 
 const THEMES = [
@@ -62,9 +61,9 @@ export default function EmailSignatureGenerator() {
   return (
     <div className="space-y-6">
       {/* Input form */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 className="text-base font-semibold text-slate-900 mb-5 flex items-center gap-2">
-          <Mail size={16} className="text-sky-600" />
+      <div className="rounded-2xl surface p-6">
+        <h2 className="text-base font-semibold text-white mb-5 flex items-center gap-2">
+          <Mail size={16} className="text-sky-300" />
           Your Details
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -88,19 +87,21 @@ export default function EmailSignatureGenerator() {
       </div>
 
       {/* Theme picker */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h2 className="text-base font-semibold text-slate-900 mb-4">Accent Color</h2>
+      <div className="rounded-2xl surface p-6">
+        <h2 className="text-base font-semibold text-white mb-4">Accent Color</h2>
         <div className="flex flex-wrap gap-3">
           {THEMES.map((t) => (
             <button
               key={t.id}
               onClick={() => setThemeId(t.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 text-sm font-medium transition-all ${
-                themeId === t.id ? 'border-slate-900 shadow-md' : 'border-slate-200 hover:border-slate-300'
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all backdrop-blur-sm ${
+                themeId === t.id
+                  ? 'border-indigo-400/60 bg-indigo-500/15 text-indigo-100 shadow-[0_0_0_1px_rgba(129,140,248,0.3)]'
+                  : 'border-white/10 bg-white/[0.02] text-slate-300 hover:border-white/20'
               }`}
             >
               <span
-                className="w-4 h-4 rounded-full inline-block shrink-0"
+                className="w-4 h-4 rounded-full inline-block shrink-0 ring-1 ring-white/20"
                 style={{ background: t.primary }}
               />
               {t.label}
@@ -110,51 +111,51 @@ export default function EmailSignatureGenerator() {
       </div>
 
       {/* Preview */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="rounded-2xl surface p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-semibold text-slate-900">Live Preview</h2>
+          <h2 className="text-base font-semibold text-white">Live Preview</h2>
           <button
             onClick={handleCopyHtml}
-            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all ${
               copied
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-200'
+                ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-400/30'
+                : 'text-white bg-indigo-500 hover:bg-indigo-400'
             }`}
           >
             {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy HTML</>}
           </button>
         </div>
 
-        {/* Rendered preview */}
+        {/* Rendered preview - always light card so signature looks like in email */}
         <div
-          className="p-5 bg-slate-50 rounded-xl border border-slate-100"
+          className="p-5 bg-white rounded-xl border border-white/[0.08] shadow-[0_20px_40px_-20px_rgba(0,0,0,0.5)]"
           dangerouslySetInnerHTML={{ __html: signatureHtml }}
         />
 
         {/* Raw HTML */}
         <details className="mt-4">
-          <summary className="text-xs font-medium text-slate-500 cursor-pointer hover:text-slate-700 select-none">
+          <summary className="text-xs font-medium text-slate-400 cursor-pointer hover:text-slate-200 select-none">
             Show raw HTML
           </summary>
-          <pre className="mt-3 p-4 bg-slate-900 text-slate-300 text-xs rounded-xl overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
+          <pre className="mt-3 p-4 bg-[#0a0a14] text-slate-300 text-xs rounded-xl border border-white/[0.06] overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
             {signatureHtml}
           </pre>
         </details>
       </div>
 
       {/* How to use */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">How to add to Gmail / Outlook</h3>
-        <div className="grid sm:grid-cols-2 gap-4">
+      <div className="rounded-2xl surface p-6">
+        <h3 className="text-sm font-semibold text-white mb-4">How to add to Gmail / Outlook</h3>
+        <div className="grid sm:grid-cols-2 gap-3">
           {[
             ['Gmail', 'Settings → See all settings → General → Signature → Create new → Paste HTML in source mode'],
             ['Outlook', 'Settings → View all Outlook settings → Compose and reply → Email signature → Paste HTML'],
             ['Apple Mail', 'Mail → Preferences → Signatures → Create → Paste HTML source'],
             ['Thunderbird', 'Account Settings → Signature text → Enable HTML → Paste HTML'],
           ].map(([client, steps]) => (
-            <div key={client} className="p-3 bg-slate-50 rounded-xl">
-              <p className="text-xs font-bold text-slate-800 mb-1">{client}</p>
-              <p className="text-xs text-slate-500 leading-relaxed">{steps}</p>
+            <div key={client} className="p-3 bg-white/[0.03] rounded-xl border border-white/[0.06]">
+              <p className="text-xs font-bold text-white mb-1">{client}</p>
+              <p className="text-xs text-slate-400 leading-relaxed">{steps}</p>
             </div>
           ))}
         </div>

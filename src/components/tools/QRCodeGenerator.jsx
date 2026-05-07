@@ -1,19 +1,19 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import QRCode from 'qrcode';
-import { QrCode, Download, RefreshCw, Link, Type } from 'lucide-react';
+import { QrCode, Download, RefreshCw, Link, Type, Wifi, Mail, Phone, ArrowLeftRight } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import CopyButton from '@/components/ui/CopyButton';
-import { downloadDataUrl } from '@/lib/utils';
+import { downloadDataUrl, cn } from '@/lib/utils';
 
 const SIZE_OPTIONS = [
-  { value: '128', label: '128 × 128 (Small)' },
-  { value: '256', label: '256 × 256 (Medium)' },
-  { value: '400', label: '400 × 400 (Large)' },
-  { value: '512', label: '512 × 512 (XL)' },
+  { value: '128', label: '128' },
+  { value: '256', label: '256' },
+  { value: '400', label: '400' },
+  { value: '512', label: '512' },
 ];
 
 const ERROR_LEVELS = [
@@ -24,15 +24,27 @@ const ERROR_LEVELS = [
 ];
 
 const QUICK_PRESETS = [
-  { label: 'Website URL', icon: Link,  value: 'https://example.com' },
-  { label: 'Plain Text',  icon: Type,  value: 'Hello from PinMyBusiness!' },
+  { label: 'URL',   icon: Link,  value: 'https://example.com' },
+  { label: 'Text',  icon: Type,  value: 'Hello from PinMyBusiness!' },
+  { label: 'Email', icon: Mail,  value: 'mailto:hello@example.com' },
+  { label: 'Phone', icon: Phone, value: 'tel:+15551234567' },
+  { label: 'Wi-Fi', icon: Wifi,  value: 'WIFI:T:WPA;S:NetworkName;P:password;;' },
+];
+
+const COLOR_PRESETS = [
+  { name: 'Classic',    fg: '#000000', bg: '#ffffff' },
+  { name: 'Inverted',   fg: '#ffffff', bg: '#0a0a0a' },
+  { name: 'Indigo',     fg: '#4f46e5', bg: '#ffffff' },
+  { name: 'Emerald',    fg: '#059669', bg: '#ffffff' },
+  { name: 'Sunset',     fg: '#0f172a', bg: '#fef3c7' },
+  { name: 'Midnight',   fg: '#a5b4fc', bg: '#0e1015' },
 ];
 
 export default function QRCodeGenerator() {
   const [input, setInput] = useState('https://');
   const [size, setSize]   = useState('256');
-  const [fgColor, setFgColor] = useState('#000000');
-  const [bgColor, setBgColor] = useState('#ffffff');
+  const [fgColor, setFgColor] = useState('#ffffff');
+  const [bgColor, setBgColor] = useState('#0a0a14');
   const [errorLevel, setErrorLevel] = useState('M');
   const [dataUrl, setDataUrl] = useState('');
   const [error, setError]     = useState('');
@@ -58,7 +70,6 @@ export default function QRCodeGenerator() {
     }
   }, [input, size, fgColor, bgColor, errorLevel]);
 
-  // Auto-generate with debounce
   useEffect(() => {
     const t = setTimeout(generate, 400);
     return () => clearTimeout(t);
@@ -71,9 +82,9 @@ export default function QRCodeGenerator() {
   return (
     <div className="space-y-6">
       {/* Input Panel */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
-        <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
-          <QrCode size={16} className="text-indigo-600" />
+      <div className="rounded-2xl surface p-6 space-y-5">
+        <h2 className="text-base font-semibold text-white flex items-center gap-2">
+          <QrCode size={16} className="text-indigo-300" />
           Enter URL or Text
         </h2>
 
@@ -83,7 +94,7 @@ export default function QRCodeGenerator() {
             <button
               key={label}
               onClick={() => setInput(value)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-50 border border-slate-200 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-white/[0.04] border border-white/10 text-slate-300 hover:bg-indigo-500/15 hover:border-indigo-400/40 hover:text-indigo-200 transition-all"
             >
               <Icon size={12} />
               {label}
@@ -99,56 +110,111 @@ export default function QRCodeGenerator() {
           hint="Paste any URL, text, phone number, email address, or Wi-Fi details"
         />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Select
-            label="QR Code Size"
-            value={size}
-            onChange={(e) => setSize(e.target.value)}
-            options={SIZE_OPTIONS}
-          />
-          <Select
-            label="Error Correction"
-            value={errorLevel}
-            onChange={(e) => setErrorLevel(e.target.value)}
-            options={ERROR_LEVELS}
-            hint="Higher = more resilient to damage"
-          />
+        {/* Size as button group */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-medium text-slate-300">Size</label>
+          <div className="grid grid-cols-4 gap-1 p-1 rounded-lg bg-[#0d0e13] border border-[#232733]">
+            {SIZE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setSize(opt.value)}
+                className={cn(
+                  'py-2 rounded-md text-[12.5px] font-medium tabular-nums transition-colors',
+                  size === opt.value
+                    ? 'bg-indigo-500/20 text-indigo-100 border border-indigo-400/40'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-transparent'
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-[12px] text-slate-500">Output: {size} × {size} px PNG</p>
         </div>
 
-        {/* Colors */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* Error correction */}
+        <Select
+          label="Error correction"
+          value={errorLevel}
+          onChange={(e) => setErrorLevel(e.target.value)}
+          options={ERROR_LEVELS}
+          hint="Higher = more resilient to damage / scanning at angles"
+        />
+
+        {/* Color presets */}
+        <div className="flex flex-col gap-2">
+          <label className="text-[13px] font-medium text-slate-300">Color preset</label>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            {COLOR_PRESETS.map((p) => {
+              const active = fgColor.toLowerCase() === p.fg.toLowerCase() && bgColor.toLowerCase() === p.bg.toLowerCase();
+              return (
+                <button
+                  key={p.name}
+                  type="button"
+                  onClick={() => { setFgColor(p.fg); setBgColor(p.bg); }}
+                  className={cn(
+                    'flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg border transition-colors',
+                    active
+                      ? 'border-indigo-400/50 bg-indigo-500/10'
+                      : 'border-[#232733] bg-[#0d0e13] hover:border-[#2c3140]'
+                  )}
+                  title={`${p.fg} on ${p.bg}`}
+                >
+                  <div className="relative w-8 h-8 rounded overflow-hidden border border-white/10">
+                    <div className="absolute inset-0" style={{ background: p.bg }} />
+                    <div className="absolute inset-1 rounded-sm" style={{ background: p.fg }} />
+                  </div>
+                  <span className="text-[10.5px] text-slate-400">{p.name}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Custom colors + swap */}
+        <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-2 sm:items-end">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-slate-700">QR Color</label>
-            <div className="flex items-center gap-2 h-[42px] px-3.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 transition-colors cursor-pointer">
+            <label className="text-[13px] font-medium text-slate-300">QR color</label>
+            <div className="flex items-center gap-2 h-[42px] px-3 rounded-lg border border-[#232733] bg-[#16181f] hover:border-[#2c3140] transition-colors cursor-pointer">
               <input
                 type="color"
                 value={fgColor}
                 onChange={(e) => setFgColor(e.target.value)}
-                className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent"
+                className="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent"
               />
-              <span className="text-sm text-slate-700 font-mono">{fgColor}</span>
+              <span className="text-[13px] text-slate-200 font-mono uppercase">{fgColor}</span>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={() => { const a = fgColor; setFgColor(bgColor); setBgColor(a); }}
+            aria-label="Swap colors"
+            className="self-end h-[42px] w-full sm:w-[42px] flex items-center justify-center rounded-lg border border-[#232733] bg-[#16181f] text-slate-400 hover:text-white hover:border-[#2c3140] transition-colors"
+            title="Swap colors"
+          >
+            <ArrowLeftRight size={14} />
+          </button>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-slate-700">Background Color</label>
-            <div className="flex items-center gap-2 h-[42px] px-3.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 transition-colors cursor-pointer">
+            <label className="text-[13px] font-medium text-slate-300">Background</label>
+            <div className="flex items-center gap-2 h-[42px] px-3 rounded-lg border border-[#232733] bg-[#16181f] hover:border-[#2c3140] transition-colors cursor-pointer">
               <input
                 type="color"
                 value={bgColor}
                 onChange={(e) => setBgColor(e.target.value)}
-                className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent"
+                className="w-7 h-7 rounded cursor-pointer border-0 p-0 bg-transparent"
               />
-              <span className="text-sm text-slate-700 font-mono">{bgColor}</span>
+              <span className="text-[13px] text-slate-200 font-mono uppercase">{bgColor}</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Preview & Download */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
+      <div className="rounded-2xl surface p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
-            <QrCode size={16} className="text-indigo-600" />
+          <h2 className="text-base font-semibold text-white flex items-center gap-2">
+            <QrCode size={16} className="text-indigo-300" />
             QR Code Preview
           </h2>
           {generating && (
@@ -160,14 +226,14 @@ export default function QRCodeGenerator() {
         </div>
 
         {error ? (
-          <div className="flex items-center justify-center h-48 bg-red-50 rounded-xl border border-red-100">
-            <p className="text-sm text-red-600 text-center px-4">{error}</p>
+          <div className="flex items-center justify-center h-48 bg-rose-500/10 rounded-xl border border-rose-400/30">
+            <p className="text-sm text-rose-300 text-center px-4">{error}</p>
           </div>
         ) : dataUrl ? (
           <div className="flex flex-col items-center gap-6">
             {/* QR Code image */}
             <div
-              className="p-4 rounded-2xl border border-slate-200 shadow-sm"
+              className="p-4 rounded-2xl border border-white/[0.08] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]"
               style={{ backgroundColor: bgColor }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -181,21 +247,11 @@ export default function QRCodeGenerator() {
 
             {/* Actions */}
             <div className="flex flex-wrap items-center gap-3 justify-center">
-              <Button
-                onClick={handleDownload}
-                size="lg"
-                icon={Download}
-                className="shadow-md shadow-indigo-200"
-              >
+              <Button onClick={handleDownload} size="lg" icon={Download}>
                 Download PNG
               </Button>
               <CopyButton text={input} label="Copy URL" size="lg" />
-              <Button
-                variant="ghost"
-                size="md"
-                icon={RefreshCw}
-                onClick={generate}
-              >
+              <Button variant="ghost" size="md" icon={RefreshCw} onClick={generate}>
                 Refresh
               </Button>
             </div>
@@ -210,7 +266,7 @@ export default function QRCodeGenerator() {
               ].map((tag) => (
                 <span
                   key={tag}
-                  className="px-2.5 py-1 text-xs bg-slate-50 text-slate-500 rounded-full border border-slate-200"
+                  className="px-2.5 py-1 text-xs bg-white/[0.04] text-slate-400 rounded-full border border-white/[0.08]"
                 >
                   {tag}
                 </span>
@@ -218,16 +274,16 @@ export default function QRCodeGenerator() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-48 bg-slate-50 rounded-xl border border-dashed border-slate-200">
-            <QrCode size={36} className="text-slate-300 mb-3" />
-            <p className="text-sm text-slate-400">Enter a URL or text above to generate</p>
+          <div className="flex flex-col items-center justify-center h-48 bg-white/[0.02] rounded-xl border border-dashed border-white/[0.1]">
+            <QrCode size={36} className="text-slate-600 mb-3" />
+            <p className="text-sm text-slate-500">Enter a URL or text above to generate</p>
           </div>
         )}
       </div>
 
       {/* Tips */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6">
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">QR Code use cases</h3>
+      <div className="rounded-2xl surface p-6">
+        <h3 className="text-sm font-semibold text-white mb-4">QR Code use cases</h3>
         <div className="grid grid-cols-2 gap-3">
           {[
             ['Restaurant Menu', 'Link to your online menu'],
@@ -237,9 +293,12 @@ export default function QRCodeGenerator() {
             ['Social Media', 'Drive followers to your profile'],
             ['Contact Info', 'Share your vCard/contact details'],
           ].map(([title, desc]) => (
-            <div key={title} className="p-3 bg-slate-50 rounded-xl">
-              <p className="text-xs font-semibold text-slate-800 mb-0.5">{title}</p>
-              <p className="text-xs text-slate-500">{desc}</p>
+            <div
+              key={title}
+              className="p-3 bg-white/[0.03] rounded-xl border border-white/[0.06]"
+            >
+              <p className="text-xs font-semibold text-white mb-0.5">{title}</p>
+              <p className="text-xs text-slate-400">{desc}</p>
             </div>
           ))}
         </div>

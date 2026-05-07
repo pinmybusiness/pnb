@@ -1,11 +1,20 @@
+/* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from 'next/og';
 
-export const dynamic = 'force-static';
-export const alt = 'PinMyBusiness - Free Business Tools for Modern Entrepreneurs';
-export const size = { width: 1200, height: 630 };
-export const contentType = 'image/png';
+export const ogSize = { width: 1200, height: 630 };
+export const ogContentType = 'image/png';
 
-export default function OpenGraphImage() {
+const COLOR_MAP = {
+  emerald: { glow: 'rgba(52,211,153,0.30)',  fg: '#a7f3d0' },
+  indigo:  { glow: 'rgba(99,102,241,0.32)',  fg: '#c7d2fe' },
+  amber:   { glow: 'rgba(245,158,11,0.30)',  fg: '#fde68a' },
+  sky:     { glow: 'rgba(56,189,248,0.30)',  fg: '#bae6fd' },
+  rose:    { glow: 'rgba(244,63,94,0.30)',   fg: '#fecdd3' },
+};
+
+export function renderToolOgImage(tool) {
+  const palette = COLOR_MAP[tool.color] || COLOR_MAP.indigo;
+
   return new ImageResponse(
     (
       <div
@@ -15,11 +24,9 @@ export default function OpenGraphImage() {
           display: 'flex',
           flexDirection: 'column',
           background: '#0e1015',
-          backgroundImage:
-            'radial-gradient(ellipse 60% 50% at 50% -10%, rgba(99,102,241,0.20) 0%, transparent 70%)',
-          padding: '70px 80px',
+          backgroundImage: `radial-gradient(ellipse 70% 55% at 50% -10%, ${palette.glow} 0%, transparent 70%)`,
+          padding: '64px 72px',
           fontFamily: 'sans-serif',
-          position: 'relative',
         }}
       >
         {/* Top row */}
@@ -31,18 +38,18 @@ export default function OpenGraphImage() {
             width: '100%',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: 56,
-                height: 56,
+                width: 48,
+                height: 48,
                 background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                borderRadius: 14,
+                borderRadius: 12,
                 color: 'white',
-                fontSize: 36,
+                fontSize: 28,
                 fontWeight: 600,
                 letterSpacing: '-0.04em',
               }}
@@ -52,7 +59,7 @@ export default function OpenGraphImage() {
             <div
               style={{
                 color: 'white',
-                fontSize: 26,
+                fontSize: 22,
                 fontWeight: 600,
                 letterSpacing: '-0.02em',
               }}
@@ -65,15 +72,15 @@ export default function OpenGraphImage() {
               display: 'flex',
               alignItems: 'center',
               padding: '6px 14px',
-              border: '1px solid #2c3140',
+              border: `1px solid ${palette.fg}55`,
               borderRadius: 999,
-              color: '#a5b4fc',
-              fontSize: 14,
+              color: palette.fg,
+              fontSize: 13,
               fontWeight: 600,
               letterSpacing: '0.12em',
             }}
           >
-            FREE · NO SIGNUP
+            {tool.category.toUpperCase()} · FREE
           </div>
         </div>
 
@@ -88,38 +95,39 @@ export default function OpenGraphImage() {
         >
           <div
             style={{
-              color: 'white',
-              fontSize: 76,
-              fontWeight: 600,
-              letterSpacing: '-0.025em',
-              lineHeight: 1.05,
+              color: '#9ca3af',
+              fontSize: 22,
+              fontWeight: 500,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
               marginBottom: 16,
             }}
           >
-            Free business tools
+            Free tool
           </div>
           <div
             style={{
-              fontSize: 76,
+              color: 'white',
+              fontSize: 78,
               fontWeight: 600,
               letterSpacing: '-0.025em',
               lineHeight: 1.05,
-              marginBottom: 28,
-              color: '#9ca3af',
+              marginBottom: 18,
+              maxWidth: 1000,
             }}
           >
-            that actually work.
+            {tool.name}
           </div>
           <div
             style={{
               color: '#9ca3af',
-              fontSize: 24,
+              fontSize: 26,
               fontWeight: 400,
-              maxWidth: 900,
+              maxWidth: 980,
               lineHeight: 1.4,
             }}
           >
-            WhatsApp links · QR codes · Invoices · Email signatures · Passwords
+            {tool.tagline}
           </div>
         </div>
 
@@ -131,17 +139,17 @@ export default function OpenGraphImage() {
             justifyContent: 'space-between',
             width: '100%',
             color: '#6b7280',
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: 500,
-            paddingTop: 20,
+            paddingTop: 18,
             borderTop: '1px solid #232733',
           }}
         >
-          <div style={{ display: 'flex' }}>pinmybusiness.com</div>
-          <div style={{ display: 'flex' }}>5 tools · 0 fees · 0 accounts</div>
+          <div style={{ display: 'flex' }}>pinmybusiness.com{tool.href}</div>
+          <div style={{ display: 'flex' }}>No signup · Always free · Private</div>
         </div>
       </div>
     ),
-    { ...size }
+    { ...ogSize }
   );
 }

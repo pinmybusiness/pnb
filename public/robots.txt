@@ -1,9 +1,75 @@
+# PinMyBusiness — robots.txt
+# https://pinmybusiness.com/robots.txt
+
+# All search engines
 User-agent: *
 Allow: /
-
-# Block Next.js internals and API routes
 Disallow: /api/
 Disallow: /_next/
+Disallow: /offline
 
-# Sitemap
+# Search engine crawlers — explicitly allow rich content
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /offline
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /offline
+
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /offline
+
+# Social media crawlers (for OG/Twitter cards)
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# AI training crawlers — opt out by default; users can revisit later
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# Sitemaps
 Sitemap: https://pinmybusiness.com/sitemap.xml
+
+# Host (canonical)
+Host: https://pinmybusiness.com

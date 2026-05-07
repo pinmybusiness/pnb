@@ -2,124 +2,183 @@
 @source "../";
 
 /* ==============================================
-   BASE - inside @layer base so Tailwind
-   utilities always win over these rules
+   DESIGN TOKENS - soft dark, editorial
+   Calm slate base, indigo-only accent.
+=============================================== */
+@theme {
+  --color-bg: #0e1015;
+  --color-bg-elev: #14161d;
+  --color-surface: #16181f;
+  --color-border: #232733;
+  --color-border-strong: #2c3140;
+  --color-text: #e5e7eb;
+  --color-muted: #9ca3af;
+  --color-subtle: #6b7280;
+  --color-brand: #818cf8;
+  --color-brand-strong: #6366f1;
+}
+
+/* ==============================================
+   BASE
 =============================================== */
 @layer base {
-  *, *::before, *::after {
-    box-sizing: border-box;
-  }
+  *, *::before, *::after { box-sizing: border-box; }
 
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    color-scheme: dark;
+    background-color: #0e1015;
   }
 
   body {
-    background-color: #ffffff;
-    color: #0f172a;
+    background-color: #0e1015;
+    color: #e5e7eb;
     line-height: 1.6;
     font-family: var(--font-inter, ui-sans-serif, system-ui, -apple-system, sans-serif);
+    overflow-x: hidden;
+  }
+
+  /* Single subtle ambient glow at top - that's it */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(900px 500px at 50% -10%, rgba(99,102,241,0.10), transparent 70%);
+    pointer-events: none;
   }
 
   *:focus-visible {
-    outline: 2px solid #6366f1;
+    outline: 2px solid #a5b4fc;
     outline-offset: 3px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 
-  ::-webkit-scrollbar { width: 5px; }
+  ::selection { background: rgba(129,140,248,0.30); color: #fff; }
+
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
-  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  ::-webkit-scrollbar-thumb { background: #2c3140; border-radius: 99px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3a4053; }
+
+  input, textarea, select { color-scheme: dark; }
+
+  /* Default heading rhythm - tight tracking, normal weight */
+  h1, h2, h3, h4 { letter-spacing: -0.02em; }
 }
 
 /* ==============================================
-   COMPONENTS - inside @layer components so
-   Tailwind utilities can still override them
+   COMPONENTS
 =============================================== */
 @layer components {
 
-  /* Section pill label */
+  /* Quiet section pill */
   .section-label {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
+    gap: 8px;
+    padding: 4px 10px;
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    font-weight: 600;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #6366f1;
-    background: #eef2ff;
-    border: 1px solid #c7d2fe;
+    color: #a5b4fc;
+    background: transparent;
+    border: 1px solid #2c3140;
     border-radius: 99px;
   }
+  .section-label::before {
+    content: "";
+    width: 5px; height: 5px;
+    border-radius: 99px;
+    background: #818cf8;
+  }
 
-  /* Gradient text - light (for dark backgrounds) */
+  /* Gradient text - calm */
   .gradient-text {
-    background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 40%, #c4b5fd 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #c7d2fe 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Gradient text - dark (for light backgrounds) */
-  .gradient-text-dark {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  .gradient-text-accent {
+    background: linear-gradient(135deg, #a5b4fc 0%, #818cf8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Primary button */
-  .btn-primary {
-    background-color: #4f46e5;
-    color: #ffffff;
-    font-weight: 600;
-    border-radius: 10px;
-    transition: background-color 0.15s, box-shadow 0.15s, transform 0.1s;
+  /* Solid surface cards (no glass blur - flat & clean) */
+  .surface {
+    background: #16181f;
+    border: 1px solid #232733;
   }
-  .btn-primary:hover {
-    background-color: #4338ca;
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15), 0 4px 16px rgba(79, 70, 229, 0.3);
-  }
-  .btn-primary:active {
-    transform: scale(0.98);
+  .surface-2 {
+    background: #1a1d26;
+    border: 1px solid #2c3140;
   }
 
-  /* Card hover lift */
+  /* Hover lift - subtle */
   .card-hover {
-    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
   }
   .card-hover:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.10);
-    border-color: #c7d2fe;
+    border-color: #2c3140;
+    background: #181b23;
   }
 
-  /* Fade-up animation utility */
-  .fade-up {
-    animation: fadeUp 0.5s ease both;
-  }
+  /* Animation - fade-up only */
+  .fade-up { animation: fadeUp 0.5s ease both; }
+
+  /* Stagger delays */
+  .delay-1 { animation-delay: 0.05s; }
+  .delay-2 { animation-delay: 0.10s; }
+  .delay-3 { animation-delay: 0.15s; }
+  .delay-4 { animation-delay: 0.20s; }
+  .delay-5 { animation-delay: 0.25s; }
 }
 
 /* ==============================================
-   KEYFRAMES
+   KEYFRAMES - minimal
 =============================================== */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ==============================================
-   PRINT - Invoice Generator
+   PRINT - Invoice
 =============================================== */
 @media print {
+  html, body { background: white !important; color: black !important; }
+  body::before { display: none !important; }
   header, footer, nav, .no-print { display: none !important; }
-  body { background: white !important; color: black !important; }
-  .print-area { margin: 0; padding: 0; box-shadow: none !important; border: none !important; }
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .print-area {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .print-area * { color: black !important; }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
 }

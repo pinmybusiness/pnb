@@ -14,11 +14,12 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)',
+          background:
+            'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%)',
           color: 'white',
           fontSize: 22,
           fontWeight: 900,
-          borderRadius: 7,
+          borderRadius: 8,
           letterSpacing: '-0.05em',
         }}
       >
